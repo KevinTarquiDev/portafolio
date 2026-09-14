@@ -1,12 +1,19 @@
-import React from "react";
-import Laybel from "../assets/laybel/Laybel.jsx";
+import Laybel from "../assets/laybel/Laybel.tsx";
 import imgPortafolio from "../assets/photos/imgPortafolio.jpg";
 import imgEcomerce from "../assets/photos/imgEcomerce.jpg";
 import { useInView } from "react-intersection-observer";
 import "../assets/effect/projects.css";
 
+interface Project {
+  title: string;
+  description: string;
+  link1: string;
+  link2: string;
+  image: string;
+}
+
 //Atributos de los proyectos realizados
-const projects = [
+const projects: Project[] = [
   {
     title: "Portafolio Personal",
     description:
@@ -25,7 +32,7 @@ const projects = [
   },
 ];
 
-const ProjectCard = ({ title, description, link1, link2, image }) => {
+const ProjectCard = ({ title, description, link1, link2, image }: Project) => {
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,

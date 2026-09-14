@@ -1,9 +1,7 @@
 @import "@fortawesome/fontawesome-free/css/all.min.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 html {
-    background-color: #3b0764;
-    scroll-behavior: smooth;
+  background-color: #3b0764;
+  scroll-behavior: smooth;
 }

@@ -1,7 +1,5 @@
-import React from "react";
-// import perfil from "../assets/photos/perfil.jpg";
 import perfil from "../assets/logos/logo1.jpeg";
-import "../assets/effect/profileImage.css"
+import "../assets/effect/profileImage.css";
 
 function ProfileImage() {
   return (

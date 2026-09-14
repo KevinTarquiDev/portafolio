@@ -1,8 +1,25 @@
-# React + Vite
+# Portafolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Portafolio personal de Kevin Tarqui, construido con React, TypeScript, Tailwind CSS y Vite.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- [React 18](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS 4](https://tailwindcss.com/)
+- [Vite](https://vite.dev/) (con [SWC](https://swc.rs/) para Fast Refresh)
+- [pnpm](https://pnpm.io/) como gestor de paquetes
+
+## Desarrollo
+
+```bash
+pnpm install
+pnpm dev
+```
+
+## Scripts
+
+- `pnpm dev` — servidor de desarrollo con HMR
+- `pnpm build` — type-check (`tsc -b`) + build de producción
+- `pnpm lint` — ESLint
+- `pnpm preview` — sirve el build de producción localmente

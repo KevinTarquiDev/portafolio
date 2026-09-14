@@ -1,11 +1,13 @@
-// particlesOptions.js
-const particlesOptions = {
+import type { ISourceOptions } from "@tsparticles/engine";
+
+const particlesOptions: ISourceOptions = {
   particles: {
     number: {
       value: 15,
       density: {
         enable: true,
-        value_area: 700,
+        width: 700,
+        height: 700,
       },
     },
     color: {
@@ -13,40 +15,33 @@ const particlesOptions = {
     },
     shape: {
       type: "polygon",
-      stroke: {
-        width: 10,
-        color: "#460c9b",
+      options: {
+        polygon: {
+          sides: 6,
+        },
       },
-      polygon: {
-        nb_sides: 6,
-      },
-      image: {
-        src: "img/github.svg",
-        width: 100,
-        height: 100,
-      },
+    },
+    stroke: {
+      width: 10,
+      color: "#460c9b",
     },
     opacity: {
       value: 0.25,
-      random: true,
-      anim: {
+      animation: {
         enable: false,
         speed: 1,
-        opacity_min: 0.1,
         sync: false,
       },
     },
     size: {
       value: 125,
-      random: true,
-      anim: {
+      animation: {
         enable: true,
         speed: 10,
-        size_min: 50,
         sync: false,
       },
     },
-    line_linked: {
+    links: {
       enable: false,
       distance: 100,
       color: "#c846ff",
@@ -59,32 +54,30 @@ const particlesOptions = {
       direction: "none",
       random: true,
       straight: false,
-      out_mode: "out",
-      bounce: false,
-      attract: {
-        enable: false,
-        rotateX: 600,
-        rotateY: 1200,
+      outModes: {
+        default: "out",
       },
     },
   },
   interactivity: {
-    detect_on: "window",
+    detectsOn: "window",
     events: {
-      onhover: {
+      onHover: {
         enable: false,
         mode: "grab",
       },
-      onclick: {
+      onClick: {
         enable: false,
         mode: "push",
       },
-      resize: true,
+      resize: {
+        enable: true,
+      },
     },
     modes: {
       grab: {
         distance: 400,
-        line_linked: {
+        links: {
           opacity: 1,
         },
       },
@@ -93,21 +86,20 @@ const particlesOptions = {
         size: 40,
         duration: 2,
         opacity: 8,
-        speed: 3,
       },
       repulse: {
         distance: 200,
         duration: 0.4,
       },
       push: {
-        particles_nb: 4,
+        quantity: 4,
       },
       remove: {
-        particles_nb: 2,
+        quantity: 2,
       },
     },
   },
-  retina_detect: true,
+  detectRetina: true,
 };
 
 export default particlesOptions;

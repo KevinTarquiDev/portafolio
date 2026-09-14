@@ -1,15 +1,14 @@
 @keyframes slide-in-left {
-    0% {
-      transform: translateX(-50%);
-      opacity: 0;
-    }
-    100% {
-      transform: translateX(0);
-      opacity: 1;
-    }
+  0% {
+    transform: translateX(-50%);
+    opacity: 0;
   }
-  
-  .slide-in-left {
-    animation: slide-in-left 0.75s ease-out;
+  100% {
+    transform: translateX(0);
+    opacity: 1;
   }
-  
+}
+
+.slide-in-left {
+  animation: slide-in-left 0.75s ease-out;
+}

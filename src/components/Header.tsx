@@ -1,6 +1,5 @@
-import React from "react";
 import video from "../assets/video/fondoHeader.mp4";
-import ProfileImage from "./ProfileImage.jsx";
+import ProfileImage from "./ProfileImage.tsx";
 import "../assets/effect/header.css";
 
 export const Header = () => {

@@ -1,7 +1,10 @@
-import React from "react";
+interface FooterLinkProps {
+  href: string;
+  iconClass: string;
+}
 
 // Componente reutilizable para los enlaces del footer
-const FooterLink = ({ href, iconClass }) => {
+const FooterLink = ({ href, iconClass }: FooterLinkProps) => {
   return (
     <a
       href={href}
@@ -26,7 +29,7 @@ export const Footer = () => {
     >
       <div className="flex justify-center space-x-4">
         <FooterLink
-          href="https://www.linkedin.com/in/kevin-andrés-tarqui-tapia-864212271/"
+          href="https://www.linkedin.com/in/kevintarquidev/"
           iconClass="fab fa-linkedin"
         />
         <FooterLink
