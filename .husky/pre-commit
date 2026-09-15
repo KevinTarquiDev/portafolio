@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Evita continuar el push si hay errores en uno de los pasos
+set -e
+
+bunx lint-staged
+bun run check
