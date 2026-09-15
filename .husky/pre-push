@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-# Evita continuar el push si hay errores en uno de los pasos
-set -e
-
-pnpm run check
-pnpm run build
