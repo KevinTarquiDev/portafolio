@@ -15,15 +15,25 @@ const { items } = portfolio.practices;
 
 <section
   id="practices"
+  data-scene-label={ui.practices.eyebrow}
   class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-5 py-24 lg:px-11"
 >
   <div
     class="pointer-events-none absolute inset-0 hidden items-center justify-center lg:flex"
     aria-hidden="true"
   >
-    <span class="aspect-square w-[54vw] max-w-[780px] rounded-full border border-dashed border-lilac/12"></span>
-    <span class="absolute aspect-square w-[37.5vw] max-w-[540px] rounded-full border border-lilac/12"></span>
-    <span class="absolute aspect-square w-[21vw] max-w-[300px] rounded-full border border-lilac/22"></span>
+    <span
+      data-motion="ring"
+      class="aspect-square w-[54vw] max-w-[780px] rounded-full border border-dashed border-lilac/12"
+    ></span>
+    <span
+      data-motion="ring"
+      class="absolute aspect-square w-[37.5vw] max-w-[540px] rounded-full border border-lilac/12"
+    ></span>
+    <span
+      data-motion="ring"
+      class="absolute aspect-square w-[21vw] max-w-[300px] rounded-full border border-lilac/22"
+    ></span>
   </div>
 
   <h2 class="relative z-10 mb-12 flex flex-col items-center text-center lg:mb-0">

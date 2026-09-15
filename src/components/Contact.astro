@@ -29,6 +29,7 @@ const currentYear = new Date().getFullYear();
 
 <section
   id="contact"
+  data-scene-label={ui.contact.eyebrow}
   class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-32"
   style="background: linear-gradient(180deg, var(--color-bg) 0%, #150b25 55%, var(--color-deep) 100%);"
 >
@@ -44,12 +45,14 @@ const currentYear = new Date().getFullYear();
       ))}
     </span>
     <span
+      data-motion="contact-title"
       class="display hidden text-ink lg:inline"
       style={`font-size:${desktopTitleSize}`}
     >
       {ui.contact.title}
     </span>
     <span
+      data-motion="contact-dot"
       class="mb-2.5 block h-11 w-11 shrink-0 rounded-full bg-green shadow-[0_0_70px_rgba(95,209,138,0.55)] lg:mb-6 lg:h-24 lg:w-24"
       aria-hidden="true"
     ></span>

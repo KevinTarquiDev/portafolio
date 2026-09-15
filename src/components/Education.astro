@@ -14,6 +14,7 @@ const entries = portfolio.education.items;
 
 <section
   id="education"
+  data-scene-label={ui.education.eyebrow}
   class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-32"
 >
   <h2 class="mono-label mb-10 text-green">{ui.education.eyebrow}</h2>
@@ -34,7 +35,10 @@ const entries = portfolio.education.items;
           </span>
         </span>
         {entry.endDate && (
-          <span class="hidden h-px flex-1 bg-gradient-to-r from-lilac/30 to-green lg:block" />
+          <span
+            data-motion="timeline-line"
+            class="hidden h-px flex-1 bg-gradient-to-r from-lilac/30 to-green lg:block"
+          />
         )}
         <span class="display text-ink" style={`font-size:${mobileType(140)}`}>
           <span class="lg:hidden">
