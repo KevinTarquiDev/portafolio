@@ -27,6 +27,10 @@ bun-debug.log*
 .generated/
 .cache/
 
+# CV en PDF: artefacto derivado de resume.*.json, se regenera con
+# `bun run cv:generate` (ver scripts/generate-cv.ts)
+public/cv/*.pdf
+
 # Test / coverage output
 coverage/
 playwright-report/

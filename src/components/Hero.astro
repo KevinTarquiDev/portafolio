@@ -86,18 +86,23 @@ const cvHref = getCvHref(locale);
     </span>
     <span
       class="relative -mr-[10vw] block text-right"
-      style={`font-size:${desktopType(540)}`}
+      style={`font-size:${desktopType(540)}; height: 1lh;`}
     >
+      {/*
+        Ambas capas van absolutas con el mismo inset:0, para que
+        coincidan al píxel: una en flujo normal + otra absoluta podían
+        desalinearse ligeramente y dejar una línea visible en el corte.
+      */}
       <span
-        class="display text-outline"
+        class="display absolute inset-0 text-outline"
         style="--stroke-color: var(--color-purple-hi); --stroke: 2px;"
       >
         {secondWord}
       </span>
       <span
         aria-hidden="true"
-        class="display absolute left-0 top-0 w-full text-purple"
-        style="height: 1lh; clip-path: inset(0 0 55% 0);"
+        class="display absolute inset-0 text-purple"
+        style="clip-path: inset(0 0 55% 0);"
       >
         {secondWord}
       </span>

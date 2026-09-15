@@ -117,7 +117,46 @@ function checkPhase5(): void {
 }
 
 checkPhase2();
+/**
+ * Fase 6: los PDF del CV existen, son PDFs válidos, y el href del
+ * botón "Descargar CV" en cada idioma apunta al PDF de ese idioma.
+ */
+function checkPhase6(): void {
+  const pdfPaths = {
+    es: join(STATIC_DIR, "cv", "kevin-tarqui-cv-es.pdf"),
+    en: join(STATIC_DIR, "cv", "kevin-tarqui-cv-en.pdf"),
+  } as const;
+
+  for (const [locale, pdfPath] of Object.entries(pdfPaths)) {
+    if (!existsSync(pdfPath)) {
+      fail(`Falta el CV en PDF para "${locale}": ${pdfPath}`);
+      continue;
+    }
+    const header = readFileSync(pdfPath).subarray(0, 5).toString("ascii");
+    if (header !== "%PDF-") {
+      fail(`${pdfPath} no parece un PDF válido (cabecera "${header}")`);
+    }
+  }
+
+  const htmlPaths = {
+    es: join(STATIC_DIR, "es", "index.html"),
+    en: join(STATIC_DIR, "en", "index.html"),
+  } as const;
+
+  for (const [locale, htmlPath] of Object.entries(htmlPaths)) {
+    const html = readText(htmlPath);
+    if (!html) {
+      continue; // ya reportado por checkPhase2
+    }
+    const expectedHref = `/cv/kevin-tarqui-cv-${locale}.pdf`;
+    if (!html.includes(expectedHref)) {
+      fail(`${htmlPath} no enlaza a ${expectedHref}`);
+    }
+  }
+}
+
 checkPhase5();
+checkPhase6();
 
 if (failures.length > 0) {
   console.error("❌ check-build encontró problemas:\n");
