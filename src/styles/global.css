@@ -1,1 +1,117 @@
 @import "tailwindcss";
+
+/* Fuentes autoalojadas: solo los subsets y pesos que usa el diseño. */
+@import "@fontsource-variable/bricolage-grotesque/wdth.css";
+@import "@fontsource/instrument-serif/latin-400.css";
+@import "@fontsource/instrument-serif/latin-400-italic.css";
+@import "@fontsource/geist-mono/latin-400.css";
+@import "@fontsource/geist-mono/latin-500.css";
+
+@theme {
+  /* Fondo, texto y superficies */
+  --color-bg: #0b0812;
+  --color-ink: #f2eef7;
+  --color-body: #cfc7dc;
+  --color-soft: #b7aec8;
+  --color-muted: #9a92ad;
+  --color-faint: #6f6784; /* solo decorativo: no cumple contraste AA */
+  --color-panel: #150e22;
+
+  /* Identidad: morado profundo y verde acento */
+  --color-purple: #7a3fe0;
+  --color-purple-hi: #9b6bf0;
+  --color-deep: #2a1245;
+  --color-lilac: #c9b6f2;
+  --color-green: #5fd18a;
+
+  /* Tipografía */
+  --font-sans:
+    "Bricolage Grotesque Variable", "Arial Narrow", Arial, sans-serif;
+  --font-display:
+    "Bricolage Grotesque Variable", "Arial Narrow", Arial, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-mono: "Geist Mono", ui-monospace, "IBM Plex Mono", monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-green);
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Título display: tipografía gigante, condensada y en negrita. */
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 0.8;
+  letter-spacing: -0.012em;
+}
+
+/* Etiqueta mono en mayúsculas, usada en rótulos de escena y HUD. */
+@utility mono-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+
+  @media (min-width: 1024px) {
+    font-size: 12px;
+  }
+}
+
+/* Texto en contorno (stroke), usado como recurso gráfico. */
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: var(--stroke, 1.5px) var(--stroke-color, currentColor);
+}
+
+/* Overlay de grano sutil sobre una escena. */
+@utility grain {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Fondo rayado para los placeholders de capturas de proyectos. */
+@utility placeholder-hatch {
+  background-color: var(--color-panel);
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-lilac) 6%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+  border: 1px solid color-mix(in srgb, var(--color-lilac) 20%, transparent);
+}

@@ -1,0 +1,90 @@
+---
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  ui: UiStrings;
+}
+
+const { ui } = Astro.props;
+
+const links: Array<{ href: string; label: string }> = [
+  { href: "#work", label: ui.nav.work },
+  { href: "#experience", label: ui.nav.experience },
+  { href: "#stack", label: ui.nav.stack },
+  { href: "#contact", label: ui.nav.contact },
+];
+---
+
+<button
+  type="button"
+  popovertarget="mobile-menu"
+  popovertargetaction="show"
+  aria-label={ui.a11y.openMenu}
+  class="flex h-11 w-11 items-center justify-center"
+>
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M3 9h18M3 15h12"
+      stroke="currentColor"
+      stroke-width="1.6"
+      stroke-linecap="round"
+    ></path>
+  </svg>
+</button>
+
+<div
+  id="mobile-menu"
+  popover
+  class="m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-bg p-6 text-ink"
+>
+  <div class="flex items-center justify-end">
+    <button
+      type="button"
+      popovertarget="mobile-menu"
+      popovertargetaction="hide"
+      aria-label={ui.a11y.closeMenu}
+      class="flex h-11 w-11 items-center justify-center"
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M6 6l12 12M18 6L6 18"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+        ></path>
+      </svg>
+    </button>
+  </div>
+  <nav aria-label="Menú principal" class="mt-10 flex flex-col gap-6">
+    {links.map((link) => (
+      <a href={link.href} class="display text-[56px] leading-none">
+        {link.label}
+      </a>
+    ))}
+  </nav>
+</div>
+
+<script>
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    for (const link of menu.querySelectorAll("a")) {
+      link.addEventListener("click", () => {
+        if (menu.matches(":popover-open")) {
+          menu.hidePopover();
+        }
+      });
+    }
+  }
+</script>

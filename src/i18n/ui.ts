@@ -12,11 +12,13 @@ export interface UiStrings {
     contact: string;
   };
   hero: {
+    eyebrow: string;
     ctaWork: string;
     ctaCv: string;
     cvBadge: string;
   };
   about: {
+    eyebrow: string;
     connector: string;
   };
   experience: {
@@ -51,6 +53,9 @@ export interface UiStrings {
     eyebrow: string;
     title: string;
     titleMobile: string[];
+    labelEmail: string;
+    labelPhone: string;
+    labelLocation: string;
     formName: string;
     formEmail: string;
     formMessage: string;
@@ -99,11 +104,13 @@ const es: UiStrings = {
     contact: "Contacto",
   },
   hero: {
+    eyebrow: "Inicio",
     ctaWork: "Ver proyectos",
     ctaCv: "Descargar CV",
     cvBadge: "PDF",
   },
   about: {
+    eyebrow: "Sobre mí",
     connector: "con orientación",
   },
   experience: {
@@ -138,6 +145,9 @@ const es: UiStrings = {
     eyebrow: "Contacto",
     title: "HABLEMOS",
     titleMobile: ["HA", "BLE", "MOS"],
+    labelEmail: "Email",
+    labelPhone: "Teléfono",
+    labelLocation: "Ubicación",
     formName: "Nombre",
     formEmail: "Email",
     formMessage: "Mensaje",
@@ -186,11 +196,13 @@ const en: UiStrings = {
     contact: "Contact",
   },
   hero: {
+    eyebrow: "Home",
     ctaWork: "View projects",
     ctaCv: "Download CV",
     cvBadge: "PDF",
   },
   about: {
+    eyebrow: "About",
     connector: "focused on",
   },
   experience: {
@@ -225,6 +237,9 @@ const en: UiStrings = {
     eyebrow: "Contact",
     title: "LET'S TALK",
     titleMobile: ["LET'S", "TALK"],
+    labelEmail: "Email",
+    labelPhone: "Phone",
+    labelLocation: "Location",
     formName: "Name",
     formEmail: "Email",
     formMessage: "Message",

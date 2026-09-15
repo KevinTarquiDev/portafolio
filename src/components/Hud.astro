@@ -1,0 +1,112 @@
+---
+import LanguageSwitch from "./LanguageSwitch.astro";
+import MobileMenu from "./MobileMenu.astro";
+import { formatIndex, type PortfolioViewModel } from "../lib/portfolio";
+import type { Locale } from "../lib/resume";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  locale: Locale;
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { locale, portfolio, ui } = Astro.props;
+
+/**
+ * Escenas en orden de scroll. El rail y el contador del HUD las recorren;
+ * motion.ts actualiza cuál está activa (Fase 4). Antes de esa fase, o sin
+ * JS, se muestra el estado inicial: escena 01.
+ */
+const scenes = [
+  { id: "top", label: ui.hero.eyebrow },
+  { id: "about", label: ui.about.eyebrow },
+  { id: "experience", label: ui.experience.eyebrow },
+  { id: "work", label: ui.work.eyebrow },
+  { id: "featured", label: ui.featured.eyebrow },
+  { id: "stack", label: ui.stack.eyebrow },
+  { id: "practices", label: ui.practices.eyebrow },
+  { id: "education", label: ui.education.eyebrow },
+  { id: "contact", label: ui.contact.eyebrow },
+] as const;
+
+const totalScenes = scenes.length;
+const initialScene = scenes[0];
+const initialProgress = (1 / totalScenes) * 100;
+
+const initials = portfolio.hero.displayName
+  .split(" ")
+  .map((word) => word[0])
+  .join("")
+  .toUpperCase();
+
+const navLinks: Array<{ href: string; label: string }> = [
+  { href: "#work", label: ui.nav.work },
+  { href: "#experience", label: ui.nav.experience },
+  { href: "#stack", label: ui.nav.stack },
+  { href: "#contact", label: ui.nav.contact },
+];
+---
+
+<header
+  data-hud
+  class="pointer-events-none fixed inset-x-0 top-0 z-20 flex h-[68px] items-center justify-between px-5 lg:h-[80px] lg:px-11"
+>
+  <a
+    href="#top"
+    class="pointer-events-auto flex items-end gap-1.5 text-xl font-extrabold tracking-tight text-ink lg:text-2xl"
+  >
+    {initials}
+    <span
+      class="mb-0.5 block h-2 w-2 rounded-full bg-green"
+      aria-hidden="true"
+    ></span>
+    <span class="sr-only">{portfolio.hero.displayName}</span>
+  </a>
+
+  <div class="pointer-events-auto flex items-center gap-6">
+    <nav
+      aria-label="Navegación principal"
+      class="mono-label hidden items-center gap-9 lg:flex"
+    >
+      {navLinks.map((link) => (
+        <a href={link.href} class="text-soft hover:text-ink">
+          {link.label}
+        </a>
+      ))}
+    </nav>
+    <LanguageSwitch locale={locale} />
+    <div class="lg:hidden">
+      <MobileMenu ui={ui} />
+    </div>
+  </div>
+</header>
+
+<div
+  data-hud-rail
+  aria-hidden="true"
+  class="mono-label pointer-events-none fixed bottom-11 left-7 z-20 hidden origin-bottom-left [writing-mode:vertical-rl] rotate-180 items-center gap-3.5 text-muted lg:flex"
+>
+  <span data-hud-rail-index class="text-green">
+    {formatIndex(1)}
+  </span>
+  <span class="block h-10 w-px bg-ink/20"></span>
+  <span data-hud-rail-label>{initialScene.label}</span>
+</div>
+
+<div
+  data-hud-counter
+  aria-hidden="true"
+  class="mono-label pointer-events-none fixed bottom-12 right-11 z-20 hidden items-center gap-3.5 text-muted lg:flex"
+>
+  <span data-hud-counter-text>
+    {formatIndex(1)} / {formatIndex(totalScenes)}
+  </span>
+  <span class="block h-px w-[120px] bg-ink/15">
+    <span
+      data-hud-progress
+      class="block h-px bg-green"
+      style={`width: ${initialProgress}%`}
+    ></span>
+  </span>
+</div>

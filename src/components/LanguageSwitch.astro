@@ -1,0 +1,37 @@
+---
+import { locales, localePath } from "../i18n/config";
+import type { Locale } from "../lib/resume";
+
+export interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+
+const labels: Record<Locale, string> = { es: "ES", en: "EN" };
+---
+
+<nav aria-label="Selector de idioma" class="mono-label flex items-center gap-2">
+  {locales.map((candidate, index) => (
+    <>
+      {index > 0 && (
+        <span class="text-muted" aria-hidden="true">
+          /
+        </span>
+      )}
+      {candidate === locale ? (
+        <span class="text-ink" aria-current="page">
+          {labels[candidate]}
+        </span>
+      ) : (
+        <a
+          href={localePath(candidate)}
+          data-language-link
+          class="text-muted hover:text-ink"
+        >
+          {labels[candidate]}
+        </a>
+      )}
+    </>
+  ))}
+</nav>

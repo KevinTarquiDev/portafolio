@@ -18,10 +18,15 @@
     "resume:validate": "bun scripts/validate-resume.ts",
     "prepare": "husky",
     "test": "bun test",
+    "build:check": "bun scripts/check-build.ts",
     "fix": "bun run format && bun run check",
-    "verify": "bun run format:check && bun run resume:validate && bun run test && bun run check && bun run build"
+    "verify": "bun run format:check && bun run resume:validate && bun run test && bun run check && bun run build && bun run build:check"
   },
   "dependencies": {
+    "@astrojs/vercel": "^11.0.10",
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource/geist-mono": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.2",
     "gsap": "^3.15.0",
