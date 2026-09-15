@@ -266,13 +266,13 @@ Si en el futuro se utiliza una isla de UI:
 Prohibido:
 
 ```ts
-any
+any;
 ```
 
 Preferir:
 
 ```ts
-unknown
+unknown;
 ```
 
 y realizar narrowing explícito.
