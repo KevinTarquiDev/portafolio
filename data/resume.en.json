@@ -1,0 +1,156 @@
+{
+  "basics": {
+    "name": "Kevin Andrés Tarqui Tapia",
+    "label": "Full Stack Developer",
+    "email": "kevin.tarqui.dev@gmail.com",
+    "phone": "+593 96 400 4859",
+    "summary": "Full Stack Developer focused on building web applications, REST APIs, and microservices for real-world business environments. I have experience with Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker, and Git. My experience covers frontend and backend development, database design and integration, authentication, validations, business logic, incident resolution, and deployments to QA and production environments. I focus on building maintainable solutions with a good user experience and aligned with business needs.",
+    "location": {
+      "city": "Cuenca",
+      "region": "Azuay",
+      "countryCode": "EC"
+    },
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "kevintarquidev",
+        "url": "https://linkedin.com/in/kevintarquidev"
+      },
+      {
+        "network": "GitHub",
+        "username": "KevinTarquiDev",
+        "url": "https://github.com/KevinTarquiDev"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "Sudamericana de Software (SASF)",
+      "location": "Remote · Guayaquil, Guayas, Ecuador",
+      "position": "Software Developer",
+      "startDate": "2023-06",
+      "endDate": "2026-05",
+      "summary": "Development and maintenance of web solutions for internal systems, a restaurant platform, and a multitenant e-commerce application.",
+      "highlights": [
+        "Developed and maintained web solutions for internal systems, a restaurant platform, and a multitenant e-commerce application, with greater involvement in frontend development and backend support.",
+        "Built responsive interfaces and reusable components for forms, tables, and business workflows using React, TypeScript, and Tailwind CSS, integrated with REST APIs.",
+        "Collaborated on the implementation and maintenance of backend features with NestJS and Spring Boot, including endpoints, DTOs, repositories, validations, authentication, error handling, and SQL queries.",
+        "Participated in incident resolution, stabilization, refactoring, and delivery of complete modules, using Docker for test environments and Scrum, Jira, Git, and Notion for collaborative work."
+      ]
+    },
+    {
+      "name": "Kruger Corp",
+      "location": "Remote · Quito, Pichincha, Ecuador",
+      "position": "Spring Boot Backend Developer",
+      "startDate": "2025-10",
+      "endDate": "2025-12",
+      "summary": "Backend development of microservices with Java and Spring Boot to digitize physical forms for an Ecuadorian public-sector entity.",
+      "highlights": [
+        "Developed microservices with Java and Spring Boot to digitize physical forms for an Ecuadorian public-sector entity, modeling sections, questions, options, and dependencies between responses.",
+        "Implemented endpoints, entities, validations, error and state handling, business logic, service-to-service communication, and scheduled jobs.",
+        "Designed PostgreSQL schemas and integrated Keycloak for authentication, survey registration, management of different user types, and categorization of confidential PDF documents.",
+        "Participated directly in QA and production deployments by building and publishing Docker images and updating services on the server."
+      ]
+    },
+    {
+      "name": "RIOUC - Universidad Católica de Cuenca",
+      "location": "Cuenca, Ecuador",
+      "position": "Frontend Developer",
+      "startDate": "2025-03",
+      "endDate": "2025-06",
+      "summary": "Improvement and refactoring of the RIOUC web portal with Next.js.",
+      "highlights": [
+        "Collaborated on the improvement and refactoring of the RIOUC web portal with Next.js, implementing UI adjustments, responsiveness, and homepage components.",
+        "Worked with Git and GitFlow for project versioning, branch management, and collaborative integration of changes."
+      ]
+    },
+    {
+      "name": "UDIPSAI - Universidad Católica de Cuenca",
+      "location": "Cuenca, Ecuador",
+      "position": "Community Engagement Project",
+      "description": "Software and data",
+      "startDate": "2024-05",
+      "endDate": "2024-07",
+      "summary": "Digitization, data migration, and support in refactoring the institutional system.",
+      "highlights": [
+        "Digitized and updated 730 institutional records, supporting the migration of information from physical records and Excel files into the internal system and its database.",
+        "Collaborated on the refactoring of the UDIPSAI system and requirements gathering for the Speech Therapy area."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Universidad Católica de Cuenca",
+      "area": "Software Engineering",
+      "studyType": "Bachelor's Degree",
+      "startDate": "2021-09",
+      "endDate": "2026-09",
+      "status": "Degree issuance pending"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Backend",
+      "keywords": [
+        "Java",
+        "Spring Boot",
+        "NestJS",
+        "Node.js",
+        "Microservices",
+        "REST APIs"
+      ]
+    },
+    {
+      "name": "Frontend",
+      "keywords": [
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "Tailwind CSS",
+        "Next.js"
+      ]
+    },
+    {
+      "name": "Data & Security",
+      "keywords": ["PostgreSQL", "SQL Server", "Database Modeling", "Keycloak"]
+    },
+    {
+      "name": "Tools & Methodologies",
+      "keywords": [
+        "Docker",
+        "Git",
+        "GitHub",
+        "GitLab",
+        "Jira",
+        "Notion",
+        "Scrum"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "language": "Spanish",
+      "fluency": "Native"
+    },
+    {
+      "language": "English",
+      "fluency": "Intermediate (B1)"
+    }
+  ],
+  "projects": [
+    {
+      "name": "EcuStock",
+      "description": "Self-developed inventory management and web catalog product.",
+      "startDate": "2026-04",
+      "endDate": "2026-08",
+      "url": "https://webstockify.com",
+      "type": "Own product",
+      "roles": ["Full Stack Developer"],
+      "keywords": ["React", "TypeScript", "NestJS", "PostgreSQL", "Docker"],
+      "highlights": [
+        "Developed a platform for small and medium-sized businesses with multi-user management, roles and permissions, products, categories, variants, inventory control, and web catalog publishing.",
+        "Implemented a multi-instance production deployment using Docker Compose, Nginx, Cloudflare Tunnel, and CI/CD pipelines, with isolated backend, database, and storage per client."
+      ]
+    }
+  ]
+}

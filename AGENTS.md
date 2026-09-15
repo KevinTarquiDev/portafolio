@@ -413,12 +413,9 @@ Si falta información, solicitarla antes de incorporarla como dato real.
 
 ### Proyectos
 
-Actualmente los proyectos principales son:
+Actualmente el proyecto principal es EcuStock, que debe aparecer como proyecto destacado.
 
-- EcuStock;
-- este propio portafolio.
-
-EcuStock debe aparecer como proyecto destacado.
+El propio portafolio no debe incluirse como entrada dentro de su propia sección de proyectos.
 
 El nombre correcto del producto es:
 
