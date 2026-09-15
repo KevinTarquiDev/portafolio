@@ -21,6 +21,23 @@
         "username": "KevinTarquiDev",
         "url": "https://github.com/KevinTarquiDev"
       }
+    ],
+    "x-displayName": "Kevin Tarqui",
+    "x-headline": "Software Developer",
+    "x-tagline": "Desarrollo aplicaciones web, APIs y sistemas orientados a resolver problemas reales de negocio.",
+    "x-specialization": {
+      "role": "Full Stack",
+      "focus": "backend"
+    },
+    "x-summaryShort": "Desarrollador Full Stack con orientación al backend y experiencia en el desarrollo de aplicaciones web, APIs REST, microservicios, sistemas frontend y backend, bases de datos y despliegues en producción.",
+    "x-focusAreas": [
+      "Aplicaciones web",
+      "APIs REST",
+      "Microservicios",
+      "Frontend",
+      "Backend",
+      "Bases de datos",
+      "Despliegues"
     ]
   },
   "work": [
@@ -156,6 +173,24 @@
         "Desarrollo de plataforma para pequeñas y medianas empresas con gestión multiusuario, roles y permisos, productos, categorías, variantes, control de existencias y publicación en catálogo web.",
         "Implementé el despliegue productivo multiinstancia mediante Docker Compose, Nginx, Cloudflare Tunnel y pipelines CI/CD, con aislamiento de backend, base de datos y almacenamiento por cliente."
       ]
+    }
+  ],
+  "x-practices": [
+    {
+      "name": "Arquitectura",
+      "keywords": ["APIs REST", "Microservicios"]
+    },
+    {
+      "name": "Calidad de código",
+      "keywords": ["Clean Code", "SOLID", "Testing"]
+    },
+    {
+      "name": "DevOps",
+      "keywords": ["Docker", "CI/CD"]
+    },
+    {
+      "name": "Flujo de trabajo",
+      "keywords": ["Git", "Code Review", "Scrum", "SDD"]
     }
   ]
 }

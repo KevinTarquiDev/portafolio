@@ -709,15 +709,15 @@ Capturas de comparación con el artifact: Chrome headless a 1440×900 y 390×844
 
 ## Estado de fases
 
-| Fase | Estado    | Fecha | Verificación automática (resultado real) | Pendiente de verificación manual |
-| ---- | --------- | ----- | ---------------------------------------- | -------------------------------- |
-| 0    | Pendiente | —     | —                                        | —                                |
-| 1    | Pendiente | —     | —                                        | —                                |
-| 2    | Pendiente | —     | —                                        | —                                |
-| 3    | Pendiente | —     | —                                        | —                                |
-| 4    | Pendiente | —     | —                                        | —                                |
-| 5    | Pendiente | —     | —                                        | —                                |
-| 6    | Pendiente | —     | —                                        | —                                |
-| 7    | Pendiente | —     | —                                        | —                                |
-| 8    | Pendiente | —     | —                                        | —                                |
-| 9    | Pendiente | —     | —                                        | —                                |
+| Fase | Estado    | Fecha      | Verificación automática (resultado real)                                                                                                                                                                                                                                 | Pendiente de verificación manual |
+| ---- | --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| 0    | Hecha     | 2026-09-15 | `IMPLEMENTATION_PLAN.md` commiteado (7514a68)                                                                                                                                                                                                                            | —                                |
+| 1    | Hecha     | 2026-09-15 | `bun run verify` en verde: format:check OK; resume:validate 2/2; `bun test` 37 pass / 0 fail (dates, portfolio, i18n/config, i18n/ui); `astro check` 0 errores; `astro build` OK. Se añadió `types: ["bun"]` a tsconfig.json para que `astro check` reconozca `bun:test` | —                                |
+| 2    | Pendiente | —          | —                                                                                                                                                                                                                                                                        | —                                |
+| 3    | Pendiente | —          | —                                                                                                                                                                                                                                                                        | —                                |
+| 4    | Pendiente | —          | —                                                                                                                                                                                                                                                                        | —                                |
+| 5    | Pendiente | —          | —                                                                                                                                                                                                                                                                        | —                                |
+| 6    | Pendiente | —          | —                                                                                                                                                                                                                                                                        | —                                |
+| 7    | Pendiente | —          | —                                                                                                                                                                                                                                                                        | —                                |
+| 8    | Pendiente | —          | —                                                                                                                                                                                                                                                                        | —                                |
+| 9    | Pendiente | —          | —                                                                                                                                                                                                                                                                        | —                                |
