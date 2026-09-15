@@ -1,5 +1,5 @@
 ---
-import { desktopType, mobileType } from "../lib/fluidType";
+import SceneEyebrow from "./SceneEyebrow.astro";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import type { UiStrings } from "../i18n/ui";
 
@@ -10,115 +10,342 @@ export interface Props {
 
 const { portfolio, ui } = Astro.props;
 const { about } = portfolio;
+
 const roleWords = about.role.split(" ");
+const summaryWords = about.summaryShort.split(" ");
+
+/** Las bandas se repiten para cubrir su ancho (más que el viewport). */
+const bandBack = [...about.focusAreas, ...about.focusAreas];
+const bandFront = [
+  ...about.focusAreas.slice(3),
+  ...about.focusAreas,
+  ...about.focusAreas,
+];
 ---
 
-<section
-  id="about"
-  data-scene-label={ui.about.eyebrow}
-  class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-32"
->
-  <div
-    class="pointer-events-none absolute -left-[10%] -top-[10%] h-[60vw] w-[60vw] max-h-[800px] max-w-[800px] rounded-full opacity-70"
-    style="background: radial-gradient(circle, color-mix(in srgb, var(--color-purple) 30%, transparent) 0%, transparent 65%);"
-    aria-hidden="true"
-  ></div>
-  <span
-    aria-hidden="true"
-    class="text-outline pointer-events-none absolute left-4 top-0 hidden origin-top-left -translate-y-1/2 [writing-mode:vertical-rl] lg:block"
-    style={`font-size:${desktopType(270)}; --stroke-color: color-mix(in srgb, var(--color-purple-hi) 45%, transparent); --stroke: 1.5px;`}
-  >
-    {about.focus.toUpperCase()}
-  </span>
+<section id="about" data-scene-label={ui.about.eyebrow} class="scene about">
+  <div class="stage">
+    <div class="glow about-glow" aria-hidden="true"></div>
+    <span
+      class="display text-outline vertical-word"
+      aria-hidden="true"
+      data-motion="about-vertical"
+    >
+      {about.focus.toUpperCase()}
+    </span>
 
-  <h2 class="mono-label relative z-10 mb-8 text-green lg:hidden">
-    {ui.about.eyebrow}
-  </h2>
+    <SceneEyebrow scene="about" label={ui.about.eyebrow} class="eyebrow" />
 
-  {/* Mobile: rol apilado en dos líneas */}
-  <div class="relative z-10 mb-10 flex flex-col lg:hidden">
-    {roleWords.map((word) => (
-      <span class="display text-ink" style={`font-size:${mobileType(130)}`}>
-        {word}
+    <p class="title">
+      <span class="display title-role">
+        {roleWords.map((word, index) => (
+          <>
+            <span class="title-role-word">{word}</span>
+            {index < roleWords.length - 1 && " "}
+          </>
+        ))}
       </span>
-    ))}
-    <span
-      class="font-serif ml-10 mt-1.5 text-lilac italic"
-      style={`font-size:${mobileType(52)}`}
-    >
-      {ui.about.connector}
-    </span>
-    <span
-      class="display flex items-end gap-1.5 text-ink"
-      style={`font-size:${mobileType(104)}`}
-    >
-      {about.focus}
-      <span
-        class="mb-1.5 block h-5 w-5 rounded-full bg-green"
-        aria-hidden="true"
-      ></span>
-    </span>
-  </div>
+      <span class="serif title-connector">{ui.about.connector}</span>
+      <span class="display title-focus">
+        {about.focus}
+        <span class="title-dot" aria-hidden="true"></span>
+      </span>
+    </p>
 
-  {/* Desktop: titular de tres líneas */}
-  <div class="relative z-10 mb-16 hidden lg:ml-72 lg:flex lg:flex-col">
-    <span class="display text-ink" style={`font-size:${desktopType(160)}`}>
-      {about.role}
-    </span>
-    <span
-      class="font-serif ml-32 text-lilac italic"
-      style={`font-size:${desktopType(118)}; line-height:0.95;`}
-    >
-      {ui.about.connector}
-    </span>
-    <span
-      class="display flex items-end gap-2.5 text-ink"
-      style={`font-size:${desktopType(160)}`}
-    >
-      {about.focus}
-      <span
-        class="mb-3.5 block h-7 w-7 rounded-full bg-green shadow-[0_0_50px_rgba(95,209,138,0.5)]"
-        aria-hidden="true"
-      ></span>
-    </span>
-  </div>
-
-  <p class="relative z-10 max-w-xl text-xl leading-snug text-body lg:ml-72 lg:max-w-2xl lg:text-[28px]">
-    {about.summaryShort}
-  </p>
-
-  <div
-    class="relative z-10 mt-16 flex flex-col gap-3 lg:mt-24 lg:gap-4"
-    aria-hidden="true"
-  >
-    <div class="flex -rotate-2 items-center gap-6 whitespace-nowrap bg-deep px-6 py-3 lg:gap-9 lg:py-5">
-      {about.focusAreas.map((area) => (
+    <p class="summary" data-motion="about-summary">
+      {summaryWords.map((word, index) => (
         <>
-          <span
-            class="text-outline shrink-0"
-            style={`font-size:${desktopType(52)}; --stroke-color: var(--color-lilac); --stroke: 1px;`}
-          >
-            {area}
-          </span>
-          <span class="block h-2.5 w-2.5 shrink-0 rounded-full bg-green" />
+          <span class="summary-word">{word}</span>
+          {index < summaryWords.length - 1 && " "}
+        </>
+      ))}
+    </p>
+
+    <div
+      class="band band-back"
+      aria-hidden="true"
+      data-motion="about-band-back"
+    >
+      {bandBack.map((area) => (
+        <>
+          <span class="display band-text">{area}</span>
+          <span class="band-dot"></span>
         </>
       ))}
     </div>
-    <div class="flex rotate-3 items-center gap-6 whitespace-nowrap bg-purple px-6 py-3 lg:gap-9 lg:py-5">
-      {about.focusAreas
-        .slice()
-        .reverse()
-        .map((area) => (
-          <>
-            <span
-              class="shrink-0 text-ink"
-              style={`font-size:${desktopType(52)}; font-weight:800; font-stretch:75%;`}
-            >
-              {area}
-            </span>
-            <span class="block h-2.5 w-2.5 shrink-0 rounded-full bg-green" />
-          </>
-        ))}
+    <div
+      class="band band-front"
+      aria-hidden="true"
+      data-motion="about-band-front"
+    >
+      {bandFront.map((area) => (
+        <>
+          <span class="display band-text">{area}</span>
+          <span class="band-dot"></span>
+        </>
+      ))}
     </div>
   </div>
 </section>
+
+<style>
+  /* ---------- Mobile · artboard M02 (390×844) ---------- */
+  .about {
+    height: calc(var(--u) * 844);
+  }
+
+  .stage {
+    height: 100%;
+  }
+
+  .about-glow {
+    left: calc(var(--ux) * -200);
+    top: calc(var(--u) * -100);
+    width: calc(var(--u) * 700);
+    height: calc(var(--u) * 700);
+  }
+
+  .vertical-word {
+    position: absolute;
+    left: calc(var(--ux) * 280);
+    top: calc(var(--u) * -20);
+    font-size: calc(var(--u) * 150);
+    writing-mode: vertical-rl;
+    white-space: nowrap;
+    pointer-events: none;
+    --stroke: 1px;
+    --stroke-color: color-mix(in srgb, var(--color-purple-hi) 35%, transparent);
+  }
+
+  .about :global(.eyebrow) {
+    position: absolute;
+    z-index: 6;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 96);
+  }
+
+  .title {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 16);
+    top: calc(var(--u) * 130);
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    color: var(--color-ink);
+  }
+
+  .title-role {
+    display: flex;
+    flex-direction: column;
+    font-size: calc(var(--u) * 130);
+  }
+
+  .title-connector {
+    margin: calc(var(--u) * 6) 0 0 calc(var(--u) * 40);
+    font-size: calc(var(--u) * 52);
+    line-height: 1.05;
+    color: var(--color-lilac);
+  }
+
+  .title-focus {
+    display: flex;
+    align-items: flex-end;
+    gap: calc(var(--u) * 6);
+    font-size: calc(var(--u) * 104);
+  }
+
+  .title-dot {
+    display: block;
+    flex-shrink: 0;
+    width: calc(var(--u) * 20);
+    height: calc(var(--u) * 20);
+    margin-bottom: calc(var(--u) * 8);
+    border-radius: 9999px;
+    background: var(--color-green);
+  }
+
+  .summary {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 540);
+    width: calc(var(--u) * 350);
+    margin: 0;
+    font-size: calc(var(--u) * 21);
+    line-height: 1.3;
+    color: var(--color-ink);
+  }
+
+  .band {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+
+  .band-back {
+    z-index: 3;
+    left: calc(var(--ux) * -60);
+    top: calc(var(--u) * 740);
+    width: calc(var(--u) * 700);
+    height: calc(var(--u) * 56);
+    gap: calc(var(--u) * 20);
+    padding: 0 calc(var(--u) * 20);
+    background: var(--color-deep);
+    rotate: 4deg;
+    --band-size: 34;
+  }
+
+  .band-front {
+    z-index: 4;
+    left: calc(var(--ux) * -40);
+    top: calc(var(--u) * 732);
+    width: calc(var(--u) * 700);
+    height: calc(var(--u) * 60);
+    gap: calc(var(--u) * 20);
+    padding: 0 calc(var(--u) * 20);
+    background: var(--color-purple);
+    rotate: -5deg;
+    --band-size: 36;
+  }
+
+  .band-text {
+    flex-shrink: 0;
+    font-size: calc(var(--u) * var(--band-size));
+    line-height: 1;
+  }
+
+  .band-back .band-text {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--color-lilac);
+  }
+
+  .band-front .band-text {
+    color: var(--color-ink);
+  }
+
+  .band-dot {
+    display: block;
+    flex-shrink: 0;
+    width: calc(var(--u) * 8);
+    height: calc(var(--u) * 8);
+    border-radius: 9999px;
+  }
+
+  .band-back .band-dot {
+    background: var(--color-lilac);
+  }
+
+  .band-front .band-dot {
+    background: var(--color-green);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--color-green) 50%, transparent);
+  }
+
+  /* ---------- Desktop · artboard 02 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .about {
+      height: 100svh;
+    }
+
+    .stage {
+      height: calc(var(--u) * 900);
+    }
+
+    .about-glow {
+      left: calc(var(--ux) * -300);
+      top: calc(var(--u) * -300);
+      width: calc(var(--u) * 1000);
+      height: calc(var(--u) * 1000);
+    }
+
+    .vertical-word {
+      left: calc(var(--ux) * 52);
+      top: calc(var(--u) * -40);
+      font-size: calc(var(--u) * 270);
+      rotate: 180deg;
+      --stroke: 1.5px;
+      --stroke-color: color-mix(
+        in srgb,
+        var(--color-purple-hi) 45%,
+        transparent
+      );
+    }
+
+    .about :global(.eyebrow) {
+      left: calc(var(--ux) * 360);
+      top: calc(var(--u) * 132);
+    }
+
+    .title {
+      z-index: 5;
+      left: calc(var(--ux) * 352);
+      top: calc(var(--u) * 170);
+    }
+
+    .title-role {
+      display: block;
+      font-size: calc(var(--u) * 160);
+    }
+
+    .title-connector {
+      margin: 0 0 0 calc(var(--u) * 130);
+      font-size: calc(var(--u) * 118);
+      line-height: 0.95;
+    }
+
+    .title-focus {
+      gap: calc(var(--u) * 10);
+      font-size: calc(var(--u) * 160);
+    }
+
+    .title-dot {
+      width: calc(var(--u) * 30);
+      height: calc(var(--u) * 30);
+      margin-bottom: calc(var(--u) * 14);
+      box-shadow: 0 0 50px
+        color-mix(in srgb, var(--color-green) 50%, transparent);
+    }
+
+    .summary {
+      z-index: 5;
+      left: calc(var(--ux) * 360);
+      top: calc(var(--u) * 600);
+      width: calc(var(--u) * 600);
+      font-size: calc(var(--u) * 28);
+      letter-spacing: -0.01em;
+    }
+
+    .band-back {
+      left: calc(var(--ux) * -200);
+      top: calc(var(--u) * 790);
+      width: calc(var(--ux) * 2000);
+      height: calc(var(--u) * 86);
+      gap: calc(var(--u) * 36);
+      padding: 0 calc(var(--u) * 40);
+      rotate: 3deg;
+      --band-size: 52;
+    }
+
+    .band-front {
+      left: calc(var(--ux) * -120);
+      top: calc(var(--u) * 780);
+      width: calc(var(--ux) * 2000);
+      height: calc(var(--u) * 86);
+      gap: calc(var(--u) * 36);
+      padding: 0 calc(var(--u) * 40);
+      rotate: -4deg;
+      --band-size: 52;
+    }
+
+    .band-dot {
+      width: calc(var(--u) * 12);
+      height: calc(var(--u) * 12);
+    }
+
+    .band-front .band-dot {
+      box-shadow: none;
+    }
+  }
+</style>

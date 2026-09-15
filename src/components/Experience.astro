@@ -1,7 +1,7 @@
 ---
+import SceneEyebrow from "./SceneEyebrow.astro";
 import SignalDot from "./SignalDot.astro";
-import { formatYearRange } from "../lib/dates";
-import { desktopType, mobileType } from "../lib/fluidType";
+import { formatYearRange, parseResumeDate } from "../lib/dates";
 import { formatIndex } from "../lib/portfolio";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import type { UiStrings } from "../i18n/ui";
@@ -12,163 +12,455 @@ export interface Props {
 }
 
 const { portfolio, ui } = Astro.props;
-const { items } = portfolio.experience;
-const active = items[0];
-const totalLabel = formatIndex(items.length);
+const total = formatIndex(portfolio.experience.items.length);
 
+const items = portfolio.experience.items.map((item) => {
+  const startYear = String(parseResumeDate(item.startDate).year);
+  const endYear = item.endDate
+    ? String(parseResumeDate(item.endDate).year)
+    : undefined;
+  return {
+    ...item,
+    startYear,
+    endYear,
+    range: formatYearRange(item.startDate, item.endDate, ui.experience.current),
+    compactRange:
+      endYear === undefined
+        ? `${startYear}–`
+        : startYear === endYear
+          ? startYear
+          : `${startYear}–${endYear}`,
+  };
+});
+
+const active = items[0];
 if (!active) {
   throw new Error("El resume no tiene experiencia laboral que mostrar");
 }
-
-const activeYearRange = formatYearRange(
-  active.startDate,
-  active.endDate,
-  ui.experience.current,
-);
-const [startYear, endYearOrCurrent] = activeYearRange
-  .split(" — ")
-  .map((part) => part.trim());
 ---
 
 <section
   id="experience"
   data-scene-label={ui.experience.eyebrow}
-  class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-0"
+  class="scene experience"
+  style={`--rows: ${items.length};`}
 >
-  <h2 class="mono-label mb-8 text-green lg:absolute lg:top-11 lg:mb-0">
-    {ui.experience.eyebrow}
-  </h2>
+  <div class="stage">
+    <div class="glow experience-glow" aria-hidden="true"></div>
+    <span
+      class="display ghost"
+      aria-hidden="true"
+      data-motion="experience-ghost"
+    >
+      {active.company.short.toUpperCase()}
+    </span>
 
-  {/* Mobile: bloques apilados, año vertical a la izquierda */}
-  <ol class="flex flex-col lg:hidden">
-    {items.map((item, index) => (
-      <li
-        class:list={[
-          "relative flex min-h-[200px] gap-4 border-t py-6",
-          index === 0 ? "border-ink/30" : "border-ink/10",
-        ]}
-      >
-        <span
-          class:list={[
-            "flex w-16 shrink-0 flex-col items-center justify-center gap-1 text-center",
-            index === 0 ? "text-ink" : "text-muted",
-          ]}
-        >
-          <span class="display" style={`font-size:${mobileType(40)}`}>
-            {item.startDate.slice(0, 4)}
-          </span>
-          {item.endDate ? (
-            <span class="display" style={`font-size:${mobileType(40)}`}>
-              {item.endDate.slice(0, 4)}
-            </span>
-          ) : (
-            <span class="mono-label">{ui.experience.current}</span>
-          )}
-        </span>
-        <div class="flex flex-col gap-2">
-          <span
-            class:list={[
-              "mono-label",
-              index === 0 ? "text-green" : "text-muted",
-            ]}
-          >
-            {item.index} / {totalLabel}
-          </span>
-          <h3
-            class:list={["display", index === 0 ? "text-ink" : "text-muted"]}
-            style={`font-size:${mobileType(44)}`}
-          >
-            {item.company.short}
-          </h3>
-          <p
-            class:list={[
-              "font-serif italic",
-              index === 0 ? "text-lilac" : "text-muted",
-            ]}
-            style={`font-size:${mobileType(26)}`}
-          >
-            {item.position}
-          </p>
-        </div>
-      </li>
-    ))}
-  </ol>
+    <SceneEyebrow
+      scene="experience"
+      label={ui.experience.eyebrow}
+      class="eyebrow"
+    />
+    <p class="display mobile-title" aria-hidden="true">
+      {ui.experience.eyebrow}
+    </p>
 
-  {/* Desktop: años gigantes + detalle del trabajo activo + lista completa */}
-  <div class="relative hidden min-h-screen lg:grid lg:grid-cols-2 lg:items-center lg:gap-16 lg:pt-32">
-    <div class="flex flex-col">
-      <span class="display text-ink" style={`font-size:${desktopType(330)}`}>
-        {startYear}
+    {/* Desktop: años gigantes y detalle del puesto activo (lo cambia motion.ts) */}
+    <div class="years" aria-hidden="true" data-motion="experience-years">
+      <span class="display year-start" data-motion="experience-year-start">
+        {active.startYear}
       </span>
       <span
-        class="text-outline display"
-        style={`font-size:${desktopType(330)}; --stroke-color: var(--color-lilac); --stroke: 1.5px;`}
+        class:list={[
+          "display text-outline year-end",
+          !active.endYear && "is-label",
+        ]}
+        data-motion="experience-year-end"
       >
-        {endYearOrCurrent}
+        {active.endYear ?? ui.experience.current}
       </span>
     </div>
 
-    <div class="flex flex-col gap-4">
-      <p class="mono-label text-muted">
-        {active.index} / {totalLabel} —{" "}
-        {active.isCurrent ? ui.experience.current : activeYearRange}
-      </p>
-      <h3 class="display text-ink" style={`font-size:${desktopType(96)}`}>
+    <div class="detail" aria-hidden="true" data-motion="experience-detail">
+      <span
+        class="mono-label text-muted detail-index"
+        data-motion="experience-detail-index"
+      >
+        {active.index} / {total}
+        {active.isCurrent && ` — ${ui.experience.current}`}
+      </span>
+      <span
+        class="display detail-company"
+        data-motion="experience-detail-company"
+      >
         {active.company.short}
-      </h3>
-      <p
-        class="font-serif text-lilac italic"
-        style={`font-size:${desktopType(46)}`}
+      </span>
+      <span
+        class="serif detail-position"
+        data-motion="experience-detail-position"
       >
         {active.position}
-      </p>
-      <p class="mt-4 max-w-md text-xl text-body">{active.summary}</p>
-
-      <ol class="relative mt-10 flex flex-col">
-        {items.map((item, index) => (
-          <li
-            class:list={[
-              "grid grid-cols-[36px_1fr_150px_104px] items-center gap-3 border-t py-4",
-              index === 0
-                ? "border-ink/35 text-ink"
-                : "border-ink/10 text-muted",
-            ]}
-          >
-            {index === 0 && (
-              <span class="absolute -left-6 top-5 flex items-center">
-                <SignalDot size={20} dotSize={8} />
-              </span>
-            )}
-            <span
-              class:list={[
-                "mono-label",
-                index === 0 ? "text-green" : "text-muted",
-              ]}
-            >
-              {item.index}
-            </span>
-            <span class="truncate text-lg font-semibold font-stretch-78%">
-              {item.company.short}
-            </span>
-            <span class="mono-label truncate">{item.position}</span>
-            <span class="mono-label text-right">
-              {formatYearRange(
-                item.startDate,
-                item.endDate,
-                ui.experience.current,
-              )}
-            </span>
-          </li>
-        ))}
-      </ol>
+      </span>
     </div>
-  </div>
 
-  <p
-    aria-hidden="true"
-    class="text-outline pointer-events-none absolute -bottom-8 left-0 hidden w-full overflow-hidden whitespace-nowrap lg:block"
-    style={`font-size:${desktopType(200)}; --stroke-color: color-mix(in srgb, var(--color-purple) 14%, transparent); --stroke: 1px;`}
-  >
-    {active.company.short.toUpperCase()}
-  </p>
+    <ol class="jobs">
+      {items.map((item, index) => (
+        <li
+          class:list={["job", index === 0 && "is-active"]}
+          data-motion="experience-job"
+          data-start={item.startYear}
+          data-end={item.endYear ?? ui.experience.current}
+          data-company={item.company.short}
+          data-position={item.position}
+          data-detail-index={`${item.index} / ${total}${item.isCurrent ? ` — ${ui.experience.current}` : ""}`}
+        >
+          <span class="display job-years" aria-hidden="true">
+            {item.compactRange}
+          </span>
+          <div class="job-body">
+            <span class="mono-label job-index">
+              {item.index}
+              <span class="job-total"> / {total}</span>
+            </span>
+            <h3 class="job-company">{item.company.short}</h3>
+            <p class="job-position">{item.position}</p>
+            <p class="mono-label job-range">{item.range}</p>
+          </div>
+          {index === 0 && <span class="job-dot" aria-hidden="true"></span>}
+        </li>
+      ))}
+    </ol>
+
+    <span class="rail" aria-hidden="true">
+      <span class="rail-active" data-motion="experience-rail-active"></span>
+    </span>
+    <SignalDot class="rail-dot" data-motion="experience-dot" />
+  </div>
 </section>
+
+<style>
+  /* ---------- Mobile · artboard M03 (390 × 250 + 240 por puesto) ---------- */
+  .experience {
+    height: calc(var(--u) * (250 + 240 * var(--rows)));
+  }
+
+  .stage {
+    height: 100%;
+  }
+
+  .experience-glow {
+    left: calc(var(--ux) * -100);
+    top: calc(var(--u) * 200);
+    width: calc(var(--u) * 700);
+    height: calc(var(--u) * 700);
+    --glow-strength: 26%;
+  }
+
+  .ghost,
+  .years,
+  .detail,
+  .rail,
+  .experience :global(.rail-dot),
+  .job-range {
+    display: none;
+  }
+
+  .experience :global(.eyebrow) {
+    position: absolute;
+    z-index: 6;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 96);
+  }
+
+  .mobile-title {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--ux) * 14);
+    top: calc(var(--u) * 130);
+    margin: 0;
+    font-size: calc(var(--u) * 92);
+    white-space: nowrap;
+    color: var(--color-ink);
+  }
+
+  .jobs {
+    position: absolute;
+    z-index: 3;
+    left: 0;
+    right: 0;
+    top: calc(var(--u) * 250);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .job {
+    position: relative;
+    display: flex;
+    height: calc(var(--u) * 240);
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+
+  .job.is-active {
+    border-top-color: color-mix(in srgb, var(--color-ink) 35%, transparent);
+  }
+
+  .job-years {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--u) * 96);
+    font-size: calc(var(--u) * 64);
+    line-height: 1;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+    color: transparent;
+    -webkit-text-stroke: 1px
+      color-mix(in srgb, var(--color-lilac) 45%, transparent);
+  }
+
+  .is-active .job-years {
+    font-size: calc(var(--u) * 76);
+    color: var(--color-ink);
+    -webkit-text-stroke: 0;
+  }
+
+  .job-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: calc(var(--u) * 10);
+    padding: 0 calc(var(--ux) * 20) 0 calc(var(--u) * 8);
+    opacity: 0.55;
+  }
+
+  .is-active .job-body {
+    opacity: 1;
+  }
+
+  .job-index {
+    color: var(--color-muted);
+  }
+
+  .is-active .job-index {
+    color: var(--color-green);
+  }
+
+  .job-company {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: calc(var(--u) * 44);
+    font-weight: 700;
+    font-stretch: 75%;
+    line-height: 0.95;
+    letter-spacing: -0.012em;
+    color: var(--color-ink);
+  }
+
+  .job-position {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: calc(var(--u) * 26);
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--color-lilac);
+  }
+
+  .job-dot {
+    position: absolute;
+    right: calc(var(--ux) * 20);
+    top: calc(var(--u) * 24);
+    width: calc(var(--u) * 10);
+    height: calc(var(--u) * 10);
+    border-radius: 9999px;
+    background: var(--color-green);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--color-green) 50%, transparent);
+  }
+
+  /* ---------- Desktop · artboard 03 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .experience {
+      height: 100svh;
+    }
+
+    .stage {
+      height: calc(var(--u) * 900);
+    }
+
+    .experience-glow {
+      left: calc(var(--ux) * 900);
+      top: calc(var(--u) * -200);
+      width: calc(var(--u) * 900);
+      height: calc(var(--u) * 900);
+      --glow-strength: 28%;
+    }
+
+    .mobile-title,
+    .job-years,
+    .job-total,
+    .job-dot {
+      display: none;
+    }
+
+    .ghost {
+      position: absolute;
+      z-index: 1;
+      left: calc(var(--ux) * -30);
+      top: calc(var(--u) * 690);
+      display: block;
+      font-size: calc(var(--u) * 290);
+      white-space: nowrap;
+      color: color-mix(in srgb, var(--color-purple) 14%, transparent);
+    }
+
+    .experience :global(.eyebrow) {
+      left: calc(var(--ux) * 104);
+      top: calc(var(--u) * 124);
+    }
+
+    .years {
+      position: absolute;
+      z-index: 3;
+      left: calc(var(--ux) * 92);
+      top: calc(var(--u) * 160);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .year-start,
+    .year-end {
+      font-size: calc(var(--u) * 330);
+      color: var(--color-ink);
+    }
+
+    .year-end {
+      margin-top: calc(var(--u) * 14);
+      color: transparent;
+      --stroke: 1.5px;
+      --stroke-color: var(--color-lilac);
+    }
+
+    .year-end.is-label {
+      font-size: calc(var(--u) * 150);
+    }
+
+    .detail {
+      position: absolute;
+      z-index: 4;
+      left: calc(var(--ux) * 830);
+      top: calc(var(--u) * 150);
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--u) * 18);
+      width: calc(var(--u) * 520);
+    }
+
+    .detail-company {
+      font-size: calc(var(--u) * 96);
+      font-weight: 700;
+      line-height: 0.9;
+      color: var(--color-ink);
+    }
+
+    .detail-position {
+      font-size: calc(var(--u) * 46);
+      line-height: 1;
+      color: var(--color-lilac);
+    }
+
+    .jobs {
+      z-index: 4;
+      left: calc(var(--ux) * 830);
+      right: auto;
+      top: calc(var(--u) * 490);
+      width: calc(var(--u) * 560);
+    }
+
+    .job {
+      display: block;
+      height: calc(var(--u) * 58);
+      color: var(--color-muted);
+      transition:
+        color 0.4s ease,
+        border-color 0.4s ease;
+    }
+
+    .job.is-active {
+      color: var(--color-ink);
+    }
+
+    .job-body {
+      display: grid;
+      grid-template-columns:
+        calc(var(--u) * 36) minmax(0, 1fr) calc(var(--u) * 150)
+        calc(var(--u) * 104);
+      align-items: center;
+      gap: calc(var(--u) * 12);
+      height: 100%;
+      padding: 0;
+      opacity: 1;
+    }
+
+    .job-index {
+      color: var(--color-muted);
+    }
+
+    .job-company {
+      font-size: calc(var(--u) * 23);
+      font-weight: 600;
+      font-stretch: 78%;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      color: inherit;
+    }
+
+    .job-position {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-style: normal;
+      line-height: 1.4;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: inherit;
+    }
+
+    .job-range {
+      display: block;
+      text-align: right;
+      white-space: nowrap;
+      color: inherit;
+    }
+
+    .rail {
+      position: absolute;
+      z-index: 4;
+      left: calc(var(--ux) * 800);
+      top: calc(var(--u) * 490);
+      display: block;
+      width: 1px;
+      height: calc(var(--u) * 58 * var(--rows));
+      background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+    }
+
+    .rail-active {
+      display: block;
+      width: 1px;
+      height: calc(var(--u) * 58);
+      background: var(--color-green);
+    }
+
+    .experience :global(.rail-dot) {
+      position: absolute;
+      z-index: 6;
+      left: calc(var(--ux) * 800 - var(--u) * 21);
+      top: calc(var(--u) * 497);
+      display: inline-flex;
+      width: calc(var(--u) * 44);
+      height: calc(var(--u) * 44);
+      --dot: calc(var(--u) * 14);
+    }
+  }
+</style>

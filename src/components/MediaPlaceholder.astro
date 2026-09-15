@@ -9,26 +9,35 @@ export interface Props {
   label: string;
   dimensions: string;
   class?: string;
-  rounded?: boolean;
 }
 
-const {
-  label,
-  dimensions,
-  class: className = "",
-  rounded = false,
-} = Astro.props;
+const { label, dimensions, class: className = "" } = Astro.props;
 ---
 
 <div
-  class:list={[
-    "placeholder-hatch flex flex-col items-center justify-center gap-1.5 p-4 text-center",
-    rounded ? "rounded-[10%]" : "",
-    className,
-  ]}
+  class:list={["placeholder-hatch media-placeholder", className]}
   role="img"
   aria-label={`${label} — placeholder, captura pendiente`}
 >
   <span class="mono-label text-lilac">{label}</span>
   <span class="mono-label text-muted">Placeholder · {dimensions}</span>
 </div>
+
+<style>
+  .media-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .media-placeholder span:first-child {
+    font-size: 11px;
+  }
+
+  .media-placeholder span:last-child {
+    font-size: 10px;
+  }
+</style>

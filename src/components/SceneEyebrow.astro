@@ -1,0 +1,32 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { sceneIndex, type SceneId } from "../lib/scenes";
+
+/**
+ * Rótulo mono de escena. En mobile lleva el número de escena
+ * ("03 Experiencia"); en desktop el HUD ya muestra el número y el rótulo
+ * se reduce al texto en verde.
+ */
+export interface Props extends HTMLAttributes<"h2"> {
+  scene: SceneId;
+  label: string;
+  as?: "h2" | "p" | "span";
+}
+
+const { scene, label, as: Tag = "h2", class: className, ...rest } = Astro.props;
+---
+
+<Tag class:list={["mono-label scene-eyebrow", className]} {...rest}>
+  <span class="text-green desk:hidden" aria-hidden="true">
+    {sceneIndex(scene)}
+  </span>
+  <span class="text-soft desk:text-green">{label}</span>
+</Tag>
+
+<style>
+  .scene-eyebrow {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+  }
+</style>

@@ -1,8 +1,9 @@
 ---
 import LanguageSwitch from "./LanguageSwitch.astro";
 import MobileMenu from "./MobileMenu.astro";
-import { formatIndex, type PortfolioViewModel } from "../lib/portfolio";
+import type { PortfolioViewModel } from "../lib/portfolio";
 import type { Locale } from "../lib/resume";
+import { SCENE_TOTAL, sceneIndex } from "../lib/scenes";
 import type { UiStrings } from "../i18n/ui";
 
 export interface Props {
@@ -14,25 +15,10 @@ export interface Props {
 const { locale, portfolio, ui } = Astro.props;
 
 /**
- * Escenas en orden de scroll. El rail y el contador del HUD las recorren;
- * motion.ts actualiza cuál está activa (Fase 4). Antes de esa fase, o sin
- * JS, se muestra el estado inicial: escena 01.
+ * Estado inicial del HUD (escena 01). motion.ts actualiza índice, rótulo
+ * y progreso con el scroll; sin JS se queda en la primera escena.
  */
-const scenes = [
-  { id: "top", label: ui.hero.eyebrow },
-  { id: "about", label: ui.about.eyebrow },
-  { id: "experience", label: ui.experience.eyebrow },
-  { id: "work", label: ui.work.eyebrow },
-  { id: "featured", label: ui.featured.eyebrow },
-  { id: "stack", label: ui.stack.eyebrow },
-  { id: "practices", label: ui.practices.eyebrow },
-  { id: "education", label: ui.education.eyebrow },
-  { id: "contact", label: ui.contact.eyebrow },
-] as const;
-
-const totalScenes = scenes.length;
-const initialScene = scenes[0];
-const initialProgress = (1 / totalScenes) * 100;
+const initialProgress = (1 / Number(SCENE_TOTAL)) * 100;
 
 const initials = portfolio.hero.displayName
   .split(" ")
@@ -50,33 +36,33 @@ const navLinks: Array<{ href: string; label: string }> = [
 
 <header
   data-hud
-  class="pointer-events-none fixed inset-x-0 top-0 z-20 flex h-[68px] items-center justify-between px-5 lg:h-[80px] lg:px-11"
+  class="pointer-events-none fixed inset-x-0 top-0 z-20 flex h-[68px] items-center justify-between bg-linear-to-b from-bg from-40% to-transparent px-5 desk:h-20 desk:bg-none desk:px-[calc(var(--ux)*44)]"
 >
   <a
     href="#top"
-    class="pointer-events-auto flex items-end gap-1.5 text-xl font-extrabold tracking-tight text-ink lg:text-2xl"
+    class="pointer-events-auto flex items-end gap-[5px] text-xl leading-none font-extrabold tracking-[-0.03em] text-ink desk:text-[22px]"
   >
     {initials}
     <span
-      class="mb-0.5 block h-2 w-2 rounded-full bg-green"
+      class="mb-0.5 block size-[7px] rounded-full bg-green"
       aria-hidden="true"
     ></span>
     <span class="sr-only">{portfolio.hero.displayName}</span>
   </a>
 
-  <div class="pointer-events-auto flex items-center gap-6">
+  <div class="pointer-events-auto flex items-center gap-1.5 desk:gap-9">
     <nav
       aria-label="Navegación principal"
-      class="mono-label hidden items-center gap-9 lg:flex"
+      class="mono-label hidden items-center gap-9 desk:flex"
     >
       {navLinks.map((link) => (
-        <a href={link.href} class="text-soft hover:text-ink">
+        <a href={link.href} class="text-soft hover:text-green">
           {link.label}
         </a>
       ))}
     </nav>
     <LanguageSwitch locale={locale} />
-    <div class="lg:hidden">
+    <div class="desk:hidden">
       <MobileMenu ui={ui} />
     </div>
   </div>
@@ -85,22 +71,22 @@ const navLinks: Array<{ href: string; label: string }> = [
 <div
   data-hud-rail
   aria-hidden="true"
-  class="mono-label pointer-events-none fixed bottom-11 left-7 z-20 hidden origin-bottom-left [writing-mode:vertical-rl] rotate-180 items-center gap-3.5 text-muted lg:flex"
+  class="mono-label pointer-events-none fixed bottom-[calc(var(--u)*44)] left-[calc(var(--ux)*28)] z-20 hidden rotate-180 items-center gap-3.5 text-faint [writing-mode:vertical-rl] desk:flex"
 >
   <span data-hud-rail-index class="text-green">
-    {formatIndex(1)}
+    {sceneIndex("top")}
   </span>
   <span class="block h-10 w-px bg-ink/20"></span>
-  <span data-hud-rail-label>{initialScene.label}</span>
+  <span data-hud-rail-label>{ui.hero.eyebrow}</span>
 </div>
 
 <div
   data-hud-counter
   aria-hidden="true"
-  class="mono-label pointer-events-none fixed bottom-12 right-11 z-20 hidden items-center gap-3.5 text-muted lg:flex"
+  class="pointer-events-none fixed right-[calc(var(--ux)*44)] bottom-[calc(var(--u)*48)] z-20 hidden items-center gap-3.5 desk:flex"
 >
-  <span data-hud-counter-text>
-    {formatIndex(1)} / {formatIndex(totalScenes)}
+  <span data-hud-counter-text class="mono-label text-faint">
+    {sceneIndex("top")} / {SCENE_TOTAL}
   </span>
   <span class="block h-px w-[120px] bg-ink/15">
     <span

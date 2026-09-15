@@ -1,7 +1,6 @@
 ---
 import MediaPlaceholder from "./MediaPlaceholder.astro";
-import SignalDot from "./SignalDot.astro";
-import { desktopType, mobileType } from "../lib/fluidType";
+import SceneEyebrow from "./SceneEyebrow.astro";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import type { UiStrings } from "../i18n/ui";
 
@@ -14,68 +13,40 @@ const { portfolio, ui } = Astro.props;
 const { items } = portfolio.workIntro;
 ---
 
-<section
-  id="work"
-  data-scene-label={ui.work.eyebrow}
-  class="relative flex min-h-screen flex-col justify-center overflow-hidden px-5 py-24 lg:px-11"
->
-  <p
-    class="font-serif mb-2 text-lilac italic"
-    style={`font-size:${mobileType(84)}`}
-  >
-    <span class="lg:hidden">{ui.work.selected}</span>
-    <span class="hidden lg:inline" style={`font-size:${desktopType(210)}`}>
-      {ui.work.selected}
-    </span>
-  </p>
+<section id="work" data-scene-label={ui.work.eyebrow} class="scene work">
+  <div class="stage">
+    <div class="glow work-glow" aria-hidden="true"></div>
 
-  <div class="relative z-10 flex items-center">
-    <span
-      class="display text-ink"
-      style={`font-size:${mobileType(210)}`}
-      aria-hidden="true"
-    >
-      W
-    </span>
-    <span
-      class="display hidden text-ink lg:inline"
-      style={`font-size:${desktopType(400)}`}
-      aria-hidden="true"
-    >
-      W
-    </span>
-    <span class="relative mx-1 aspect-square w-[38vw] max-w-[150px] shrink-0 overflow-hidden rounded-full border-2 border-green lg:max-w-[420px]">
-      <MediaPlaceholder
-        label={ui.featured.captionLanding}
-        dimensions="640×400"
-        class="h-full w-full"
-      />
-      <span class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-        <SignalDot size={22} dotSize={8} />
+    <SceneEyebrow
+      scene="work"
+      label={ui.work.eyebrow}
+      as="p"
+      class="eyebrow"
+      data-motion="work-meta"
+    />
+
+    <h2 class="title">
+      <span class="serif selected" data-motion="work-selected">
+        {ui.work.selected}
       </span>
-    </span>
-    <span
-      class="display text-ink"
-      style={`font-size:${mobileType(210)}`}
-      aria-hidden="true"
-    >
-      RK
-    </span>
-    <span
-      class="display hidden text-ink lg:inline"
-      style={`font-size:${desktopType(400)}`}
-      aria-hidden="true"
-    >
-      RK
-    </span>
-    <span class="sr-only">Work</span>
-  </div>
+      <span class="sr-only">Work</span>
+      <span class="display word" aria-hidden="true">
+        <span data-motion="work-w">W</span>
+        <span class="window" data-motion="work-window">
+          <MediaPlaceholder
+            label={ui.featured.captionLanding}
+            dimensions="640×400"
+            class="window-media"
+          />
+          <span class="window-dot" data-motion="work-window-dot"></span>
+        </span>
+        <span data-motion="work-rk">RK</span>
+      </span>
+    </h2>
 
-  <div class="relative z-10 mt-10 flex flex-wrap items-end justify-between gap-6">
-    <span class="mono-label text-green">{ui.work.eyebrow}</span>
-    <ol class="flex gap-9">
+    <ol class="projects" data-motion="work-meta">
       {items.map((item, index) => (
-        <li class="flex flex-col gap-1.5">
+        <li>
           <span
             class:list={[
               "mono-label",
@@ -86,7 +57,7 @@ const { items } = portfolio.workIntro;
           </span>
           <span
             class:list={[
-              "text-lg font-bold font-stretch-80%",
+              "project-name",
               index === 0 ? "text-ink" : "text-soft",
             ]}
           >
@@ -97,3 +68,164 @@ const { items } = portfolio.workIntro;
     </ol>
   </div>
 </section>
+
+<style>
+  /* ---------- Mobile · parte superior del artboard M04 ---------- */
+  .work {
+    height: calc(var(--u) * 420);
+  }
+
+  .stage {
+    height: 100%;
+  }
+
+  .work-glow {
+    left: calc(var(--ux) * -200);
+    top: 0;
+    width: calc(var(--u) * 800);
+    height: calc(var(--u) * 800);
+    --glow-strength: 32%;
+  }
+
+  .work :global(.eyebrow) {
+    position: absolute;
+    z-index: 6;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 96);
+  }
+
+  .title {
+    margin: 0;
+  }
+
+  .selected {
+    position: absolute;
+    z-index: 5;
+    left: calc(var(--ux) * 18);
+    top: calc(var(--u) * 122);
+    font-size: calc(var(--u) * 84);
+    line-height: 1;
+    color: var(--color-lilac);
+  }
+
+  .word {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--ux) * -6);
+    top: calc(var(--u) * 214);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 4);
+    font-size: calc(var(--u) * 210);
+    white-space: nowrap;
+    color: var(--color-ink);
+  }
+
+  .window {
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    width: calc(var(--u) * 150);
+    height: calc(var(--u) * 150);
+  }
+
+  .window :global(.window-media) {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border: 2px solid var(--color-green);
+    border-radius: 9999px;
+  }
+
+  .window-dot {
+    display: none;
+  }
+
+  .projects {
+    display: none;
+  }
+
+  /* ---------- Desktop · artboard 04 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .work {
+      height: 100svh;
+    }
+
+    .stage {
+      height: calc(var(--u) * 900);
+    }
+
+    .work-glow {
+      left: calc(var(--ux) * 220);
+      top: calc(var(--u) * -150);
+      width: calc(var(--u) * 1200);
+      height: calc(var(--u) * 1200);
+      --glow-strength: 34%;
+    }
+
+    .work :global(.eyebrow) {
+      left: calc(var(--ux) * 104);
+      top: auto;
+      bottom: calc(var(--u) * 120);
+      z-index: 5;
+    }
+
+    .selected {
+      left: calc(var(--ux) * 110);
+      top: calc(var(--u) * 96);
+      font-size: calc(var(--u) * 210);
+    }
+
+    .word {
+      left: 0;
+      right: 0;
+      top: calc(var(--u) * 268);
+      justify-content: center;
+      gap: calc(var(--u) * 10);
+      font-size: calc(var(--u) * 580);
+    }
+
+    .window {
+      width: calc(var(--u) * 420);
+      height: calc(var(--u) * 420);
+    }
+
+    .window-dot {
+      position: absolute;
+      left: 50%;
+      top: calc(var(--u) * -12);
+      display: block;
+      width: calc(var(--u) * 22);
+      height: calc(var(--u) * 22);
+      translate: -50% 0;
+      border-radius: 9999px;
+      background: var(--color-green);
+      box-shadow: 0 0 44px
+        color-mix(in srgb, var(--color-green) 50%, transparent);
+    }
+
+    .projects {
+      position: absolute;
+      z-index: 5;
+      right: calc(var(--ux) * 210);
+      bottom: calc(var(--u) * 120);
+      display: flex;
+      gap: calc(var(--u) * 48);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .projects li {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .project-name {
+      font-size: calc(var(--u) * 28);
+      font-weight: 700;
+      font-stretch: 80%;
+    }
+  }
+</style>

@@ -1,20 +1,33 @@
 @import "tailwindcss";
 
-/* Fuentes autoalojadas: solo los subsets y pesos que usa el diseño. */
-@import "@fontsource-variable/bricolage-grotesque/wdth.css";
+/*
+ * Fuentes autoalojadas. Bricolage usa la variante "standard", que incluye
+ * los tres ejes del diseño (wght, wdth y opsz): sin opsz, los titulares
+ * gigantes se renderizan con el tamaño óptico de texto y salen ~15% más
+ * anchos que en el artifact.
+ */
+@import "@fontsource-variable/bricolage-grotesque/standard.css";
 @import "@fontsource/instrument-serif/latin-400.css";
 @import "@fontsource/instrument-serif/latin-400-italic.css";
 @import "@fontsource/geist-mono/latin-400.css";
 @import "@fontsource/geist-mono/latin-500.css";
+
+/*
+ * Composición desktop: viewport ancho y apaisado. Las tablets en vertical
+ * usan la composición mobile aunque superen 1024px de ancho.
+ */
+@custom-variant desk (@media (min-width: 1024px) and (min-aspect-ratio: 1/1));
 
 @theme {
   /* Fondo, texto y superficies */
   --color-bg: #0b0812;
   --color-ink: #f2eef7;
   --color-body: #cfc7dc;
+  --color-prose: #e6dff2;
   --color-soft: #b7aec8;
   --color-muted: #9a92ad;
   --color-faint: #6f6784; /* solo decorativo: no cumple contraste AA */
+  --color-dim: #4e4760; /* solo estado inicial de animaciones */
   --color-panel: #150e22;
 
   /* Identidad: morado profundo y verde acento */
@@ -34,8 +47,27 @@
 }
 
 @layer base {
-  html {
+  /*
+   * --u es la unidad de composición: 1u equivale a 1px del artboard de
+   * referencia (390px de ancho en mobile, 1440×900 en desktop). Las
+   * escenas se maquetan en u para reproducir las proporciones exactas del
+   * diseño a cualquier tamaño. En desktop se limita por alto para que
+   * cada escena quepa siempre en un viewport.
+   *
+   * --ux escala solo con el ancho y se usa para las coordenadas
+   * horizontales, de modo que los elementos anclados a los bordes (y los
+   * que sangran fuera de ellos) conservan su relación con el viewport
+   * aunque su proporción no sea 16:10.
+   */
+  :root {
     color-scheme: dark;
+    --u: min(100vw / 390, 1.6px);
+    --ux: calc(100vw / 390);
+
+    @variant desk {
+      --u: min(100vw / 1440, 100svh / 900);
+      --ux: calc(100vw / 1440);
+    }
   }
 
   body {
@@ -66,6 +98,24 @@
   }
 }
 
+/*
+ * Evita el parpadeo del hero antes de su animación de entrada: mientras
+ * motion.ts carga, sus piezas animables se ocultan. Si JS falla o tarda,
+ * la animación de respaldo las muestra igualmente a los 2.5s.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html.js:not(.motion) #top [data-motion] {
+    opacity: 0;
+    animation: reveal-fallback 0.3s 2.5s forwards;
+  }
+}
+
+@keyframes reveal-fallback {
+  to {
+    opacity: 1;
+  }
+}
+
 /* Título display: tipografía gigante, condensada y en negrita. */
 @utility display {
   font-family: var(--font-display);
@@ -84,9 +134,17 @@
   line-height: 1.4;
   text-transform: uppercase;
 
-  @media (min-width: 1024px) {
+  @variant desk {
     font-size: 12px;
   }
+}
+
+/* Voz editorial: Instrument Serif en itálica. */
+@utility serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 /* Texto en contorno (stroke), usado como recurso gráfico. */
@@ -95,9 +153,53 @@
   -webkit-text-stroke: var(--stroke, 1.5px) var(--stroke-color, currentColor);
 }
 
-/* Overlay de grano sutil sobre una escena. */
-@utility grain {
+/*
+ * Escena desktop: ocupa un viewport y centra un escenario de 900u de alto
+ * donde se posicionan los elementos del artboard. En mobile es un bloque
+ * normal cuya altura la define su propio contenido.
+ */
+@utility scene {
+  position: relative;
+  overflow: hidden;
+
+  @variant desk {
+    height: 100svh;
+    min-height: calc(var(--u) * 900);
+  }
+}
+
+@utility stage {
+  position: relative;
+
+  @variant desk {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: calc(var(--u) * 900);
+    translate: 0 -50%;
+  }
+}
+
+/* Resplandor radial decorativo (morado por defecto). */
+@utility glow {
   position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    color-mix(
+        in srgb,
+        var(--glow-color, var(--color-purple)) var(--glow-strength, 30%),
+        transparent
+      )
+      0%,
+    transparent 65%
+  );
+}
+
+/* Overlay de grano sutil, fijo sobre todo el sitio. */
+@utility grain {
+  position: fixed;
   inset: 0;
   z-index: 30;
   pointer-events: none;

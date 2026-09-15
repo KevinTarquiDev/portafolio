@@ -1,7 +1,14 @@
 ---
+import SceneEyebrow from "./SceneEyebrow.astro";
 import SignalDot from "./SignalDot.astro";
-import { desktopType, mobileType } from "../lib/fluidType";
+import { formatIndex } from "../lib/portfolio";
 import type { PortfolioViewModel } from "../lib/portfolio";
+import {
+  STACK_COLUMN_SIZES,
+  fitsOneLine,
+  stackColumnFontSize,
+  stackColumnLoop,
+} from "../lib/stack";
 import type { UiStrings } from "../i18n/ui";
 
 export interface Props {
@@ -10,53 +17,382 @@ export interface Props {
 }
 
 const { portfolio, ui } = Astro.props;
-const { groups } = portfolio.stack;
+
+/** Alto de medio escenario por encima/debajo de la línea de foco (u). */
+const HALF_STAGE = 470;
+
+const columns = portfolio.stack.groups.map((group, index) => {
+  const designSize = STACK_COLUMN_SIZES[index % STACK_COLUMN_SIZES.length];
+  const size = stackColumnFontSize(group.keywords, designSize);
+  const rowsToFill = Math.ceil(HALF_STAGE / (size * 1.2)) + 1;
+  return {
+    ...group,
+    count: formatIndex(group.keywords.length),
+    size,
+    loop: stackColumnLoop(group.keywords, rowsToFill + group.keywords.length),
+    // Marquesina mobile: la lista repetida para cubrir el ancho y el desplazamiento.
+    marquee: [...group.keywords, ...group.keywords, ...group.keywords],
+  };
+});
 ---
 
-<section
-  id="stack"
-  data-scene-label={ui.stack.eyebrow}
-  class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-32"
->
-  <h2
-    class="display mb-10 text-ink lg:absolute lg:bottom-16 lg:left-11 lg:mb-0 lg:[writing-mode:vertical-rl] lg:rotate-180"
-    style={`font-size:${mobileType(190)}`}
-  >
-    <span class="lg:hidden">{ui.stack.eyebrow}</span>
-    <span class="hidden lg:inline" style={`font-size:${desktopType(210)}`}>
-      {ui.stack.eyebrow}
-    </span>
-  </h2>
+<section id="stack" data-scene-label={ui.stack.eyebrow} class="scene stack">
+  <div class="stage">
+    <div class="glow stack-glow" aria-hidden="true"></div>
 
-  <div class="relative flex flex-col gap-12 lg:ml-40 lg:grid lg:grid-cols-4 lg:items-center lg:gap-8">
-    <span
-      aria-hidden="true"
-      class="absolute left-0 right-0 top-1/2 hidden h-px -translate-y-1/2 bg-gradient-to-r from-green via-green/40 to-transparent lg:block"
-    ></span>
-    <span class="absolute left-0 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
-      <SignalDot size={20} dotSize={10} />
-    </span>
+    <SceneEyebrow
+      scene="stack"
+      label={ui.stack.eyebrow}
+      as="p"
+      class="eyebrow"
+    />
+    <h2 class="display title">{ui.stack.eyebrow}</h2>
 
-    {groups.map((group) => (
-      <div data-motion="stack-column" class="flex flex-col gap-4">
-        <p class="mono-label flex items-center gap-2.5 text-soft">
-          <span class="text-green">{group.index}</span>
-          {group.name}
-        </p>
-        <ul class="flex flex-col gap-1.5">
-          {group.keywords.map((keyword, keywordIndex) => (
-            <li
+    <div class="columns">
+      {columns.map((column, columnIndex) => (
+        <div
+          class="column"
+          style={`--size: ${column.size}; --col: ${columnIndex};`}
+          data-count={column.keywords.length}
+          data-motion="stack-column"
+        >
+          <h3 class="mono-label column-label">
+            <span class="text-green" aria-hidden="true">
+              {column.count}
+            </span>
+            <span class="text-soft">{column.name}</span>
+          </h3>
+          <ul class="sr-only">
+            {column.keywords.map((keyword) => (
+              <li>{keyword}</li>
+            ))}
+          </ul>
+
+          <div class="loop" aria-hidden="true" data-motion="stack-loop">
+            <div class="loop-side loop-before">
+              {column.loop.before.map((keyword, i, all) => (
+                <span
+                  class:list={[
+                    "item",
+                    i === all.length - 1 && "is-near",
+                    !fitsOneLine(keyword, column.size) && "is-wrapped",
+                  ]}
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+            <span
               class:list={[
-                "font-extrabold leading-none font-stretch-80%",
-                keywordIndex === 0 ? "text-ink" : "text-muted",
+                "item is-focus",
+                !fitsOneLine(column.loop.focus, column.size) && "is-wrapped",
               ]}
-              style={`font-size:${keywordIndex === 0 ? mobileType(46) : mobileType(34)};`}
             >
-              {keyword}
-            </li>
-          ))}
-        </ul>
-      </div>
-    ))}
+              {column.loop.focus}
+            </span>
+            <div class="loop-side">
+              {column.loop.after.map((keyword, i) => (
+                <span
+                  class:list={[
+                    "item",
+                    i === 0 && "is-near",
+                    !fitsOneLine(keyword, column.size) && "is-wrapped",
+                  ]}
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div class="marquee" aria-hidden="true" data-motion="stack-marquee">
+            {column.marquee.map((keyword, i) => (
+              <>
+                <span
+                  class:list={[
+                    "marquee-item",
+                    (i + columnIndex) % 2 === 1 && "is-outline",
+                  ]}
+                >
+                  {keyword}
+                </span>
+                <span class="marquee-dot"></span>
+              </>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="mask mask-top" aria-hidden="true"></div>
+    <div class="mask mask-bottom" aria-hidden="true"></div>
+    <div class="focus-line" aria-hidden="true"></div>
+    <SignalDot class="focus-dot" />
   </div>
 </section>
+
+<style>
+  /* ---------- Mobile · parte superior del artboard M05 ---------- */
+  .stack {
+    height: calc(var(--u) * 900);
+  }
+
+  .stage {
+    height: 100%;
+  }
+
+  .stack-glow {
+    left: calc(var(--ux) * -200);
+    top: calc(var(--u) * 100);
+    width: calc(var(--u) * 700);
+    height: calc(var(--u) * 700);
+    --glow-strength: 26%;
+  }
+
+  .stack :global(.eyebrow) {
+    position: absolute;
+    z-index: 6;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 96);
+  }
+
+  .title {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--ux) * 14);
+    top: calc(var(--u) * 126);
+    margin: 0;
+    font-size: calc(var(--u) * 190);
+    color: var(--color-ink);
+  }
+
+  .column {
+    position: absolute;
+    z-index: 3;
+    left: 0;
+    right: 0;
+    top: calc(var(--u) * (330 + var(--col) * 140));
+    height: calc(var(--u) * 120);
+  }
+
+  .column-label {
+    position: absolute;
+    left: calc(var(--ux) * 20);
+    top: 0;
+    display: flex;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .loop,
+  .mask,
+  .focus-line,
+  .stack :global(.focus-dot) {
+    display: none;
+  }
+
+  .marquee {
+    position: absolute;
+    top: calc(var(--u) * 26);
+    left: calc(var(--ux) * var(--marquee-offset, -40));
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 18);
+    white-space: nowrap;
+  }
+
+  .column:nth-child(4n + 2) .marquee {
+    --marquee-offset: -260;
+  }
+
+  .column:nth-child(4n + 3) .marquee {
+    --marquee-offset: -10;
+  }
+
+  .column:nth-child(4n + 4) .marquee {
+    --marquee-offset: -150;
+  }
+
+  .marquee-item {
+    font-family: var(--font-display);
+    font-size: calc(var(--u) * 68);
+    font-weight: 800;
+    font-stretch: 75%;
+    line-height: 1;
+    letter-spacing: -0.012em;
+    color: var(--color-ink);
+  }
+
+  .marquee-item.is-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px
+      color-mix(in srgb, var(--color-lilac) 50%, transparent);
+  }
+
+  .marquee-dot {
+    flex-shrink: 0;
+    width: calc(var(--u) * 10);
+    height: calc(var(--u) * 10);
+    border-radius: 9999px;
+    background: var(--color-green);
+    opacity: 0.8;
+  }
+
+  /* ---------- Desktop · artboard 07 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .stack {
+      height: 100svh;
+    }
+
+    .stage {
+      height: calc(var(--u) * 900);
+    }
+
+    .stack-glow {
+      left: calc(var(--ux) * 500);
+      top: calc(var(--u) * 150);
+      width: calc(var(--u) * 800);
+      height: calc(var(--u) * 800);
+      --glow-strength: 22%;
+    }
+
+    .stack :global(.eyebrow) {
+      display: none;
+    }
+
+    .title {
+      z-index: 6;
+      left: calc(var(--ux) * 72);
+      top: 0;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      font-size: calc(var(--u) * 210);
+      writing-mode: vertical-rl;
+      rotate: 180deg;
+    }
+
+    .column {
+      z-index: auto;
+      left: calc(var(--ux) * (240 + var(--col) * 300));
+      right: auto;
+      top: 0;
+      width: calc(var(--ux) * 300);
+      height: 100%;
+      border-left: 1px solid
+        color-mix(in srgb, var(--color-ink) 8%, transparent);
+    }
+
+    .column-label {
+      z-index: 5;
+      left: calc(var(--u) * 24);
+      top: calc(var(--u) * 112);
+    }
+
+    .marquee {
+      display: none;
+    }
+
+    .loop {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+      padding: calc(var(--u) * 38) 0 0 calc(var(--u) * 24);
+    }
+
+    .loop-side {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .loop-before {
+      justify-content: flex-end;
+    }
+
+    .item {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      width: calc(var(--u) * 270);
+      min-height: calc(var(--u) * var(--size) * 1.2);
+      font-family: var(--font-display);
+      font-size: calc(var(--u) * var(--size));
+      font-weight: 800;
+      font-stretch: 75%;
+      line-height: 0.95;
+      letter-spacing: -0.012em;
+      text-wrap: balance;
+      color: transparent;
+      -webkit-text-stroke: 1px
+        color-mix(in srgb, var(--color-lilac) 16%, transparent);
+      transition:
+        color 0.35s ease,
+        -webkit-text-stroke-color 0.35s ease;
+    }
+
+    .item.is-wrapped {
+      padding-block: calc(var(--u) * var(--size) * 0.22);
+    }
+
+    .item.is-near {
+      -webkit-text-stroke-color: color-mix(
+        in srgb,
+        var(--color-lilac) 40%,
+        transparent
+      );
+    }
+
+    .item.is-focus {
+      color: var(--color-ink);
+      -webkit-text-stroke: 0;
+    }
+
+    .mask {
+      position: absolute;
+      z-index: 4;
+      left: calc(var(--ux) * 240);
+      right: 0;
+      display: block;
+      height: calc(var(--u) * 230);
+      pointer-events: none;
+    }
+
+    .mask-top {
+      top: 0;
+      background: linear-gradient(var(--color-bg) 45%, transparent);
+    }
+
+    .mask-bottom {
+      bottom: 0;
+      background: linear-gradient(transparent, var(--color-bg) 60%);
+    }
+
+    .focus-line {
+      position: absolute;
+      z-index: 5;
+      left: calc(var(--ux) * 226);
+      right: 0;
+      top: calc(var(--u) * 469);
+      display: block;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--color-green) 70%, transparent),
+        color-mix(in srgb, var(--color-green) 5%, transparent)
+      );
+    }
+
+    .stack :global(.focus-dot) {
+      position: absolute;
+      z-index: 6;
+      left: calc(var(--ux) * 226 - var(--u) * 22);
+      top: calc(var(--u) * 448);
+      display: inline-flex;
+      width: calc(var(--u) * 44);
+      height: calc(var(--u) * 44);
+      --dot: calc(var(--u) * 14);
+    }
+  }
+</style>

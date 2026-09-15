@@ -1,6 +1,6 @@
 ---
 import ContactForm from "./ContactForm.astro";
-import { desktopType, mobileType } from "../lib/fluidType";
+import SceneEyebrow from "./SceneEyebrow.astro";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import type { Locale } from "../lib/resume";
 import type { UiStrings } from "../i18n/ui";
@@ -15,14 +15,46 @@ const { locale, portfolio, ui } = Astro.props;
 const { contact } = portfolio;
 
 /**
- * El título ("HABLEMOS" / "LET'S TALK") tiene distinta longitud según
- * el idioma; se escala en proporción inversa a la cantidad de
- * caracteres para ocupar un ancho similar en ambos.
+ * El título ("HABLEMOS" / "LET'S TALK") tiene distinta longitud según el
+ * idioma: se escala en proporción inversa a sus caracteres para ocupar el
+ * mismo ancho que en el diseño (8 caracteres en desktop, líneas de 3 en
+ * mobile). En mobile se reduce respecto al artboard (262) para que el punto
+ * final quepa en el viewport: en el diseño queda recortado.
  */
-const REFERENCE_CHARS = 8;
-const titleScale = REFERENCE_CHARS / ui.contact.title.length;
-const desktopTitleSize = desktopType(Math.round(370 * titleScale));
-const mobileTitleSize = mobileType(Math.round(196 * titleScale));
+const desktopTitleSize = Math.round(
+  (370 * 8) / Math.max(8, ui.contact.title.length),
+);
+const longestMobileLine = Math.max(
+  ...ui.contact.titleMobile.map((line) => line.length),
+);
+const mobileTitleSize = Math.round((212 * 3) / Math.max(3, longestMobileLine));
+
+const rows = [
+  {
+    label: ui.contact.labelEmail,
+    value: contact.email,
+    href: `mailto:${contact.email}`,
+    external: false,
+  },
+  ...contact.profiles.map((profile) => ({
+    label: profile.network,
+    value: profile.urlDisplay,
+    href: profile.url,
+    external: true,
+  })),
+  {
+    label: ui.contact.labelPhone,
+    value: contact.phone,
+    href: contact.phoneHref,
+    external: false,
+  },
+  {
+    label: ui.contact.labelLocation,
+    value: `${contact.location.city}, ${contact.location.countryName}`,
+    href: undefined,
+    external: false,
+  },
+];
 
 const currentYear = new Date().getFullYear();
 ---
@@ -30,108 +62,297 @@ const currentYear = new Date().getFullYear();
 <section
   id="contact"
   data-scene-label={ui.contact.eyebrow}
-  class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-32"
-  style="background: linear-gradient(180deg, var(--color-bg) 0%, #150b25 55%, var(--color-deep) 100%);"
+  class="scene contact"
+  style={`--title-desktop: ${desktopTitleSize}; --title-mobile: ${mobileTitleSize};`}
 >
-  <h2 class="relative z-10 mb-14 flex items-end gap-3 lg:mb-20">
-    <span class="lg:hidden">
-      {ui.contact.titleMobile.map((line) => (
-        <span
-          class="display block text-ink"
-          style={`font-size:${mobileTitleSize}`}
-        >
-          {line}
-        </span>
-      ))}
-    </span>
-    <span
-      data-motion="contact-title"
-      class="display hidden text-ink lg:inline"
-      style={`font-size:${desktopTitleSize}`}
-    >
-      {ui.contact.title}
-    </span>
-    <span
-      data-motion="contact-dot"
-      class="mb-2.5 block h-11 w-11 shrink-0 rounded-full bg-green shadow-[0_0_70px_rgba(95,209,138,0.55)] lg:mb-6 lg:h-24 lg:w-24"
+  <div class="stage">
+    <div class="glow contact-glow-green" aria-hidden="true"></div>
+    <div
+      class="glow contact-glow-purple"
       aria-hidden="true"
-    ></span>
-  </h2>
+      data-motion="contact-glow"
+    ></div>
 
-  <div class="relative z-10 grid gap-14 lg:grid-cols-2 lg:gap-16">
-    <dl class="flex flex-col">
-      <div class="flex items-center justify-between gap-4 border-t border-ink/10 py-5">
-        <dt class="mono-label text-muted">{ui.contact.labelEmail}</dt>
-        <dd>
-          <a
-            href={`mailto:${contact.email}`}
-            class="text-xl font-medium font-stretch-85% text-ink"
-          >
-            {contact.email}
-          </a>
-        </dd>
-      </div>
-      {contact.profiles.map((profile) => (
-        <div class="flex items-center justify-between gap-4 border-t border-ink/10 py-5">
-          <dt class="mono-label text-muted">{profile.network}</dt>
-          <dd>
-            <a
-              href={profile.url}
-              target="_blank"
-              rel="noopener"
-              class="text-xl font-medium font-stretch-85% text-ink"
-            >
-              {profile.urlDisplay}
-            </a>
+    <SceneEyebrow
+      scene="contact"
+      label={ui.contact.eyebrow}
+      as="p"
+      class="eyebrow"
+    />
+
+    <h2 class="display title" data-motion="contact-title">
+      <span class="sr-only">{ui.contact.title}</span>
+      <span class="title-desktop" aria-hidden="true">
+        {ui.contact.title}
+        <span class="title-dot" data-motion="contact-dot"></span>
+      </span>
+      <span class="title-mobile" aria-hidden="true">
+        {ui.contact.titleMobile.map((line, index) => (
+          <span class="title-line" data-motion="contact-line">
+            {line}
+            {index === ui.contact.titleMobile.length - 1 && (
+              <span class="title-dot" data-motion="contact-dot"></span>
+            )}
+          </span>
+        ))}
+      </span>
+    </h2>
+
+    <dl class="details" data-motion="contact-details">
+      {rows.map((row) => (
+        <div class="detail" data-motion="contact-row">
+          <dt class="mono-label text-muted">{row.label}</dt>
+          <dd class="detail-value">
+            {row.href ? (
+              <a
+                href={row.href}
+                {...(row.external ? { target: "_blank", rel: "noopener" } : {})}
+              >
+                {row.value}
+              </a>
+            ) : (
+              row.value
+            )}
           </dd>
         </div>
       ))}
-      <div class="flex items-center justify-between gap-4 border-t border-ink/10 py-5">
-        <dt class="mono-label text-muted">{ui.contact.labelPhone}</dt>
-        <dd>
-          <a
-            href={contact.phoneHref}
-            class="text-xl font-medium font-stretch-85% text-ink"
-          >
-            {contact.phone}
-          </a>
-        </dd>
-      </div>
-      <div class="flex items-center justify-between gap-4 border-t border-ink/10 py-5">
-        <dt class="mono-label text-muted">{ui.contact.labelLocation}</dt>
-        <dd class="text-xl font-medium font-stretch-85% text-ink">
-          {contact.location.city}, {contact.location.countryName}
-        </dd>
-      </div>
     </dl>
 
-    <ContactForm locale={locale} ui={ui} />
-  </div>
+    <div class="form" data-motion="contact-form">
+      <ContactForm locale={locale} ui={ui} />
+    </div>
 
-  <footer class="relative z-10 mt-20 flex items-center justify-between gap-4 border-t border-ink/10 pt-8 lg:mt-28">
-    <p class="mono-label text-muted">
-      © {currentYear} {portfolio.hero.displayName}
-    </p>
-    <a
-      href="#top"
-      class="mono-label flex items-center gap-2 text-soft hover:text-ink"
-    >
-      {ui.contact.footerBackToTop}
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d="M12 20V4M5 11l7-7 7 7"
-          stroke="currentColor"
-          stroke-width="1.6"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        ></path>
-      </svg>
-    </a>
-  </footer>
+    <footer class="footer">
+      <p class="mono-label text-muted">
+        © {currentYear} {portfolio.hero.displayName}
+      </p>
+      <a href="#top" class="mono-label back-to-top">
+        {ui.contact.footerBackToTop}
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 20V4M5 11l7-7 7 7"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+      </a>
+    </footer>
+  </div>
 </section>
+
+<style>
+  /* ---------- Mobile · parte inferior del artboard M06 (flujo) ---------- */
+  .contact {
+    background: linear-gradient(
+      180deg,
+      var(--color-bg) 0%,
+      #150b25 40%,
+      var(--color-deep) 100%
+    );
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 60px calc(var(--ux) * 20) 40px;
+  }
+
+  .contact-glow-green {
+    display: none;
+  }
+
+  .contact-glow-purple {
+    left: -30%;
+    top: 30%;
+    width: calc(var(--u) * 900);
+    height: calc(var(--u) * 900);
+    --glow-strength: 25%;
+  }
+
+  .contact :global(.eyebrow),
+  .title,
+  .details,
+  .form,
+  .footer {
+    position: relative;
+    z-index: 3;
+  }
+
+  .title {
+    margin: 0 0 0 calc(var(--u) * -12);
+    color: var(--color-ink);
+  }
+
+  .title-desktop {
+    display: none;
+  }
+
+  .title-mobile {
+    display: flex;
+    flex-direction: column;
+    font-size: calc(var(--u) * var(--title-mobile));
+  }
+
+  .title-line {
+    display: flex;
+    align-items: flex-end;
+    gap: calc(var(--u) * 8);
+  }
+
+  .title-dot {
+    display: block;
+    flex-shrink: 0;
+    width: calc(var(--u) * 48);
+    height: calc(var(--u) * 48);
+    margin-bottom: calc(var(--u) * 5);
+    border-radius: 9999px;
+    background: var(--color-green);
+    box-shadow: 0 0 70px color-mix(in srgb, var(--color-green) 55%, transparent);
+  }
+
+  .details {
+    margin: 0;
+  }
+
+  .detail {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    min-height: 58px;
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .detail-value {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: calc(var(--u) * 19);
+    font-weight: 500;
+    font-stretch: 85%;
+    letter-spacing: -0.01em;
+  }
+
+  .detail-value a:hover,
+  .back-to-top:hover {
+    color: var(--color-green);
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .footer p {
+    margin: 0;
+  }
+
+  .back-to-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-soft);
+  }
+
+  .back-to-top svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* ---------- Desktop · artboard 10 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .contact {
+      background: linear-gradient(
+        180deg,
+        var(--color-bg) 0%,
+        #150b25 55%,
+        var(--color-deep) 100%
+      );
+    }
+
+    .stage {
+      display: block;
+      padding: 0;
+    }
+
+    .contact-glow-green {
+      left: calc(var(--ux) * 900);
+      top: calc(var(--u) * -100);
+      display: block;
+      width: calc(var(--u) * 900);
+      height: calc(var(--u) * 900);
+      --glow-color: var(--color-green);
+      --glow-strength: 12%;
+    }
+
+    .contact-glow-purple {
+      left: calc(var(--ux) * -200);
+      top: calc(var(--u) * 300);
+      width: calc(var(--u) * 1400);
+      height: calc(var(--u) * 1400);
+      --glow-strength: 35%;
+    }
+
+    .contact :global(.eyebrow),
+    .title-mobile {
+      display: none;
+    }
+
+    .title {
+      position: absolute;
+      left: calc(var(--ux) * 22);
+      top: calc(var(--u) * 60);
+      margin: 0;
+    }
+
+    .title-desktop {
+      display: flex;
+      align-items: flex-end;
+      gap: calc(var(--u) * 12);
+      font-size: calc(var(--u) * var(--title-desktop));
+      white-space: nowrap;
+    }
+
+    .title-dot {
+      width: calc(var(--u) * 88);
+      height: calc(var(--u) * 88);
+      margin-bottom: calc(var(--u) * 8);
+      box-shadow: 0 0 120px
+        color-mix(in srgb, var(--color-green) 55%, transparent);
+    }
+
+    .details {
+      position: absolute;
+      left: calc(var(--ux) * 120);
+      top: calc(var(--u) * 470);
+      width: calc(var(--u) * 560);
+    }
+
+    .detail {
+      grid-template-columns: calc(var(--u) * 120) minmax(0, 1fr);
+      min-height: calc(var(--u) * 58);
+    }
+
+    .detail-value {
+      font-size: calc(var(--u) * 26);
+    }
+
+    .form {
+      position: absolute;
+      left: calc(var(--ux) * 800);
+      top: calc(var(--u) * 470);
+      width: calc(var(--u) * 520);
+    }
+
+    .footer {
+      position: absolute;
+      left: calc(var(--ux) * 120);
+      right: calc(var(--ux) * 300);
+      bottom: calc(var(--u) * 40);
+    }
+  }
+</style>

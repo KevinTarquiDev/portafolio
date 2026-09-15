@@ -11,11 +11,14 @@ const { locale } = Astro.props;
 const labels: Record<Locale, string> = { es: "ES", en: "EN" };
 ---
 
-<nav aria-label="Selector de idioma" class="mono-label flex items-center gap-2">
+<nav
+  aria-label="Selector de idioma"
+  class="mono-label flex items-center gap-1.5 desk:gap-2"
+>
   {locales.map((candidate, index) => (
     <>
       {index > 0 && (
-        <span class="text-muted" aria-hidden="true">
+        <span class="text-faint" aria-hidden="true">
           /
         </span>
       )}
