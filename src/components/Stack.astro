@@ -1,0 +1,61 @@
+---
+import SignalDot from "./SignalDot.astro";
+import { desktopType, mobileType } from "../lib/fluidType";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+const { groups } = portfolio.stack;
+---
+
+<section
+  id="stack"
+  class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-32"
+>
+  <h2
+    class="display mb-10 text-ink lg:absolute lg:bottom-16 lg:left-11 lg:mb-0 lg:[writing-mode:vertical-rl] lg:rotate-180"
+    style={`font-size:${mobileType(190)}`}
+  >
+    <span class="lg:hidden">{ui.stack.eyebrow}</span>
+    <span class="hidden lg:inline" style={`font-size:${desktopType(210)}`}>
+      {ui.stack.eyebrow}
+    </span>
+  </h2>
+
+  <div class="relative flex flex-col gap-12 lg:ml-40 lg:grid lg:grid-cols-4 lg:items-center lg:gap-8">
+    <span
+      aria-hidden="true"
+      class="absolute left-0 right-0 top-1/2 hidden h-px -translate-y-1/2 bg-gradient-to-r from-green via-green/40 to-transparent lg:block"
+    ></span>
+    <span class="absolute left-0 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
+      <SignalDot size={20} dotSize={10} />
+    </span>
+
+    {groups.map((group) => (
+      <div class="flex flex-col gap-4">
+        <p class="mono-label flex items-center gap-2.5 text-soft">
+          <span class="text-green">{group.index}</span>
+          {group.name}
+        </p>
+        <ul class="flex flex-col gap-1.5">
+          {group.keywords.map((keyword, keywordIndex) => (
+            <li
+              class:list={[
+                "font-extrabold leading-none font-stretch-80%",
+                keywordIndex === 0 ? "text-ink" : "text-outline",
+              ]}
+              style={`font-size:${keywordIndex === 0 ? mobileType(46) : mobileType(34)}; --stroke-color: color-mix(in srgb, var(--color-lilac) 40%, transparent);`}
+            >
+              {keyword}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>

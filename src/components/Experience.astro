@@ -1,0 +1,170 @@
+---
+import SignalDot from "./SignalDot.astro";
+import { formatYearRange } from "../lib/dates";
+import { desktopType, mobileType } from "../lib/fluidType";
+import { formatIndex } from "../lib/portfolio";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+const { items } = portfolio.experience;
+const active = items[0];
+const totalLabel = formatIndex(items.length);
+
+if (!active) {
+  throw new Error("El resume no tiene experiencia laboral que mostrar");
+}
+
+const activeYearRange = formatYearRange(
+  active.startDate,
+  active.endDate,
+  ui.experience.current,
+);
+const [startYear, endYearOrCurrent] = activeYearRange
+  .split(" — ")
+  .map((part) => part.trim());
+---
+
+<section
+  id="experience"
+  class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-0"
+>
+  <h2 class="mono-label mb-8 text-green lg:absolute lg:top-11 lg:mb-0">
+    {ui.experience.eyebrow}
+  </h2>
+
+  {/* Mobile: bloques apilados, año vertical a la izquierda */}
+  <ol class="flex flex-col lg:hidden">
+    {items.map((item, index) => (
+      <li
+        class:list={[
+          "relative flex min-h-[200px] gap-4 border-t py-6",
+          index === 0 ? "border-ink/30" : "border-ink/10",
+        ]}
+      >
+        <span
+          class:list={[
+            "flex w-16 shrink-0 flex-col items-center justify-center gap-1 text-center",
+            index === 0 ? "text-ink" : "text-outline",
+          ]}
+          style={`--stroke-color: color-mix(in srgb, var(--color-lilac) 45%, transparent);`}
+        >
+          <span class="display" style={`font-size:${mobileType(40)}`}>
+            {item.startDate.slice(0, 4)}
+          </span>
+          {item.endDate ? (
+            <span class="display" style={`font-size:${mobileType(40)}`}>
+              {item.endDate.slice(0, 4)}
+            </span>
+          ) : (
+            <span class="mono-label">{ui.experience.current}</span>
+          )}
+        </span>
+        <div
+          class:list={["flex flex-col gap-2", index === 0 ? "" : "opacity-60"]}
+        >
+          <span
+            class:list={[
+              "mono-label",
+              index === 0 ? "text-green" : "text-muted",
+            ]}
+          >
+            {item.index} / {totalLabel}
+          </span>
+          <h3 class="display text-ink" style={`font-size:${mobileType(44)}`}>
+            {item.company.short}
+          </h3>
+          <p
+            class="font-serif text-lilac italic"
+            style={`font-size:${mobileType(26)}`}
+          >
+            {item.position}
+          </p>
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  {/* Desktop: años gigantes + detalle del trabajo activo + lista completa */}
+  <div class="relative hidden min-h-screen lg:grid lg:grid-cols-2 lg:items-center lg:gap-16 lg:pt-32">
+    <div class="flex flex-col">
+      <span class="display text-ink" style={`font-size:${desktopType(330)}`}>
+        {startYear}
+      </span>
+      <span
+        class="text-outline display"
+        style={`font-size:${desktopType(330)}; --stroke-color: var(--color-lilac); --stroke: 1.5px;`}
+      >
+        {endYearOrCurrent}
+      </span>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <p class="mono-label text-muted">
+        {active.index} / {totalLabel} —{" "}
+        {active.isCurrent ? ui.experience.current : activeYearRange}
+      </p>
+      <h3 class="display text-ink" style={`font-size:${desktopType(96)}`}>
+        {active.company.short}
+      </h3>
+      <p
+        class="font-serif text-lilac italic"
+        style={`font-size:${desktopType(46)}`}
+      >
+        {active.position}
+      </p>
+      <p class="mt-4 max-w-md text-xl text-body">{active.summary}</p>
+
+      <ol class="relative mt-10 flex flex-col">
+        {items.map((item, index) => (
+          <li
+            class:list={[
+              "grid grid-cols-[36px_1fr_150px_104px] items-center gap-3 border-t py-4",
+              index === 0
+                ? "border-ink/35 text-ink"
+                : "border-ink/10 text-muted",
+            ]}
+          >
+            {index === 0 && (
+              <span class="absolute -left-6 top-5 flex items-center">
+                <SignalDot size={20} dotSize={8} />
+              </span>
+            )}
+            <span
+              class:list={[
+                "mono-label",
+                index === 0 ? "text-green" : "text-muted",
+              ]}
+            >
+              {item.index}
+            </span>
+            <span class="truncate text-lg font-semibold font-stretch-78%">
+              {item.company.short}
+            </span>
+            <span class="mono-label truncate">{item.position}</span>
+            <span class="mono-label text-right">
+              {formatYearRange(
+                item.startDate,
+                item.endDate,
+                ui.experience.current,
+              )}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+
+  <p
+    aria-hidden="true"
+    class="text-outline pointer-events-none absolute -bottom-8 left-0 hidden w-full overflow-hidden whitespace-nowrap lg:block"
+    style={`font-size:${desktopType(200)}; --stroke-color: color-mix(in srgb, var(--color-purple) 14%, transparent); --stroke: 1px;`}
+  >
+    {active.company.short.toUpperCase()}
+  </p>
+</section>

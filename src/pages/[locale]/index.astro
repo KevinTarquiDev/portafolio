@@ -1,5 +1,14 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Hero from "../../components/Hero.astro";
+import About from "../../components/About.astro";
+import Experience from "../../components/Experience.astro";
+import WorkIntro from "../../components/WorkIntro.astro";
+import FeaturedProject from "../../components/FeaturedProject.astro";
+import Stack from "../../components/Stack.astro";
+import Practices from "../../components/Practices.astro";
+import Education from "../../components/Education.astro";
+import Contact from "../../components/Contact.astro";
 import { locales } from "../../i18n/config";
 import { ui } from "../../i18n/ui";
 import { getPortfolio } from "../../lib/portfolio";
@@ -31,160 +40,13 @@ const description = portfolio.hero.tagline;
   title={title}
   description={description}
 >
-  <!--
-    Fase 2: esqueleto de rutas, layout y HUD. Cada escena se implementa
-    por completo en la Fase 3 siguiendo la especificación de diseño.
-  -->
-  <section id="top" class="flex min-h-screen items-end px-5 pb-24 lg:px-11">
-    <div>
-      <h1 class="display text-[18vw] leading-[0.8] lg:text-[13vw]">
-        {portfolio.hero.displayName}
-      </h1>
-      <p class="mono-label mt-4 text-green">{portfolio.hero.headline}</p>
-      <p class="mt-2 max-w-md font-serif text-xl text-body italic">
-        {portfolio.hero.tagline}
-      </p>
-    </div>
-  </section>
-
-  <section id="about" class="min-h-screen px-5 py-24 lg:px-11">
-    <h2 class="mono-label text-green">{strings.about.connector}</h2>
-    <p class="mt-6 max-w-2xl text-2xl text-body">
-      {portfolio.about.summaryShort}
-    </p>
-  </section>
-
-  <section id="experience" class="min-h-screen px-5 py-24 lg:px-11">
-    <h2 class="mono-label text-green">{strings.experience.eyebrow}</h2>
-    <ol class="mt-6 flex flex-col gap-6">
-      {portfolio.experience.items.map((item) => (
-        <li>
-          <p class="text-sm text-muted">{item.index}</p>
-          <p class="text-2xl text-ink">{item.company.short}</p>
-          <p class="font-serif text-lg text-lilac italic">{item.position}</p>
-        </li>
-      ))}
-    </ol>
-  </section>
-
-  <section id="work" class="min-h-screen px-5 py-24 lg:px-11">
-    <h2 class="mono-label text-green">{strings.work.eyebrow}</h2>
-    <ul class="mt-6 flex flex-col gap-2">
-      {portfolio.workIntro.items.map((item) => (
-        <li class="text-xl text-ink">
-          {item.index} — {item.name}
-        </li>
-      ))}
-    </ul>
-  </section>
-
-  <section id="featured" class="min-h-screen px-5 py-24 lg:px-11">
-    <h2 class="mono-label text-green">{strings.featured.eyebrow}</h2>
-    <p class="mt-6 text-4xl text-ink">{portfolio.featuredProject.name}</p>
-    <p class="mt-4 max-w-2xl font-serif text-xl text-body italic">
-      {portfolio.featuredProject.description}
-    </p>
-    <a
-      href={portfolio.featuredProject.url}
-      target="_blank"
-      rel="noopener"
-      class="mt-6 inline-block text-lg text-green underline"
-    >
-      {strings.featured.ctaVisit}
-    </a>
-  </section>
-
-  <section id="stack" class="min-h-screen px-5 py-24 lg:px-11">
-    <h2 class="mono-label text-green">{strings.stack.eyebrow}</h2>
-    <div class="mt-6 flex flex-col gap-6">
-      {portfolio.stack.groups.map((group) => (
-        <div>
-          <p class="text-sm text-muted">
-            {group.index} {group.name}
-          </p>
-          <p class="text-xl text-ink">{group.keywords.join(" · ")}</p>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <section id="practices" class="min-h-screen px-5 py-24 lg:px-11">
-    <h2 class="display text-5xl">
-      <span class="font-serif text-lilac italic">
-        {strings.practices.titleTop}
-      </span>{" "}
-      {strings.practices.titleBottom}
-    </h2>
-    <div class="mt-6 grid gap-6 lg:grid-cols-2">
-      {portfolio.practices.items.map((practice) => (
-        <div>
-          <p class="text-sm text-green">{practice.index}</p>
-          <p class="text-2xl text-ink">{practice.name}</p>
-          <p class="mono-label text-muted">{practice.keywords.join(" · ")}</p>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <section id="education" class="min-h-screen px-5 py-24 lg:px-11">
-    <h2 class="mono-label text-green">{strings.education.eyebrow}</h2>
-    {portfolio.education.items.map((entry) => (
-      <div class="mt-6">
-        <p class="text-2xl text-ink">{entry.area}</p>
-        <p class="font-serif text-lg text-lilac italic">{entry.institution}</p>
-        {entry.status && (
-          <p class="mono-label mt-2 text-muted">{entry.status}</p>
-        )}
-      </div>
-    ))}
-  </section>
-
-  <section id="contact" class="min-h-screen px-5 py-24 lg:px-11">
-    <h2 class="display text-[16vw] leading-[0.85] lg:text-[8vw]">
-      {strings.contact.title}
-    </h2>
-    <dl class="mt-10 flex flex-col gap-3">
-      <div>
-        <dt class="mono-label text-muted">{strings.contact.labelEmail}</dt>
-        <dd>
-          <a
-            href={`mailto:${portfolio.contact.email}`}
-            class="text-xl text-ink"
-          >
-            {portfolio.contact.email}
-          </a>
-        </dd>
-      </div>
-      <div>
-        <dt class="mono-label text-muted">{strings.contact.labelPhone}</dt>
-        <dd>
-          <a href={portfolio.contact.phoneHref} class="text-xl text-ink">
-            {portfolio.contact.phone}
-          </a>
-        </dd>
-      </div>
-      {portfolio.contact.profiles.map((profile) => (
-        <div>
-          <dt class="mono-label text-muted">{profile.network}</dt>
-          <dd>
-            <a
-              href={profile.url}
-              class="text-xl text-ink"
-              target="_blank"
-              rel="noopener"
-            >
-              {profile.urlDisplay}
-            </a>
-          </dd>
-        </div>
-      ))}
-      <div>
-        <dt class="mono-label text-muted">{strings.contact.labelLocation}</dt>
-        <dd class="text-xl text-ink">
-          {portfolio.contact.location.city},{" "}
-          {portfolio.contact.location.countryName}
-        </dd>
-      </div>
-    </dl>
-  </section>
+  <Hero locale={locale} portfolio={portfolio} ui={strings} />
+  <About portfolio={portfolio} ui={strings} />
+  <Experience portfolio={portfolio} ui={strings} />
+  <WorkIntro portfolio={portfolio} ui={strings} />
+  <FeaturedProject portfolio={portfolio} ui={strings} />
+  <Stack portfolio={portfolio} ui={strings} />
+  <Practices portfolio={portfolio} ui={strings} />
+  <Education portfolio={portfolio} ui={strings} />
+  <Contact locale={locale} portfolio={portfolio} ui={strings} />
 </BaseLayout>

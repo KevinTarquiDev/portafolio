@@ -1,0 +1,123 @@
+---
+import { desktopType, mobileType } from "../lib/fluidType";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+const { about } = portfolio;
+const roleWords = about.role.split(" ");
+---
+
+<section
+  id="about"
+  class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-32"
+>
+  <div
+    class="pointer-events-none absolute -left-[10%] -top-[10%] h-[60vw] w-[60vw] max-h-[800px] max-w-[800px] rounded-full opacity-70"
+    style="background: radial-gradient(circle, color-mix(in srgb, var(--color-purple) 30%, transparent) 0%, transparent 65%);"
+    aria-hidden="true"
+  ></div>
+  <span
+    aria-hidden="true"
+    class="text-outline pointer-events-none absolute left-4 top-0 hidden origin-top-left -translate-y-1/2 [writing-mode:vertical-rl] lg:block"
+    style={`font-size:${desktopType(270)}; --stroke-color: color-mix(in srgb, var(--color-purple-hi) 45%, transparent); --stroke: 1.5px;`}
+  >
+    {about.focus.toUpperCase()}
+  </span>
+
+  <h2 class="mono-label relative z-10 mb-8 text-green lg:hidden">
+    {ui.about.eyebrow}
+  </h2>
+
+  {/* Mobile: rol apilado en dos líneas */}
+  <div class="relative z-10 mb-10 flex flex-col lg:hidden">
+    {roleWords.map((word) => (
+      <span class="display text-ink" style={`font-size:${mobileType(130)}`}>
+        {word}
+      </span>
+    ))}
+    <span
+      class="font-serif ml-10 mt-1.5 text-lilac italic"
+      style={`font-size:${mobileType(52)}`}
+    >
+      {ui.about.connector}
+    </span>
+    <span
+      class="display flex items-end gap-1.5 text-ink"
+      style={`font-size:${mobileType(104)}`}
+    >
+      {about.focus}
+      <span
+        class="mb-1.5 block h-5 w-5 rounded-full bg-green"
+        aria-hidden="true"
+      ></span>
+    </span>
+  </div>
+
+  {/* Desktop: titular de tres líneas */}
+  <div class="relative z-10 mb-16 hidden lg:ml-72 lg:flex lg:flex-col">
+    <span class="display text-ink" style={`font-size:${desktopType(160)}`}>
+      {about.role}
+    </span>
+    <span
+      class="font-serif ml-32 text-lilac italic"
+      style={`font-size:${desktopType(118)}; line-height:0.95;`}
+    >
+      {ui.about.connector}
+    </span>
+    <span
+      class="display flex items-end gap-2.5 text-ink"
+      style={`font-size:${desktopType(160)}`}
+    >
+      {about.focus}
+      <span
+        class="mb-3.5 block h-7 w-7 rounded-full bg-green shadow-[0_0_50px_rgba(95,209,138,0.5)]"
+        aria-hidden="true"
+      ></span>
+    </span>
+  </div>
+
+  <p class="relative z-10 max-w-xl text-xl leading-snug text-body lg:ml-72 lg:max-w-2xl lg:text-[28px]">
+    {about.summaryShort}
+  </p>
+
+  <div
+    class="relative z-10 mt-16 flex flex-col gap-3 lg:mt-24 lg:gap-4"
+    aria-hidden="true"
+  >
+    <div class="flex -rotate-2 items-center gap-6 whitespace-nowrap bg-deep px-6 py-3 lg:gap-9 lg:py-5">
+      {about.focusAreas.map((area) => (
+        <>
+          <span
+            class="text-outline shrink-0"
+            style={`font-size:${desktopType(52)}; --stroke-color: var(--color-lilac); --stroke: 1px;`}
+          >
+            {area}
+          </span>
+          <span class="block h-2.5 w-2.5 shrink-0 rounded-full bg-green" />
+        </>
+      ))}
+    </div>
+    <div class="flex rotate-3 items-center gap-6 whitespace-nowrap bg-purple px-6 py-3 lg:gap-9 lg:py-5">
+      {about.focusAreas
+        .slice()
+        .reverse()
+        .map((area) => (
+          <>
+            <span
+              class="shrink-0 text-ink"
+              style={`font-size:${desktopType(52)}; font-weight:800; font-stretch:75%;`}
+            >
+              {area}
+            </span>
+            <span class="block h-2.5 w-2.5 shrink-0 rounded-full bg-green" />
+          </>
+        ))}
+    </div>
+  </div>
+</section>

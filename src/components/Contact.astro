@@ -1,0 +1,134 @@
+---
+import ContactForm from "./ContactForm.astro";
+import { desktopType, mobileType } from "../lib/fluidType";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { Locale } from "../lib/resume";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  locale: Locale;
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { locale, portfolio, ui } = Astro.props;
+const { contact } = portfolio;
+
+/**
+ * El título ("HABLEMOS" / "LET'S TALK") tiene distinta longitud según
+ * el idioma; se escala en proporción inversa a la cantidad de
+ * caracteres para ocupar un ancho similar en ambos.
+ */
+const REFERENCE_CHARS = 8;
+const titleScale = REFERENCE_CHARS / ui.contact.title.length;
+const desktopTitleSize = desktopType(Math.round(370 * titleScale));
+const mobileTitleSize = mobileType(Math.round(196 * titleScale));
+
+const currentYear = new Date().getFullYear();
+---
+
+<section
+  id="contact"
+  class="relative overflow-hidden px-5 py-24 lg:px-11 lg:py-32"
+  style="background: linear-gradient(180deg, var(--color-bg) 0%, #150b25 55%, var(--color-deep) 100%);"
+>
+  <h2 class="relative z-10 mb-14 flex items-end gap-3 lg:mb-20">
+    <span class="lg:hidden">
+      {ui.contact.titleMobile.map((line) => (
+        <span
+          class="display block text-ink"
+          style={`font-size:${mobileTitleSize}`}
+        >
+          {line}
+        </span>
+      ))}
+    </span>
+    <span
+      class="display hidden text-ink lg:inline"
+      style={`font-size:${desktopTitleSize}`}
+    >
+      {ui.contact.title}
+    </span>
+    <span
+      class="mb-2.5 block h-11 w-11 shrink-0 rounded-full bg-green shadow-[0_0_70px_rgba(95,209,138,0.55)] lg:mb-6 lg:h-24 lg:w-24"
+      aria-hidden="true"
+    ></span>
+  </h2>
+
+  <div class="relative z-10 grid gap-14 lg:grid-cols-2 lg:gap-16">
+    <dl class="flex flex-col">
+      <div class="flex items-center justify-between gap-4 border-t border-ink/10 py-5">
+        <dt class="mono-label text-muted">{ui.contact.labelEmail}</dt>
+        <dd>
+          <a
+            href={`mailto:${contact.email}`}
+            class="text-xl font-medium font-stretch-85% text-ink"
+          >
+            {contact.email}
+          </a>
+        </dd>
+      </div>
+      {contact.profiles.map((profile) => (
+        <div class="flex items-center justify-between gap-4 border-t border-ink/10 py-5">
+          <dt class="mono-label text-muted">{profile.network}</dt>
+          <dd>
+            <a
+              href={profile.url}
+              target="_blank"
+              rel="noopener"
+              class="text-xl font-medium font-stretch-85% text-ink"
+            >
+              {profile.urlDisplay}
+            </a>
+          </dd>
+        </div>
+      ))}
+      <div class="flex items-center justify-between gap-4 border-t border-ink/10 py-5">
+        <dt class="mono-label text-muted">{ui.contact.labelPhone}</dt>
+        <dd>
+          <a
+            href={contact.phoneHref}
+            class="text-xl font-medium font-stretch-85% text-ink"
+          >
+            {contact.phone}
+          </a>
+        </dd>
+      </div>
+      <div class="flex items-center justify-between gap-4 border-t border-ink/10 py-5">
+        <dt class="mono-label text-muted">{ui.contact.labelLocation}</dt>
+        <dd class="text-xl font-medium font-stretch-85% text-ink">
+          {contact.location.city}, {contact.location.countryName}
+        </dd>
+      </div>
+    </dl>
+
+    <ContactForm locale={locale} ui={ui} />
+  </div>
+
+  <footer class="relative z-10 mt-20 flex items-center justify-between gap-4 border-t border-ink/10 pt-8 lg:mt-28">
+    <p class="mono-label text-muted">
+      © {currentYear} {portfolio.hero.displayName}
+    </p>
+    <a
+      href="#top"
+      class="mono-label flex items-center gap-2 text-soft hover:text-ink"
+    >
+      {ui.contact.footerBackToTop}
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M12 20V4M5 11l7-7 7 7"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+    </a>
+  </footer>
+</section>

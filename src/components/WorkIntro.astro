@@ -1,0 +1,98 @@
+---
+import MediaPlaceholder from "./MediaPlaceholder.astro";
+import SignalDot from "./SignalDot.astro";
+import { desktopType, mobileType } from "../lib/fluidType";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+const { items } = portfolio.workIntro;
+---
+
+<section
+  id="work"
+  class="relative flex min-h-screen flex-col justify-center overflow-hidden px-5 py-24 lg:px-11"
+>
+  <p
+    class="font-serif mb-2 text-lilac italic"
+    style={`font-size:${mobileType(84)}`}
+  >
+    <span class="lg:hidden">{ui.work.selected}</span>
+    <span class="hidden lg:inline" style={`font-size:${desktopType(210)}`}>
+      {ui.work.selected}
+    </span>
+  </p>
+
+  <div class="relative z-10 flex items-center">
+    <span
+      class="display text-ink"
+      style={`font-size:${mobileType(210)}`}
+      aria-hidden="true"
+    >
+      W
+    </span>
+    <span
+      class="display hidden text-ink lg:inline"
+      style={`font-size:${desktopType(400)}`}
+      aria-hidden="true"
+    >
+      W
+    </span>
+    <span class="relative mx-1 aspect-square w-[38vw] max-w-[150px] shrink-0 overflow-hidden rounded-full border-2 border-green lg:max-w-[420px]">
+      <MediaPlaceholder
+        label={ui.featured.captionLanding}
+        dimensions="640×400"
+        class="h-full w-full"
+      />
+      <span class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
+        <SignalDot size={22} dotSize={8} />
+      </span>
+    </span>
+    <span
+      class="display text-ink"
+      style={`font-size:${mobileType(210)}`}
+      aria-hidden="true"
+    >
+      RK
+    </span>
+    <span
+      class="display hidden text-ink lg:inline"
+      style={`font-size:${desktopType(400)}`}
+      aria-hidden="true"
+    >
+      RK
+    </span>
+    <span class="sr-only">Work</span>
+  </div>
+
+  <div class="relative z-10 mt-10 flex flex-wrap items-end justify-between gap-6">
+    <span class="mono-label text-green">{ui.work.eyebrow}</span>
+    <ol class="flex gap-9">
+      {items.map((item, index) => (
+        <li class="flex flex-col gap-1.5">
+          <span
+            class:list={[
+              "mono-label",
+              index === 0 ? "text-green" : "text-muted",
+            ]}
+          >
+            {item.index}
+          </span>
+          <span
+            class:list={[
+              "text-lg font-bold font-stretch-80%",
+              index === 0 ? "text-ink" : "text-soft",
+            ]}
+          >
+            {item.name}
+          </span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

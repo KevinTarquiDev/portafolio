@@ -1,0 +1,34 @@
+---
+/**
+ * Placeholder para capturas de proyectos que todavía no existen en el
+ * repositorio (ver IMPLEMENTATION_PLAN.md, riesgo #2). Cuando la
+ * captura real esté disponible en src/assets/projects/, se reemplaza
+ * por <Picture> con avif/webp — nunca se inventa un screenshot.
+ */
+export interface Props {
+  label: string;
+  dimensions: string;
+  class?: string;
+  rounded?: boolean;
+}
+
+const {
+  label,
+  dimensions,
+  class: className = "",
+  rounded = false,
+} = Astro.props;
+---
+
+<div
+  class:list={[
+    "placeholder-hatch flex flex-col items-center justify-center gap-1.5 p-4 text-center",
+    rounded ? "rounded-[10%]" : "",
+    className,
+  ]}
+  role="img"
+  aria-label={`${label} — placeholder, captura pendiente`}
+>
+  <span class="mono-label text-lilac">{label}</span>
+  <span class="mono-label text-muted">Placeholder · {dimensions}</span>
+</div>

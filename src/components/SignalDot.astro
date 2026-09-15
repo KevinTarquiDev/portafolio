@@ -1,0 +1,27 @@
+---
+/**
+ * El punto verde que recorre el sitio: un anillo con un punto luminoso
+ * dentro. Aparece en cada escena marcando el elemento activo.
+ */
+export interface Props {
+  size?: number;
+  dotSize?: number;
+  class?: string;
+}
+
+const { size = 40, dotSize = 12, class: className = "" } = Astro.props;
+---
+
+<span
+  class:list={[
+    "inline-flex shrink-0 items-center justify-center rounded-full border border-green/40",
+    className,
+  ]}
+  style={`width:${size}px;height:${size}px;`}
+  aria-hidden="true"
+>
+  <span
+    class="block rounded-full bg-green"
+    style={`width:${dotSize}px;height:${dotSize}px;box-shadow:0 0 ${dotSize * 2}px color-mix(in srgb, var(--color-green) 50%, transparent);`}
+  ></span>
+</span>

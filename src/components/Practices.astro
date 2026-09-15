@@ -1,0 +1,67 @@
+---
+import SignalDot from "./SignalDot.astro";
+import { desktopType, mobileType } from "../lib/fluidType";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+const { items } = portfolio.practices;
+---
+
+<section
+  id="practices"
+  class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-5 py-24 lg:px-11"
+>
+  <div
+    class="pointer-events-none absolute inset-0 hidden items-center justify-center lg:flex"
+    aria-hidden="true"
+  >
+    <span class="aspect-square w-[54vw] max-w-[780px] rounded-full border border-dashed border-lilac/12"></span>
+    <span class="absolute aspect-square w-[37.5vw] max-w-[540px] rounded-full border border-lilac/12"></span>
+    <span class="absolute aspect-square w-[21vw] max-w-[300px] rounded-full border border-lilac/22"></span>
+  </div>
+
+  <h2 class="relative z-10 mb-12 flex flex-col items-center text-center lg:mb-0">
+    <span
+      class="font-serif text-lilac italic"
+      style={`font-size:${mobileType(60)}`}
+    >
+      <span class="lg:hidden">{ui.practices.titleTop}</span>
+      <span class="hidden lg:inline" style={`font-size:${desktopType(88)}`}>
+        {ui.practices.titleTop}
+      </span>
+    </span>
+    <span class="display text-ink" style={`font-size:${mobileType(110)}`}>
+      <span class="lg:hidden">{ui.practices.titleBottom}</span>
+      <span class="hidden lg:inline" style={`font-size:${desktopType(130)}`}>
+        {ui.practices.titleBottom}
+      </span>
+    </span>
+  </h2>
+
+  <ol class="relative z-10 grid gap-10 lg:absolute lg:inset-11 lg:grid-cols-2 lg:content-between">
+    {items.map((practice) => (
+      <li class="flex items-start gap-4">
+        <SignalDot size={30} dotSize={10} class="mt-1.5 shrink-0" />
+        <div class="flex flex-col gap-1.5">
+          <span class="mono-label text-green">{practice.index}</span>
+          <h3 class="display text-ink" style={`font-size:${mobileType(48)}`}>
+            <span class="lg:hidden">{practice.name}</span>
+            <span
+              class="hidden lg:inline"
+              style={`font-size:${desktopType(72)}`}
+            >
+              {practice.name}
+            </span>
+          </h3>
+          <p class="mono-label text-muted">{practice.keywords.join(" · ")}</p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>

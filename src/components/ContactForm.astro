@@ -1,0 +1,87 @@
+---
+/**
+ * Formulario de contacto. La integración real con Brevo (envío server-side,
+ * honeypot, aria-live y mejora progresiva vía contact-form.ts) se añade en
+ * la Fase 5; aquí queda la estructura semántica y accesible del formulario.
+ */
+import type { Locale } from "../lib/resume";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  locale: Locale;
+  ui: UiStrings;
+}
+
+const { locale, ui } = Astro.props;
+---
+
+<form action="/api/contact/" method="post" class="flex flex-col gap-7">
+  <input type="hidden" name="locale" value={locale} />
+  <div class="grid gap-7 lg:grid-cols-2">
+    <div class="flex flex-col gap-2.5">
+      <label for="contact-name" class="mono-label text-soft">
+        {ui.contact.formName}
+      </label>
+      <input
+        id="contact-name"
+        name="name"
+        type="text"
+        required
+        minlength="2"
+        maxlength="100"
+        autocomplete="name"
+        class="h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
+      />
+    </div>
+    <div class="flex flex-col gap-2.5">
+      <label for="contact-email" class="mono-label text-soft">
+        {ui.contact.formEmail}
+      </label>
+      <input
+        id="contact-email"
+        name="email"
+        type="email"
+        required
+        maxlength="254"
+        autocomplete="email"
+        class="h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
+      />
+    </div>
+  </div>
+  <div class="flex flex-col gap-2.5">
+    <label for="contact-message" class="mono-label text-soft">
+      {ui.contact.formMessage}
+    </label>
+    <textarea
+      id="contact-message"
+      name="message"
+      rows="3"
+      required
+      minlength="10"
+      maxlength="2000"
+      class="min-h-24 resize-none border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
+    ></textarea>
+  </div>
+  <button
+    type="submit"
+    data-cursor="cta"
+    class="mt-2 flex h-14 w-fit items-center gap-3.5 rounded-full bg-green px-7 text-lg font-bold font-stretch-85% text-bg"
+  >
+    {ui.contact.formSubmit}
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 12h16M13 5l7 7-7 7"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+    </svg>
+  </button>
+</form>

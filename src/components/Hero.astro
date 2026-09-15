@@ -1,0 +1,156 @@
+---
+import SignalDot from "./SignalDot.astro";
+import { desktopType, mobileType } from "../lib/fluidType";
+import { getCvHref } from "../lib/cv";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { Locale } from "../lib/resume";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  locale: Locale;
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { locale, portfolio, ui } = Astro.props;
+const { hero } = portfolio;
+
+const [firstWord, ...restWords] = hero.displayName.split(" ");
+const secondWord = restWords.join(" ");
+
+/** Fragmenta la segunda palabra a la mitad para la composición mobile. */
+function splitInHalf(word: string): string[] {
+  if (word.length <= 5) {
+    return [word];
+  }
+  const mid = Math.ceil(word.length / 2);
+  return [word.slice(0, mid), word.slice(mid)];
+}
+
+const secondWordFragments = splitInHalf(secondWord);
+const cvHref = getCvHref(locale);
+---
+
+<section
+  id="top"
+  class="relative flex min-h-screen flex-col justify-end overflow-hidden px-5 pt-24 pb-16 lg:px-11 lg:pb-14"
+>
+  {/* Fondo decorativo: glows y anillos, puramente ornamentales */}
+  <div
+    class="pointer-events-none absolute -right-[10%] top-[5%] h-[70vw] w-[70vw] max-h-[900px] max-w-[900px] rounded-full opacity-70"
+    style="background: radial-gradient(circle, color-mix(in srgb, var(--color-purple) 40%, transparent) 0%, transparent 65%);"
+    aria-hidden="true"
+  ></div>
+  <div
+    class="pointer-events-none absolute right-[8%] top-[8%] hidden aspect-square w-[50vw] max-w-[720px] rounded-full border border-lilac/15 lg:block"
+    aria-hidden="true"
+  ></div>
+  <div
+    class="pointer-events-none absolute right-[14%] top-[20%] hidden aspect-square w-[33vw] max-w-[480px] rounded-full border border-dashed border-lilac/10 lg:block"
+    aria-hidden="true"
+  ></div>
+  <div class="absolute right-[20%] top-[10%] hidden lg:block">
+    <SignalDot size={44} dotSize={14} />
+  </div>
+
+  {/* Mobile: nombre fragmentado en tres bloques */}
+  <h1 class="relative z-10 mb-6 flex flex-col lg:hidden">
+    <span class="display text-ink" style={`font-size:${mobileType(200)}`}>
+      {firstWord}
+    </span>
+    {secondWordFragments.map((fragment, index) => (
+      <span
+        aria-hidden="true"
+        class:list={[
+          "display",
+          index === 0 && secondWordFragments.length > 1
+            ? "text-outline"
+            : "text-purple",
+        ]}
+        style={`font-size:${mobileType(200)}; --stroke-color: var(--color-purple-hi);`}
+      >
+        {fragment}
+      </span>
+    ))}
+    <span class="sr-only">{hero.displayName}</span>
+  </h1>
+
+  {/* Desktop: dos palabras, la segunda en contorno + relleno parcial */}
+  <h1 class="relative z-10 mb-8 hidden lg:mb-14 lg:block">
+    <span
+      class="display -ml-[2.8vw] block text-ink"
+      style={`font-size:${desktopType(540)}`}
+    >
+      {firstWord}
+    </span>
+    <span
+      class="relative -mr-[10vw] block text-right"
+      style={`font-size:${desktopType(540)}`}
+    >
+      <span
+        class="display text-outline"
+        style="--stroke-color: var(--color-purple-hi); --stroke: 2px;"
+      >
+        {secondWord}
+      </span>
+      <span
+        aria-hidden="true"
+        class="display absolute left-0 top-0 w-full text-purple"
+        style="height: 1lh; clip-path: inset(0 0 55% 0);"
+      >
+        {secondWord}
+      </span>
+    </span>
+  </h1>
+
+  <div class="relative z-10 mb-6 flex items-center gap-3 lg:mb-4 lg:gap-5">
+    <span class="mono-label text-green">{hero.headline}</span>
+    <span
+      class="hidden h-px w-24 bg-ink/25 lg:block lg:w-44"
+      aria-hidden="true"
+    ></span>
+    <span class="mono-label text-soft">
+      {hero.location.city} — {hero.location.countryName}
+    </span>
+  </div>
+
+  <p class="font-serif relative z-10 mb-8 max-w-xs text-xl text-body italic lg:mb-12 lg:max-w-sm lg:text-2xl">
+    {hero.tagline}
+  </p>
+
+  <div class="relative z-10 flex flex-wrap items-center gap-6 lg:flex-row-reverse lg:justify-end lg:gap-9">
+    <a
+      href="#work"
+      data-cursor="cta"
+      class="flex h-28 w-28 flex-col items-center justify-center gap-2 rounded-full bg-green text-bg shadow-[0_0_80px_rgba(95,209,138,0.25)] lg:h-[172px] lg:w-[172px] lg:gap-2.5"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M12 4v16M5 13l7 7 7-7"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+      <span class="text-sm font-bold font-stretch-85% lg:text-xl">
+        {ui.hero.ctaWork}
+      </span>
+    </a>
+    <a href={cvHref} download class="flex flex-col gap-2">
+      <span class="flex items-center gap-2.5 text-base font-semibold font-stretch-85% lg:text-xl">
+        {ui.hero.ctaCv}
+        <span class="mono-label rounded border border-ink/30 px-1.5 py-0.5 text-[10px] text-soft">
+          {ui.hero.cvBadge}
+        </span>
+      </span>
+      <span class="block h-px w-full bg-ink"></span>
+    </a>
+  </div>
+</section>
