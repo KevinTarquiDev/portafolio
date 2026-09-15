@@ -156,7 +156,94 @@ function checkPhase6(): void {
 }
 
 checkPhase5();
+/**
+ * Fase 7: canonical y hreflang recíprocos, meta OG/Twitter con URLs
+ * absolutas, JSON-LD parseable, sitemap y robots correctos, y el
+ * og-image presente.
+ */
+function checkPhase7(): void {
+  const htmlPaths = {
+    es: join(STATIC_DIR, "es", "index.html"),
+    en: join(STATIC_DIR, "en", "index.html"),
+  } as const;
+
+  for (const [locale, htmlPath] of Object.entries(htmlPaths)) {
+    const html = readText(htmlPath);
+    if (!html) {
+      continue; // ya reportado por checkPhase2
+    }
+
+    const canonicalMatch = /<link rel="canonical" href="([^"]+)"/.exec(html);
+    if (!canonicalMatch) {
+      fail(`${htmlPath}: falta <link rel="canonical">`);
+    } else if (!canonicalMatch[1].endsWith(`/${locale}/`)) {
+      fail(
+        `${htmlPath}: canonical "${canonicalMatch[1]}" no apunta a /${locale}/`,
+      );
+    }
+
+    for (const hreflang of ["es", "en", "x-default"]) {
+      if (!html.includes(`hreflang="${hreflang}"`)) {
+        fail(`${htmlPath}: falta hreflang="${hreflang}"`);
+      }
+    }
+
+    for (const property of [
+      'property="og:title"',
+      'property="og:description"',
+      'property="og:image"',
+      'property="og:url"',
+      'name="twitter:card"',
+    ]) {
+      if (!html.includes(property)) {
+        fail(`${htmlPath}: falta meta ${property}`);
+      }
+    }
+    if (!html.includes("og:image") || !html.includes("https://")) {
+      fail(`${htmlPath}: og:image debería ser una URL absoluta`);
+    }
+
+    const jsonLdMatch =
+      /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/.exec(
+        html,
+      );
+    if (!jsonLdMatch) {
+      fail(`${htmlPath}: falta el script JSON-LD`);
+    } else {
+      try {
+        const parsed = JSON.parse(jsonLdMatch[1]) as Record<string, unknown>;
+        if (parsed["@type"] !== "Person") {
+          fail(`${htmlPath}: JSON-LD no es @type Person`);
+        }
+      } catch {
+        fail(`${htmlPath}: el JSON-LD no es JSON válido`);
+      }
+    }
+  }
+
+  const sitemap = readText(join(STATIC_DIR, "sitemap.xml"));
+  if (!sitemap) {
+    fail("Falta static/sitemap.xml");
+  } else {
+    if (!sitemap.includes("/es/") || !sitemap.includes("/en/")) {
+      fail("sitemap.xml no incluye /es/ y /en/");
+    }
+  }
+
+  const robots = readText(join(STATIC_DIR, "robots.txt"));
+  if (!robots) {
+    fail("Falta static/robots.txt");
+  } else if (!robots.includes("Sitemap:")) {
+    fail("robots.txt no incluye la línea Sitemap:");
+  }
+
+  if (!existsSync(join(STATIC_DIR, "og-image.png"))) {
+    fail("Falta static/og-image.png");
+  }
+}
+
 checkPhase6();
+checkPhase7();
 
 if (failures.length > 0) {
   console.error("❌ check-build encontró problemas:\n");

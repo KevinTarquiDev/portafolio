@@ -13,15 +13,28 @@ export interface Props {
   ui: UiStrings;
   title: string;
   description: string;
+  noindex?: boolean;
 }
 
-const { locale, portfolio, ui, title, description } = Astro.props;
+const {
+  locale,
+  portfolio,
+  ui,
+  title,
+  description,
+  noindex = false,
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang={locale} class="no-js">
   <head>
-    <Seo title={title} description={description} />
+    <Seo
+      title={title}
+      description={description}
+      locale={locale}
+      noindex={noindex}
+    />
     <link
       rel="preload"
       as="font"

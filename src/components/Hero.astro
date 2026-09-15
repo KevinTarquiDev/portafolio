@@ -1,10 +1,10 @@
 ---
-import SignalDot from "./SignalDot.astro";
-import { desktopType, mobileType } from "../lib/fluidType";
+import type { UiStrings } from "../i18n/ui";
 import { getCvHref } from "../lib/cv";
+import { desktopType, mobileType } from "../lib/fluidType";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import type { Locale } from "../lib/resume";
-import type { UiStrings } from "../i18n/ui";
+import SignalDot from "./SignalDot.astro";
 
 export interface Props {
   locale: Locale;
@@ -79,13 +79,13 @@ const cvHref = getCvHref(locale);
   {/* Desktop: dos palabras, la segunda en contorno + relleno parcial */}
   <h1 class="relative z-10 mb-8 hidden lg:mb-14 lg:block">
     <span
-      class="display -ml-[2.8vw] block text-ink"
+      class="display -ml-[2.8vw] block text-ink uppercase"
       style={`font-size:${desktopType(540)}`}
     >
       {firstWord}
     </span>
     <span
-      class="relative -mr-[10vw] block text-right"
+      class="relative -mr-[10vw] block text-right uppercase"
       style={`font-size:${desktopType(540)}; height: 1lh;`}
     >
       {/*
