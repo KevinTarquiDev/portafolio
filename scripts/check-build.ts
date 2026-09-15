@@ -245,6 +245,65 @@ function checkPhase7(): void {
 checkPhase6();
 checkPhase7();
 
+/**
+ * Fase 8: `vercel.json` existe, es JSON válido y declara las cabeceras
+ * de seguridad y cache esperadas; el cache immutable de `/_astro/*`
+ * ya lo escribe el propio adaptador en config.json. Las cabeceras de
+ * `vercel.json` las aplica la plataforma de Vercel en el despliegue
+ * real (no las fusiona el adaptador en config.json), así que aquí
+ * solo se valida el archivo fuente.
+ */
+function checkPhase8(): void {
+  const vercelJsonRaw = readText("vercel.json");
+  if (!vercelJsonRaw) {
+    fail("Falta vercel.json en la raíz del repo");
+    return;
+  }
+
+  let vercelJson: {
+    headers?: Array<{
+      source: string;
+      headers: Array<{ key: string; value: string }>;
+    }>;
+  };
+  try {
+    vercelJson = JSON.parse(vercelJsonRaw);
+  } catch {
+    fail("vercel.json no es JSON válido");
+    return;
+  }
+
+  const allHeaderKeys = (vercelJson.headers ?? []).flatMap((rule) =>
+    rule.headers.map((h) => h.key),
+  );
+  const requiredKeys = [
+    "X-Content-Type-Options",
+    "Referrer-Policy",
+    "X-Frame-Options",
+    "Permissions-Policy",
+  ];
+  for (const key of requiredKeys) {
+    if (!allHeaderKeys.includes(key)) {
+      fail(`vercel.json no declara la cabecera "${key}"`);
+    }
+  }
+
+  const config = readText(CONFIG_PATH);
+  if (config) {
+    const hasImmutableAstroCache =
+      /"src":\s*"\^\/_astro\/[^"]*"[\s\S]*?"cache-control":\s*"public, max-age=31536000, immutable"/.test(
+        config,
+      );
+    if (!hasImmutableAstroCache) {
+      fail(
+        "config.json no aplica cache-control immutable a /_astro/* (lo genera el adaptador)",
+      );
+    }
+  }
+}
+
+checkPhase8();
+
 if (failures.length > 0) {
   console.error("❌ check-build encontró problemas:\n");
   for (const failure of failures) {

@@ -48,9 +48,9 @@ const { groups } = portfolio.stack;
             <li
               class:list={[
                 "font-extrabold leading-none font-stretch-80%",
-                keywordIndex === 0 ? "text-ink" : "text-outline",
+                keywordIndex === 0 ? "text-ink" : "text-muted",
               ]}
-              style={`font-size:${keywordIndex === 0 ? mobileType(46) : mobileType(34)}; --stroke-color: color-mix(in srgb, var(--color-lilac) 40%, transparent);`}
+              style={`font-size:${keywordIndex === 0 ? mobileType(46) : mobileType(34)};`}
             >
               {keyword}
             </li>

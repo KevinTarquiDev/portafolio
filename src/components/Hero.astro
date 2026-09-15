@@ -55,7 +55,7 @@ const cvHref = getCvHref(locale);
   </div>
 
   {/* Mobile: nombre fragmentado en tres bloques */}
-  <h1 class="relative z-10 mb-6 flex flex-col lg:hidden">
+  <h1 class="relative z-10 mb-6 flex flex-col lg:hidden uppercase">
     <span class="display text-ink" style={`font-size:${mobileType(200)}`}>
       {firstWord}
     </span>
@@ -77,15 +77,15 @@ const cvHref = getCvHref(locale);
   </h1>
 
   {/* Desktop: dos palabras, la segunda en contorno + relleno parcial */}
-  <h1 class="relative z-10 mb-8 hidden lg:mb-14 lg:block">
+  <h1 class="relative z-10 mb-8 hidden lg:mb-14 lg:block uppercase">
     <span
-      class="display -ml-[2.8vw] block text-ink uppercase"
+      class="display -ml-[2.8vw] block text-ink"
       style={`font-size:${desktopType(540)}`}
     >
       {firstWord}
     </span>
     <span
-      class="relative -mr-[10vw] block text-right uppercase"
+      class="relative -mr-[10vw] block text-right"
       style={`font-size:${desktopType(540)}; height: 1lh;`}
     >
       {/*

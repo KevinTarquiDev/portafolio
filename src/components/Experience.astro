@@ -51,9 +51,8 @@ const [startYear, endYearOrCurrent] = activeYearRange
         <span
           class:list={[
             "flex w-16 shrink-0 flex-col items-center justify-center gap-1 text-center",
-            index === 0 ? "text-ink" : "text-outline",
+            index === 0 ? "text-ink" : "text-muted",
           ]}
-          style={`--stroke-color: color-mix(in srgb, var(--color-lilac) 45%, transparent);`}
         >
           <span class="display" style={`font-size:${mobileType(40)}`}>
             {item.startDate.slice(0, 4)}
@@ -66,9 +65,7 @@ const [startYear, endYearOrCurrent] = activeYearRange
             <span class="mono-label">{ui.experience.current}</span>
           )}
         </span>
-        <div
-          class:list={["flex flex-col gap-2", index === 0 ? "" : "opacity-60"]}
-        >
+        <div class="flex flex-col gap-2">
           <span
             class:list={[
               "mono-label",
@@ -77,11 +74,17 @@ const [startYear, endYearOrCurrent] = activeYearRange
           >
             {item.index} / {totalLabel}
           </span>
-          <h3 class="display text-ink" style={`font-size:${mobileType(44)}`}>
+          <h3
+            class:list={["display", index === 0 ? "text-ink" : "text-muted"]}
+            style={`font-size:${mobileType(44)}`}
+          >
             {item.company.short}
           </h3>
           <p
-            class="font-serif text-lilac italic"
+            class:list={[
+              "font-serif italic",
+              index === 0 ? "text-lilac" : "text-muted",
+            ]}
             style={`font-size:${mobileType(26)}`}
           >
             {item.position}
