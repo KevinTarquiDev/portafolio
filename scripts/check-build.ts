@@ -91,7 +91,33 @@ function checkPhase2(): void {
   }
 }
 
+/**
+ * Fase 5: la función serverless que atiende /api/contact/ existe en
+ * el config de Vercel.
+ */
+function checkPhase5(): void {
+  const config = readText(CONFIG_PATH);
+  if (!config) {
+    fail("Falta .vercel/output/config.json");
+    return;
+  }
+
+  const hasContactRoute =
+    /"src":\s*"\^\/api\/contact\/\$"[\s\S]*?"dest":\s*"_render"/.test(config);
+  if (!hasContactRoute) {
+    fail('config.json no enruta "/api/contact/" a una función on-demand');
+  }
+
+  const functionsDir = join(OUTPUT_DIR, "functions");
+  if (!existsSync(functionsDir)) {
+    fail(
+      "Falta .vercel/output/functions: no se generó ninguna función on-demand",
+    );
+  }
+}
+
 checkPhase2();
+checkPhase5();
 
 if (failures.length > 0) {
   console.error("❌ check-build encontró problemas:\n");

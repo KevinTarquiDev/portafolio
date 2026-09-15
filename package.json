@@ -19,8 +19,9 @@
     "prepare": "husky",
     "test": "bun test",
     "build:check": "bun scripts/check-build.ts",
+    "secrets:check": "bun scripts/check-secrets.ts",
     "fix": "bun run format && bun run check",
-    "verify": "bun run format:check && bun run resume:validate && bun run test && bun run check && bun run build && bun run build:check"
+    "verify": "bun run format:check && bun run resume:validate && bun run test && bun run check && bun run build && bun run build:check && bun run secrets:check --allow-missing"
   },
   "dependencies": {
     "@astrojs/vercel": "^11.0.10",

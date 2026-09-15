@@ -71,6 +71,9 @@ export interface UiStrings {
     formErrorMessageLength: string;
     formErrorRateLimited: string;
     footerBackToTop: string;
+    resultSentTitle: string;
+    resultErrorTitle: string;
+    resultCta: string;
   };
   cv: {
     sectionProfile: string;
@@ -163,6 +166,9 @@ const es: UiStrings = {
     formErrorMessageLength: "El mensaje debe tener entre 10 y 2000 caracteres.",
     formErrorRateLimited: "Espera unos segundos antes de volver a intentar.",
     footerBackToTop: "Volver arriba",
+    resultSentTitle: "Mensaje enviado",
+    resultErrorTitle: "No se pudo enviar",
+    resultCta: "Volver al inicio",
   },
   cv: {
     sectionProfile: "Perfil",
@@ -255,6 +261,9 @@ const en: UiStrings = {
     formErrorMessageLength: "Message must be between 10 and 2000 characters.",
     formErrorRateLimited: "Please wait a few seconds and try again.",
     footerBackToTop: "Back to top",
+    resultSentTitle: "Message sent",
+    resultErrorTitle: "Couldn't send it",
+    resultCta: "Back to home",
   },
   cv: {
     sectionProfile: "Profile",

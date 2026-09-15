@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { locales, localePath } from "../../../i18n/config";
+import { ui } from "../../../i18n/ui";
+import { getPortfolio } from "../../../lib/portfolio";
+import type { Locale } from "../../../lib/resume";
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({
+    params: { locale },
+    props: { locale },
+  }));
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const portfolio = getPortfolio(locale);
+const strings = ui[locale];
+const title = `${strings.contact.resultSentTitle} · ${portfolio.hero.displayName}`;
+---
+
+<BaseLayout
+  locale={locale}
+  portfolio={portfolio}
+  ui={strings}
+  title={title}
+  description={strings.contact.formSuccess}
+>
+  <meta name="robots" content="noindex" slot="head" />
+  <section class="flex min-h-screen flex-col items-start justify-center gap-8 px-5 lg:px-11">
+    <h1 class="display text-5xl text-ink lg:text-7xl">
+      {strings.contact.resultSentTitle}
+    </h1>
+    <p class="max-w-md text-xl text-body">{strings.contact.formSuccess}</p>
+    <a href={localePath(locale)} class="text-lg text-green underline">
+      {strings.contact.resultCta}
+    </a>
+  </section>
+</BaseLayout>

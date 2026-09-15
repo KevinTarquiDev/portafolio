@@ -29,6 +29,7 @@ const { locale, portfolio, ui, title, description } = Astro.props;
       href={bricolageLatinWoff2}
       crossorigin="anonymous"
     />
+    <slot name="head" />
   </head>
   <body class="min-h-screen overflow-x-hidden bg-bg text-ink">
     <a
