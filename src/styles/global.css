@@ -180,6 +180,40 @@
   }
 }
 
+/*
+ * Sutura entre escenas.
+ *
+ * Cada escena recorta su contenido en el borde inferior (overflow: hidden),
+ * así que al cruzar el límite ese recorte se lee como una línea horizontal
+ * dura entre secciones. Esta banda disuelve el contenido en el color base
+ * justo antes del corte, de modo que una escena se funde con la siguiente
+ * en lugar de terminar de golpe.
+ *
+ * Solo hace falta abajo: el borde superior de la escena entrante no recorta
+ * nada, porque su contenido empieza dentro.
+ */
+[data-scene-label] {
+  position: relative;
+  /* Cada escena se aísla para que su sutura no pinte sobre las vecinas. */
+  isolation: isolate;
+}
+
+[data-scene-label]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 7;
+  height: var(--seam, calc(var(--u) * 96));
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    var(--seam-color, var(--color-bg)) 0%,
+    color-mix(in srgb, var(--seam-color, var(--color-bg)) 72%, transparent) 42%,
+    transparent 100%
+  );
+}
+
 /* Resplandor radial decorativo (morado por defecto). */
 @utility glow {
   position: absolute;

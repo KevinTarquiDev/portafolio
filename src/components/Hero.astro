@@ -98,6 +98,8 @@ const cvHref = getCvHref(locale);
   /* ---------- Mobile · artboard M01 (390×844) ---------- */
   .hero {
     height: calc(var(--u) * 844);
+    /* La sutura inferior se funde con el tinte con el que abre Sobre mí. */
+    --seam-color: color-mix(in srgb, var(--color-purple) 6%, var(--color-bg));
     background: linear-gradient(
       180deg,
       transparent 72%,
@@ -280,6 +282,11 @@ const cvHref = getCvHref(locale);
   @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
     .hero {
       height: 100svh;
+      --seam-color: color-mix(
+        in srgb,
+        var(--color-purple) 11%,
+        var(--color-bg)
+      );
     }
 
     .stage {

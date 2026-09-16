@@ -70,6 +70,10 @@ const entries = portfolio.education.items.map((entry) => ({
 
 <style>
   /* ---------- Mobile · parte superior del artboard M06 ---------- */
+  .education {
+    --seam-color: color-mix(in srgb, var(--color-purple) 6%, var(--color-bg));
+  }
+
   .entry {
     height: calc(var(--u) * 720);
     background: linear-gradient(

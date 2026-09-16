@@ -76,9 +76,11 @@ const { items } = portfolio.workIntro;
 </section>
 
 <style>
-  /* ---------- Mobile · parte superior del artboard M04 ---------- */
+  /* ---------- Mobile · artboard M04 ---------- */
   .work {
-    height: calc(var(--u) * 520);
+    height: calc(var(--u) * 844);
+    /* El relevo lo hace la O al cubrir el viewport: sin banda de sutura. */
+    --seam: 0px;
   }
 
   .stage {
@@ -104,11 +106,17 @@ const { items } = portfolio.workIntro;
     margin: 0;
   }
 
+  /*
+   * La composición se ancla al centro del escenario en vez de a una
+   * coordenada fija: con motion el escenario mide un viewport completo, y
+   * la O solo puede cubrirlo por completo si parte de su centro.
+   */
   .selected {
     position: absolute;
     z-index: 5;
     left: calc(var(--ux) * 18);
-    top: calc(var(--u) * 122);
+    top: 50%;
+    margin-top: calc(var(--u) * -252);
     font-size: calc(var(--u) * 84);
     line-height: 1;
     color: var(--color-lilac);
@@ -119,7 +127,8 @@ const { items } = portfolio.workIntro;
     z-index: 3;
     left: 0;
     right: 0;
-    top: calc(var(--u) * 224);
+    top: 50%;
+    translate: 0 -50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -160,9 +169,10 @@ const { items } = portfolio.workIntro;
   @media (prefers-reduced-motion: no-preference) {
     :global(html.motion) .work {
       z-index: 2;
-      overflow-x: clip;
-      overflow-y: visible;
+      height: 100svh;
+      overflow: hidden;
       background-color: var(--color-bg);
+      /* La escena queda fijada sobre EcuStock: no debe interceptar clics. */
       pointer-events: none;
     }
   }
@@ -172,7 +182,28 @@ const { items } = portfolio.workIntro;
   }
 
   .projects {
-    display: none;
+    position: absolute;
+    z-index: 5;
+    left: calc(var(--ux) * 20);
+    bottom: calc(var(--u) * 120);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 14);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .projects li {
+    display: flex;
+    align-items: baseline;
+    gap: calc(var(--u) * 14);
+  }
+
+  .project-name {
+    font-size: calc(var(--u) * 24);
+    font-weight: 700;
+    font-stretch: 80%;
   }
 
   /* ---------- Desktop · artboard 04 (1440×900) ---------- */
@@ -203,6 +234,7 @@ const { items } = portfolio.workIntro;
     .selected {
       left: calc(var(--ux) * 110);
       top: calc(var(--u) * 96);
+      margin-top: 0;
       font-size: calc(var(--u) * 210);
     }
 
@@ -210,6 +242,7 @@ const { items } = portfolio.workIntro;
       left: 0;
       right: 0;
       top: calc(var(--u) * 268);
+      translate: none;
       justify-content: center;
       gap: calc(var(--u) * 10);
       font-size: calc(var(--u) * 580);
@@ -241,27 +274,21 @@ const { items } = portfolio.workIntro;
     }
 
     .projects {
-      position: absolute;
-      z-index: 5;
+      left: auto;
       right: calc(var(--ux) * 210);
       bottom: calc(var(--u) * 120);
-      display: flex;
+      flex-direction: row;
       gap: calc(var(--u) * 48);
-      margin: 0;
-      padding: 0;
-      list-style: none;
     }
 
     .projects li {
-      display: flex;
       flex-direction: column;
+      align-items: flex-start;
       gap: 6px;
     }
 
     .project-name {
       font-size: calc(var(--u) * 28);
-      font-weight: 700;
-      font-stretch: 80%;
     }
   }
 </style>

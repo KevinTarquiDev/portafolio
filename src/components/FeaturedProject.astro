@@ -49,7 +49,7 @@ const backgroundWords = project.keywords
 <section id="featured" data-scene-label={ui.featured.eyebrow} class="featured">
   <div class="track" data-motion="featured-track">
     <div class="scene panel panel-intro">
-      <div class="stage" data-motion="featured-intro">
+      <div class="stage">
         <div class="glow intro-glow" aria-hidden="true"></div>
         <span
           class="display text-outline index"
@@ -168,13 +168,9 @@ const backgroundWords = project.keywords
   .featured {
     position: relative;
     z-index: 1;
+    /* El Stack abre con este tinte, así que la sutura termina en él. */
+    --seam-color: color-mix(in srgb, var(--color-purple) 22%, var(--color-bg));
     overflow: hidden;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html.motion) .featured {
-      margin-top: calc(var(--u) * -72);
-    }
   }
 
   .panel-intro {
@@ -182,11 +178,11 @@ const backgroundWords = project.keywords
   }
 
   .panel-media {
-    height: calc(var(--u) * 480);
+    height: calc(var(--u) * 640);
     background: linear-gradient(
       180deg,
-      transparent 58%,
-      color-mix(in srgb, var(--color-purple) 10%, var(--color-bg)) 100%
+      transparent 52%,
+      color-mix(in srgb, var(--color-purple) 22%, var(--color-bg)) 100%
     );
   }
 
@@ -326,7 +322,7 @@ const backgroundWords = project.keywords
     font-size: calc(var(--u) * 140);
     white-space: nowrap;
     --stroke: 1px;
-    --stroke-color: color-mix(in srgb, var(--color-lilac) 14%, transparent);
+    --stroke-color: color-mix(in srgb, var(--color-lilac) 9%, transparent);
   }
 
   .word:nth-child(2) {
@@ -348,31 +344,45 @@ const backgroundWords = project.keywords
     object-fit: cover;
   }
 
+  /*
+   * En 390px una captura de escritorio solo se lee si ocupa casi todo el
+   * ancho: las tres van al máximo que permite el lienzo y solapan únicamente
+   * por las esquinas, no sobre el contenido útil de la de debajo.
+   */
+  .media :global(.media-shot) {
+    border-radius: calc(var(--u) * 8);
+  }
+
   .media[data-media="admin"] {
     z-index: 2;
-    left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 50);
-    width: calc(var(--u) * 330);
-    height: calc(var(--u) * 206);
+    left: calc(var(--ux) * 10);
+    top: calc(var(--u) * 36);
+    width: calc(var(--u) * 372);
+    height: calc(var(--u) * 233);
     box-shadow: 0 30px 80px rgb(0 0 0 / 0.55);
   }
 
   .media[data-media="landing"] {
     z-index: 3;
-    left: calc(var(--ux) * 52);
-    top: calc(var(--u) * 220);
-    width: calc(var(--u) * 260);
-    height: calc(var(--u) * 163);
+    left: calc(var(--ux) * 10);
+    top: calc(var(--u) * 320);
+    width: calc(var(--u) * 300);
+    height: calc(var(--u) * 188);
     box-shadow: 0 30px 80px rgb(0 0 0 / 0.6);
   }
 
   .media[data-media="mobile"] {
     z-index: 4;
-    left: calc(var(--ux) * 240);
-    top: calc(var(--u) * 160);
-    width: calc(var(--u) * 130);
-    height: calc(var(--u) * 231);
+    left: calc(var(--ux) * 224);
+    top: calc(var(--u) * 210);
+    width: calc(var(--u) * 152);
+    height: calc(var(--u) * 328);
     box-shadow: 0 30px 80px rgb(0 0 0 / 0.6);
+  }
+
+  .media[data-media="admin"] :global(.media-shot),
+  .media[data-media="landing"] :global(.media-shot) {
+    border: 1px solid color-mix(in srgb, var(--color-lilac) 16%, transparent);
   }
 
   .media[data-media="mobile"] :global(.media-shot) {
@@ -384,20 +394,34 @@ const backgroundWords = project.keywords
     position: absolute;
     z-index: 4;
     left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 410);
+    top: calc(var(--u) * 566);
     margin: 0;
     font-size: 10px;
   }
 
   /* ---------- Desktop · artboard 05 (2 viewports de 1440×900) ---------- */
   @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
-    :global(html.motion) .featured {
-      margin-top: 0;
+    /*
+     * En desktop el Stack tapa su borde superior con .mask en color base,
+     * de modo que ahí la sutura tiene que fundirse con el fondo y no con
+     * el morado que declara el degradado de la sección.
+     */
+    .featured {
+      --seam-color: var(--color-bg);
     }
 
     .panel-intro,
     .panel-media {
       height: 100svh;
+    }
+
+    .media :global(.media-shot) {
+      border-radius: 0;
+    }
+
+    .media[data-media="admin"] :global(.media-shot),
+    .media[data-media="landing"] :global(.media-shot) {
+      border: 0;
     }
 
     .stage {
@@ -556,6 +580,10 @@ const backgroundWords = project.keywords
     .word {
       font-size: calc(var(--u) * 200);
       --stroke: 1.2px;
+    }
+
+    .word {
+      --stroke-color: color-mix(in srgb, var(--color-lilac) 14%, transparent);
     }
 
     .word:nth-child(1) {

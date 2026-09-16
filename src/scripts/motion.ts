@@ -83,6 +83,7 @@ async function initMotion(): Promise<void> {
     }
     educationScene(kit, desk);
     contactScene(kit, desk);
+    cleanups.push(sceneHandoffs(kit, desk));
 
     return () => {
       for (const cleanup of cleanups) {
@@ -254,6 +255,127 @@ function splitChars(element: HTMLElement): {
     revert: () => {
       element.textContent = original;
     },
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Enlace entre escenas                                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Pares con coreografía propia, que no deben recibir el encadenado
+ * genérico: la O de Trabajo abre EcuStock (workScene) y EcuStock cede el
+ * paso al Stack (featuredToStack). El Hero sí lo recibe: heroToAbout solo
+ * desplaza sus piezas de fondo y el titular seguía llegando entero al
+ * borde de la sección.
+ */
+const HANDOFF_SKIP: ReadonlySet<SceneId> = new Set(["work", "featured"]);
+
+/** Progreso de entrada y de salida de una escena, de 0 a 1. */
+interface HandoffState {
+  enter: number;
+  exit: number;
+}
+
+/**
+ * Encadena cada escena con la siguiente. Mientras la entrante sube por el
+ * viewport, la saliente se eleva y se apaga, de modo que en el momento del
+ * relevo ya no queda contenido que el borde de la sección pueda recortar:
+ * es lo que evita que el cambio se lea como un corte horizontal y lo que
+ * hace que las escenas se perciban como un mismo scroll y no como bloques
+ * independientes.
+ *
+ * Una escena intermedia entra y sale, así que ambos progresos se combinan
+ * en un único punto de escritura: dos tweens sobre la misma opacidad se
+ * pisarían al cruzarse.
+ */
+function sceneHandoffs({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
+  // unit() mide con una sonda en el DOM: se cachea y solo se revisa cuando
+  // ScrollTrigger recalcula, no en cada scroll.
+  let shift = unit();
+  const measure = () => {
+    shift = unit();
+  };
+  ScrollTrigger.addEventListener("refresh", measure);
+
+  const enterShift = () => (desk ? 56 : 40) * shift;
+  const exitShift = () => (desk ? -72 : -52) * shift;
+
+  const states = new Map<SceneId, HandoffState>();
+  const stages = new Map<SceneId, HTMLElement[]>();
+
+  for (const id of SCENE_IDS) {
+    const scene = section(id);
+    if (!scene) {
+      continue;
+    }
+    stages.set(id, [...scene.querySelectorAll<HTMLElement>(".stage")]);
+    // Sin transición propia una escena ya está presente: enter = 1.
+    states.set(id, { enter: 1, exit: 0 });
+  }
+
+  const apply = (id: SceneId) => {
+    const state = states.get(id);
+    const targets = stages.get(id);
+    if (!state || !targets || targets.length === 0) {
+      return;
+    }
+    gsap.set(targets, {
+      y: (1 - state.enter) * enterShift() + state.exit * exitShift(),
+      opacity: (0.25 + 0.75 * state.enter) * (1 - 0.88 * state.exit),
+    });
+  };
+
+  SCENE_IDS.forEach((id, index) => {
+    const nextId = SCENE_IDS[index + 1];
+    if (!nextId || HANDOFF_SKIP.has(id)) {
+      return;
+    }
+    const outgoing = section(id);
+    const incoming = section(nextId);
+    const outgoingState = states.get(id);
+    const incomingState = states.get(nextId);
+    if (!outgoing || !incoming || !outgoingState || !incomingState) {
+      return;
+    }
+
+    incomingState.enter = 0;
+    apply(nextId);
+
+    gsap.to(outgoingState, {
+      exit: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: incoming,
+        start: "top 85%",
+        end: "top top",
+        scrub: 0.7,
+        invalidateOnRefresh: true,
+      },
+      onUpdate: () => apply(id),
+    });
+
+    gsap.to(incomingState, {
+      enter: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: incoming,
+        start: "top bottom",
+        end: "top 35%",
+        scrub: 0.7,
+        invalidateOnRefresh: true,
+      },
+      onUpdate: () => apply(nextId),
+    });
+  });
+
+  return () => {
+    ScrollTrigger.removeEventListener("refresh", measure);
+    for (const targets of stages.values()) {
+      if (targets.length > 0) {
+        gsap.set(targets, { clearProps: "transform,opacity" });
+      }
+    }
   };
 }
 
@@ -577,10 +699,6 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
   const vertical = motionEl(about, "about-vertical");
   const bandBack = motionEl(about, "about-band-back");
   const bandFront = motionEl(about, "about-band-front");
-  const bands = [bandBack, bandFront].filter(
-    (element): element is HTMLElement => element !== null,
-  );
-
   if (desk) {
     const timeline = gsap.timeline({
       defaults: { ease: "none" },
@@ -607,37 +725,32 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
         0,
       );
     }
+    // Las aspas ya giran solas (marquesina CSS): el scroll solo las monta
+    // en su sitio y añade un contrapeso lateral muy leve.
     if (bandBack) {
       timeline.fromTo(
         bandBack,
-        { x: () => -60 * unit(), y: () => 45 * unit(), opacity: 0.25 },
+        { x: () => -46 * unit(), y: () => 96 * unit(), opacity: 0 },
         {
-          x: () => 180 * unit(),
+          x: () => 46 * unit(),
           y: 0,
           opacity: 1,
-          duration: 0.62,
+          duration: 0.66,
         },
-        0.24,
+        0.2,
       );
     }
     if (bandFront) {
       timeline.fromTo(
         bandFront,
-        { x: () => 80 * unit(), y: () => 70 * unit(), opacity: 0.2 },
+        { x: () => 46 * unit(), y: () => 128 * unit(), opacity: 0 },
         {
-          x: () => -300 * unit(),
+          x: () => -46 * unit(),
           y: 0,
           opacity: 1,
-          duration: 0.62,
+          duration: 0.66,
         },
-        0.24,
-      );
-    }
-    if (bands.length > 0) {
-      timeline.to(
-        bands,
-        { y: () => 20 * unit(), opacity: 0.55, duration: 0.18 },
-        0.82,
+        0.2,
       );
     }
     return;
@@ -670,34 +783,27 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
   if (bandBack) {
     timeline.fromTo(
       bandBack,
-      { x: () => -35 * unit(), y: () => 95 * unit(), opacity: 0 },
+      { x: () => -28 * unit(), y: () => 90 * unit(), opacity: 0 },
       {
-        x: () => 70 * unit(),
+        x: () => 28 * unit(),
         y: 0,
         opacity: 1,
-        duration: 0.5,
+        duration: 0.56,
       },
-      0.3,
+      0.26,
     );
   }
   if (bandFront) {
     timeline.fromTo(
       bandFront,
-      { x: () => 50 * unit(), y: () => 110 * unit(), opacity: 0 },
+      { x: () => 28 * unit(), y: () => 116 * unit(), opacity: 0 },
       {
-        x: () => -190 * unit(),
+        x: () => -28 * unit(),
         y: 0,
         opacity: 1,
-        duration: 0.5,
+        duration: 0.56,
       },
-      0.3,
-    );
-  }
-  if (bands.length > 0) {
-    timeline.to(
-      bands,
-      { y: () => 18 * unit(), opacity: 0.52, duration: 0.18 },
-      0.82,
+      0.26,
     );
   }
 }
@@ -1034,70 +1140,16 @@ function experienceMobile({ gsap, ScrollTrigger }: Kit): Cleanup {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Desktop: la O de WORK es una ventana que escala con scrub hasta cubrir
- * el viewport y da paso a EcuStock; "Selected" sale hacia arriba.
+ * La O de WORK es una ventana que escala con scrub hasta cubrir el viewport
+ * y da paso a EcuStock; "Selected" sale hacia arriba y las letras se
+ * separan a los lados. Mobile y desktop comparten el mecanismo (escena
+ * fijada sin espaciado, EcuStock entrando por debajo): solo cambian la
+ * composición y los recorridos.
  */
 function workScene({ gsap }: Kit, desk: boolean): void {
   const work = section("work");
   const window_ = work ? motionEl(work, "work-window") : null;
   if (!work || !window_) {
-    return;
-  }
-
-  if (!desk) {
-    const featured = section("featured");
-    const featuredIntro = featured
-      ? motionEl(featured, "featured-intro")
-      : null;
-    const media = window_.querySelector<HTMLElement>(".window-media");
-    const timeline = gsap.timeline({
-      defaults: { ease: "none" },
-      scrollTrigger: {
-        trigger: work,
-        start: "top 45%",
-        end: "bottom 10%",
-        scrub: 0.65,
-        invalidateOnRefresh: true,
-      },
-    });
-
-    timeline
-      .fromTo(window_, { scale: 0.84 }, { scale: 1, duration: 0.24 }, 0)
-      .to(window_, { scale: 2.9, duration: 0.7, ease: "power2.in" }, 0.24)
-      .to(
-        [motionEl(work, "work-selected"), ...motionEls(work, "work-meta")],
-        { y: () => -28 * unit(), opacity: 0, duration: 0.3 },
-        0.52,
-      )
-      .to(
-        motionEl(work, "work-w"),
-        { xPercent: -55, opacity: 0, duration: 0.32 },
-        0.58,
-      )
-      .to(
-        motionEl(work, "work-rk"),
-        { xPercent: 55, opacity: 0, duration: 0.32 },
-        0.58,
-      )
-      .to(motionEl(work, "work-glow"), { opacity: 0.2, duration: 0.25 }, 0.7)
-      .to(work, { backgroundColor: "rgba(11, 8, 18, 0)", duration: 0.22 }, 0.76)
-      .to(window_, { opacity: 0, duration: 0.16 }, 0.84);
-
-    if (media) {
-      timeline.to(
-        media,
-        { filter: "brightness(0.45) saturate(0.7)", duration: 0.28 },
-        0.62,
-      );
-    }
-    if (featuredIntro) {
-      timeline.fromTo(
-        featuredIntro,
-        { y: () => 46 * unit(), opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.38 },
-        0.48,
-      );
-    }
     return;
   }
 
@@ -1133,6 +1185,8 @@ function workScene({ gsap }: Kit, desk: boolean): void {
     },
   });
 
+  const apart = desk ? 80 : 95;
+
   timeline
     .to(
       motionEl(work, "work-selected"),
@@ -1143,12 +1197,12 @@ function workScene({ gsap }: Kit, desk: boolean): void {
     .to(motionEl(work, "work-window-dot"), { opacity: 0, duration: 0.15 }, 0)
     .to(
       motionEl(work, "work-w"),
-      { xPercent: -80, opacity: 0, duration: 0.6 },
+      { xPercent: -apart, opacity: 0, duration: 0.6 },
       0.1,
     )
     .to(
       motionEl(work, "work-rk"),
-      { xPercent: 80, opacity: 0, duration: 0.6 },
+      { xPercent: apart, opacity: 0, duration: 0.6 },
       0.1,
     )
     .to(window_, { scale: coverScale, duration: 0.9, ease: "power2.in" }, 0.05)
@@ -1290,9 +1344,12 @@ function featuredToStack(gsap: Gsap, featured: HTMLElement): void {
     ...motionEls(featured, "featured-media"),
   ].filter((element): element is HTMLElement => element !== null);
   const stackGlow = stack.querySelector<HTMLElement>(".stack-glow");
+  // Arranca con el Stack ya asomando: en mobile las capturas están todavía
+  // en pantalla cuando su borde superior cruza el viewport, y apagarlas
+  // desde ahí las dejaba ilegibles la mitad del recorrido.
   const transition = {
     trigger: stack,
-    start: "top bottom",
+    start: "top 78%",
     end: "top 28%",
     scrub: 0.7,
     invalidateOnRefresh: true,
@@ -1301,7 +1358,7 @@ function featuredToStack(gsap: Gsap, featured: HTMLElement): void {
   if (outgoing.length > 0) {
     gsap.to(outgoing, {
       y: () => -55 * unit(),
-      opacity: 0.38,
+      opacity: 0.45,
       ease: "none",
       scrollTrigger: transition,
     });

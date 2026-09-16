@@ -14,13 +14,17 @@ const { about } = portfolio;
 const roleWords = about.role.split(" ");
 const summaryWords = about.summaryShort.split(" ");
 
-/** Las bandas se repiten para cubrir su ancho (más que el viewport). */
-const bandBack = [...about.focusAreas, ...about.focusAreas];
-const bandFront = [
-  ...about.focusAreas.slice(3),
-  ...about.focusAreas,
-  ...about.focusAreas,
+/**
+ * Cada banda es una marquesina: dos grupos idénticos que se desplazan
+ * media pista, de modo que el bucle no tiene salto. La banda frontal
+ * arranca el listado en otro punto para que ambas nunca coincidan.
+ */
+const bandBackItems = about.focusAreas;
+const bandFrontItems = [
+  ...about.focusAreas.slice(2),
+  ...about.focusAreas.slice(0, 2),
 ];
+const bandGroups = [0, 1];
 ---
 
 <section id="about" data-scene-label={ui.about.eyebrow} class="scene about">
@@ -66,24 +70,36 @@ const bandFront = [
       aria-hidden="true"
       data-motion="about-band-back"
     >
-      {bandBack.map((area) => (
-        <>
-          <span class="display band-text">{area}</span>
-          <span class="band-dot"></span>
-        </>
-      ))}
+      <div class="band-track">
+        {bandGroups.map(() => (
+          <div class="band-group">
+            {bandBackItems.map((area) => (
+              <>
+                <span class="display band-text">{area}</span>
+                <span class="band-dot"></span>
+              </>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
     <div
       class="band band-front"
       aria-hidden="true"
       data-motion="about-band-front"
     >
-      {bandFront.map((area) => (
-        <>
-          <span class="display band-text">{area}</span>
-          <span class="band-dot"></span>
-        </>
-      ))}
+      <div class="band-track">
+        {bandGroups.map(() => (
+          <div class="band-group">
+            {bandFrontItems.map((area) => (
+              <>
+                <span class="display band-text">{area}</span>
+                <span class="band-dot"></span>
+              </>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 </section>
@@ -92,6 +108,7 @@ const bandFront = [
   /* ---------- Mobile · artboard M02 (390×844) ---------- */
   .about {
     height: calc(var(--u) * 980);
+    --seam-color: color-mix(in srgb, var(--color-purple) 4%, var(--color-bg));
     overflow: clip;
     background: linear-gradient(
       180deg,
@@ -185,38 +202,69 @@ const bandFront = [
     color: var(--color-ink);
   }
 
+  /*
+   * Aspas: dos barras giradas en sentidos opuestos que se cruzan por el
+   * centro y se separan en los extremos. El contenido de cada una es una
+   * marquesina continua (dos grupos idénticos que recorren media pista),
+   * de modo que siguen girando aunque el scroll esté parado.
+   */
   .band {
     position: absolute;
     display: flex;
     align-items: center;
-    white-space: nowrap;
+    overflow: hidden;
     box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .band-track {
+    display: flex;
+    width: max-content;
+    animation: band-marquee var(--band-duration) linear infinite;
+  }
+
+  .band-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: calc(var(--u) * var(--band-gap));
+    padding-right: calc(var(--u) * var(--band-gap));
+  }
+
+  @keyframes band-marquee {
+    to {
+      translate: -50% 0;
+    }
   }
 
   .band-back {
     z-index: 3;
-    left: calc(var(--ux) * -60);
-    top: calc(var(--u) * 770);
-    width: calc(var(--u) * 700);
+    left: calc(var(--ux) * -80);
+    top: calc(var(--u) * 762);
+    width: calc(var(--ux) * 560);
     height: calc(var(--u) * 56);
-    gap: calc(var(--u) * 20);
-    padding: 0 calc(var(--u) * 20);
     background: var(--color-deep);
-    rotate: 4deg;
+    rotate: 9deg;
     --band-size: 34;
+    --band-gap: 20;
+    --band-duration: 46s;
+  }
+
+  .band-back .band-track {
+    animation-direction: reverse;
   }
 
   .band-front {
     z-index: 4;
-    left: calc(var(--ux) * -40);
+    left: calc(var(--ux) * -80);
     top: calc(var(--u) * 760);
-    width: calc(var(--u) * 700);
+    width: calc(var(--ux) * 560);
     height: calc(var(--u) * 60);
-    gap: calc(var(--u) * 20);
-    padding: 0 calc(var(--u) * 20);
     background: var(--color-purple);
-    rotate: -5deg;
+    rotate: -9deg;
     --band-size: 36;
+    --band-gap: 20;
+    --band-duration: 34s;
   }
 
   .band-text {
@@ -268,12 +316,17 @@ const bandFront = [
     .about,
     :global(html.motion) .about {
       height: 100svh;
+      /*
+       * El resplandor superior nace dentro de la escena, no en su borde:
+       * si arranca a plena intensidad en el 0% se ve una línea morada
+       * justo donde termina el Hero.
+       */
       background:
         radial-gradient(
-          ellipse 48% 28% at 75% 0%,
+          ellipse 50% 36% at 76% 24%,
           color-mix(in srgb, var(--color-purple) 30%, var(--color-bg)) 0%,
-          color-mix(in srgb, var(--color-purple) 26%, var(--color-bg)) 30%,
-          color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 68%,
+          color-mix(in srgb, var(--color-purple) 22%, var(--color-bg)) 34%,
+          color-mix(in srgb, var(--color-purple) 5%, var(--color-bg)) 72%,
           transparent 100%
         ),
         linear-gradient(
@@ -358,25 +411,23 @@ const bandFront = [
     }
 
     .band-back {
-      left: calc(var(--ux) * -200);
-      top: calc(var(--u) * 830);
-      width: calc(var(--ux) * 2000);
+      left: calc(var(--ux) * -220);
+      top: calc(var(--u) * 762);
+      width: calc(var(--ux) * 1880);
       height: calc(var(--u) * 86);
-      gap: calc(var(--u) * 36);
-      padding: 0 calc(var(--u) * 40);
-      rotate: 3deg;
+      rotate: 4deg;
       --band-size: 52;
+      --band-gap: 36;
     }
 
     .band-front {
-      left: calc(var(--ux) * -120);
-      top: calc(var(--u) * 820);
-      width: calc(var(--ux) * 2000);
+      left: calc(var(--ux) * -220);
+      top: calc(var(--u) * 762);
+      width: calc(var(--ux) * 1880);
       height: calc(var(--u) * 86);
-      gap: calc(var(--u) * 36);
-      padding: 0 calc(var(--u) * 40);
       rotate: -4deg;
       --band-size: 52;
+      --band-gap: 36;
     }
 
     .band-dot {
