@@ -91,7 +91,15 @@ const bandFront = [
 <style>
   /* ---------- Mobile · artboard M02 (390×844) ---------- */
   .about {
-    height: calc(var(--u) * 844);
+    height: calc(var(--u) * 980);
+    overflow: clip;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-purple) 3%, var(--color-bg)) 0%,
+      transparent 22%,
+      transparent 78%,
+      color-mix(in srgb, var(--color-purple) 4%, var(--color-bg)) 100%
+    );
   }
 
   .stage {
@@ -169,10 +177,10 @@ const bandFront = [
     position: absolute;
     z-index: 4;
     left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 540);
+    top: calc(var(--u) * 524);
     width: calc(var(--u) * 350);
     margin: 0;
-    font-size: calc(var(--u) * 21);
+    font-size: calc(var(--u) * 20);
     line-height: 1.3;
     color: var(--color-ink);
   }
@@ -188,7 +196,7 @@ const bandFront = [
   .band-back {
     z-index: 3;
     left: calc(var(--ux) * -60);
-    top: calc(var(--u) * 740);
+    top: calc(var(--u) * 770);
     width: calc(var(--u) * 700);
     height: calc(var(--u) * 56);
     gap: calc(var(--u) * 20);
@@ -201,7 +209,7 @@ const bandFront = [
   .band-front {
     z-index: 4;
     left: calc(var(--ux) * -40);
-    top: calc(var(--u) * 732);
+    top: calc(var(--u) * 760);
     width: calc(var(--u) * 700);
     height: calc(var(--u) * 60);
     gap: calc(var(--u) * 20);
@@ -243,14 +251,46 @@ const bandFront = [
     box-shadow: 0 0 16px color-mix(in srgb, var(--color-green) 50%, transparent);
   }
 
-  /* ---------- Desktop · artboard 02 (1440×900) ---------- */
-  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
-    .about {
-      height: 100svh;
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.motion) .about {
+      height: max(calc(var(--u) * 1320), 160svh);
     }
 
-    .stage {
+    :global(html.motion) .about .stage {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+    }
+  }
+
+  /* ---------- Desktop · artboard 02 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .about,
+    :global(html.motion) .about {
+      height: 100svh;
+      background:
+        radial-gradient(
+          ellipse 48% 28% at 75% 0%,
+          color-mix(in srgb, var(--color-purple) 30%, var(--color-bg)) 0%,
+          color-mix(in srgb, var(--color-purple) 26%, var(--color-bg)) 30%,
+          color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 68%,
+          transparent 100%
+        ),
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--color-purple) 3%, var(--color-bg)) 0%,
+          transparent 22%,
+          transparent 78%,
+          color-mix(in srgb, var(--color-purple) 4%, var(--color-bg)) 100%
+        );
+    }
+
+    .stage,
+    :global(html.motion) .about .stage {
+      position: absolute;
+      top: 50%;
       height: calc(var(--u) * 900);
+      translate: 0 -50%;
     }
 
     .about-glow {
@@ -311,15 +351,15 @@ const bandFront = [
     .summary {
       z-index: 5;
       left: calc(var(--ux) * 360);
-      top: calc(var(--u) * 600);
-      width: calc(var(--u) * 600);
-      font-size: calc(var(--u) * 28);
+      top: calc(var(--u) * 584);
+      width: calc(var(--u) * 650);
+      font-size: calc(var(--u) * 27);
       letter-spacing: -0.01em;
     }
 
     .band-back {
       left: calc(var(--ux) * -200);
-      top: calc(var(--u) * 790);
+      top: calc(var(--u) * 830);
       width: calc(var(--ux) * 2000);
       height: calc(var(--u) * 86);
       gap: calc(var(--u) * 36);
@@ -330,7 +370,7 @@ const bandFront = [
 
     .band-front {
       left: calc(var(--ux) * -120);
-      top: calc(var(--u) * 780);
+      top: calc(var(--u) * 820);
       width: calc(var(--ux) * 2000);
       height: calc(var(--u) * 86);
       gap: calc(var(--u) * 36);

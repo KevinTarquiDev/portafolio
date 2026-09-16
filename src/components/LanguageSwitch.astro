@@ -4,17 +4,15 @@ import type { Locale } from "../lib/resume";
 
 export interface Props {
   locale: Locale;
+  label: string;
 }
 
-const { locale } = Astro.props;
+const { locale, label } = Astro.props;
 
 const labels: Record<Locale, string> = { es: "ES", en: "EN" };
 ---
 
-<nav
-  aria-label="Selector de idioma"
-  class="mono-label flex items-center gap-1.5 desk:gap-2"
->
+<nav aria-label={label} class="mono-label flex items-center gap-1.5 desk:gap-2">
   {locales.map((candidate, index) => (
     <>
       {index > 0 && (

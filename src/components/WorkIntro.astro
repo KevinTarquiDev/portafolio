@@ -16,7 +16,11 @@ const { items } = portfolio.workIntro;
 
 <section id="work" data-scene-label={ui.work.eyebrow} class="scene work">
   <div class="stage">
-    <div class="glow work-glow" aria-hidden="true"></div>
+    <div
+      class="glow work-glow"
+      aria-hidden="true"
+      data-motion="work-glow"
+    ></div>
 
     <SceneEyebrow
       scene="work"
@@ -74,7 +78,7 @@ const { items } = portfolio.workIntro;
 <style>
   /* ---------- Mobile · parte superior del artboard M04 ---------- */
   .work {
-    height: calc(var(--u) * 420);
+    height: calc(var(--u) * 520);
   }
 
   .stage {
@@ -84,8 +88,8 @@ const { items } = portfolio.workIntro;
   .work-glow {
     left: calc(var(--ux) * -200);
     top: 0;
-    width: calc(var(--u) * 800);
-    height: calc(var(--u) * 800);
+    width: calc(var(--u) * 590);
+    height: calc(var(--u) * 700);
     --glow-strength: 32%;
   }
 
@@ -113,12 +117,14 @@ const { items } = portfolio.workIntro;
   .word {
     position: absolute;
     z-index: 3;
-    left: calc(var(--ux) * -6);
-    top: calc(var(--u) * 214);
+    left: 0;
+    right: 0;
+    top: calc(var(--u) * 224);
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: calc(var(--u) * 4);
-    font-size: calc(var(--u) * 210);
+    font-size: calc(var(--u) * 154);
     white-space: nowrap;
     color: var(--color-ink);
   }
@@ -127,8 +133,17 @@ const { items } = portfolio.workIntro;
     position: relative;
     display: block;
     flex-shrink: 0;
-    width: calc(var(--u) * 150);
-    height: calc(var(--u) * 150);
+    width: calc(var(--u) * 124);
+    height: calc(var(--u) * 124);
+    overflow: hidden;
+    border-radius: 9999px;
+    background: radial-gradient(
+      circle at 45% 40%,
+      color-mix(in srgb, var(--color-purple) 55%, var(--color-panel)),
+      var(--color-panel) 72%
+    );
+    box-shadow: 0 0 48px
+      color-mix(in srgb, var(--color-purple) 18%, transparent);
   }
 
   .window :global(.window-media) {
@@ -140,6 +155,16 @@ const { items } = portfolio.workIntro;
     object-fit: cover;
     border: 2px solid var(--color-green);
     border-radius: 9999px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.motion) .work {
+      z-index: 2;
+      overflow-x: clip;
+      overflow-y: visible;
+      background-color: var(--color-bg);
+      pointer-events: none;
+    }
   }
 
   .window-dot {
@@ -193,6 +218,12 @@ const { items } = portfolio.workIntro;
     .window {
       width: calc(var(--u) * 420);
       height: calc(var(--u) * 420);
+      box-shadow: 0 0 110px
+        color-mix(in srgb, var(--color-purple) 20%, transparent);
+    }
+
+    :global(html.motion) .work {
+      overflow: hidden;
     }
 
     .window-dot {

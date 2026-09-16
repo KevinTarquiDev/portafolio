@@ -49,7 +49,7 @@ const backgroundWords = project.keywords
 <section id="featured" data-scene-label={ui.featured.eyebrow} class="featured">
   <div class="track" data-motion="featured-track">
     <div class="scene panel panel-intro">
-      <div class="stage">
+      <div class="stage" data-motion="featured-intro">
         <div class="glow intro-glow" aria-hidden="true"></div>
         <span
           class="display text-outline index"
@@ -167,7 +167,14 @@ const backgroundWords = project.keywords
   /* ---------- Mobile · parte central del artboard M04 ---------- */
   .featured {
     position: relative;
+    z-index: 1;
     overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.motion) .featured {
+      margin-top: calc(var(--u) * -72);
+    }
   }
 
   .panel-intro {
@@ -176,6 +183,11 @@ const backgroundWords = project.keywords
 
   .panel-media {
     height: calc(var(--u) * 480);
+    background: linear-gradient(
+      180deg,
+      transparent 58%,
+      color-mix(in srgb, var(--color-purple) 10%, var(--color-bg)) 100%
+    );
   }
 
   .stage {
@@ -379,6 +391,10 @@ const backgroundWords = project.keywords
 
   /* ---------- Desktop · artboard 05 (2 viewports de 1440×900) ---------- */
   @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    :global(html.motion) .featured {
+      margin-top: 0;
+    }
+
     .panel-intro,
     .panel-media {
       height: 100svh;

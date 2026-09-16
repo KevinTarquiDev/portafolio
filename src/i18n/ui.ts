@@ -92,6 +92,8 @@ export interface UiStrings {
     titleSeparator: string;
   };
   a11y: {
+    mainNavigation: string;
+    languageSelector: string;
     skipToContent: string;
     openMenu: string;
     closeMenu: string;
@@ -187,6 +189,8 @@ const es: UiStrings = {
     titleSeparator: "—",
   },
   a11y: {
+    mainNavigation: "Navegación principal",
+    languageSelector: "Selector de idioma",
     skipToContent: "Saltar al contenido",
     openMenu: "Abrir menú",
     closeMenu: "Cerrar menú",
@@ -282,6 +286,8 @@ const en: UiStrings = {
     titleSeparator: "—",
   },
   a11y: {
+    mainNavigation: "Main navigation",
+    languageSelector: "Language selector",
     skipToContent: "Skip to content",
     openMenu: "Open menu",
     closeMenu: "Close menu",

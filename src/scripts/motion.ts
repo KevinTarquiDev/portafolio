@@ -14,6 +14,7 @@
  */
 
 import { DESK_MEDIA_QUERY, SCENE_IDS } from "../lib/scenes";
+import type { SceneId } from "../lib/scenes";
 
 type Gsap = typeof import("gsap").gsap;
 type ScrollTriggerApi = typeof import("gsap/ScrollTrigger").ScrollTrigger;
@@ -60,6 +61,8 @@ async function initMotion(): Promise<void> {
       cleanups.push(heroEntrance(kit));
     }
 
+    heroToAbout(kit, desk);
+
     // Orden de creación = orden del documento, necesario para que los
     // pins calculen bien el espacio que añaden.
     if (desk) {
@@ -69,14 +72,14 @@ async function initMotion(): Promise<void> {
       workScene(kit, true);
       cleanups.push(featuredDesk(kit));
       cleanups.push(stackDesk(kit));
-      practicesScene(kit, true);
+      cleanups.push(practicesScene(kit, true));
     } else {
       aboutScene(kit, false);
-      experienceMobile(kit);
+      cleanups.push(experienceMobile(kit));
       workScene(kit, false);
       featuredMobile(kit);
-      stackMobile(kit);
-      practicesScene(kit, false);
+      cleanups.push(stackMobile(kit));
+      cleanups.push(practicesScene(kit, false));
     }
     educationScene(kit, desk);
     contactScene(kit, desk);
@@ -91,6 +94,7 @@ async function initMotion(): Promise<void> {
   setupHud(kit);
   setupCursor(gsap);
   ScrollTrigger.refresh();
+  setupBreakpointContinuity(kit);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -118,6 +122,114 @@ function unit(): number {
   const value = probe.getBoundingClientRect().width / 1000;
   probe.remove();
   return value;
+}
+
+interface ViewportLocation {
+  id: SceneId;
+  progress: number;
+}
+
+function sceneContainer(scene: HTMLElement): HTMLElement {
+  const parent = scene.parentElement;
+  return parent?.classList.contains("pin-spacer") ? parent : scene;
+}
+
+function sceneTravel(scene: HTMLElement, container: HTMLElement): number {
+  if (container !== scene) {
+    const pinTravel = container.offsetHeight - scene.offsetHeight;
+    if (pinTravel > 0) {
+      return pinTravel;
+    }
+  }
+
+  const stage = scene.querySelector<HTMLElement>(".stage");
+  if (stage && getComputedStyle(stage).position === "sticky") {
+    return Math.max(1, scene.offsetHeight - window.innerHeight);
+  }
+  return Math.max(1, scene.offsetHeight);
+}
+
+/** Posición semántica actual para conservar la escena al cambiar breakpoint. */
+function viewportLocation(): ViewportLocation | null {
+  const focus = window.scrollY + window.innerHeight / 2;
+  let located: { scene: HTMLElement; id: SceneId; top: number } | null = null;
+
+  for (const id of SCENE_IDS) {
+    const scene = section(id);
+    if (!scene) {
+      continue;
+    }
+    const container = sceneContainer(scene);
+    const box = container.getBoundingClientRect();
+    const top = box.top + window.scrollY;
+    const bottom = top + box.height;
+    if (focus >= top && focus <= bottom) {
+      // En los solapes intencionales prevalece la escena posterior.
+      located = { scene, id, top };
+    }
+  }
+
+  if (!located) {
+    return null;
+  }
+  const container = sceneContainer(located.scene);
+  const travel = sceneTravel(located.scene, container);
+  return {
+    id: located.id,
+    progress: Math.min(1, Math.max(0, (window.scrollY - located.top) / travel)),
+  };
+}
+
+function restoreViewportLocation(location: ViewportLocation): void {
+  const scene = section(location.id);
+  if (!scene) {
+    return;
+  }
+  const container = sceneContainer(scene);
+  const top = container.getBoundingClientRect().top + window.scrollY;
+  const travel = sceneTravel(scene, container);
+  window.scrollTo({
+    top: top + travel * location.progress,
+    behavior: "auto",
+  });
+}
+
+/**
+ * Al alternar desktop/mobile GSAP reconstruye los pins. Conserva la escena y
+ * su progreso relativo para que esa reconstrucción no devuelva la página al
+ * Hero; no interviene en rueda, touch ni en el scroll ordinario.
+ */
+function setupBreakpointContinuity({ ScrollTrigger }: Kit): void {
+  const query = window.matchMedia(DESK_MEDIA_QUERY);
+  let stableDesk = query.matches;
+  let tracked = viewportLocation();
+  let restoring = false;
+
+  const remember = () => {
+    if (restoring || query.matches !== stableDesk) {
+      return;
+    }
+    tracked = viewportLocation() ?? tracked;
+  };
+  window.addEventListener("scroll", remember, { passive: true });
+
+  query.addEventListener("change", (event) => {
+    const saved = tracked;
+    stableDesk = event.matches;
+    if (!saved) {
+      return;
+    }
+    restoring = true;
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+      requestAnimationFrame(() => {
+        restoreViewportLocation(saved);
+        ScrollTrigger.update();
+        tracked = viewportLocation() ?? saved;
+        restoring = false;
+      });
+    });
+  });
 }
 
 /**
@@ -392,6 +504,61 @@ function heroOrbit({ gsap, ScrollTrigger }: Kit): Cleanup {
   };
 }
 
+/**
+ * Mantiene la profundidad del Hero mientras aparece About. La transición
+ * sucede antes del pin de About, por lo que no añade espacio ni bloquea el
+ * scroll nativo.
+ */
+function heroToAbout({ gsap }: Kit, desk: boolean): void {
+  const hero = section("top");
+  const about = section("about");
+  if (!hero || !about) {
+    return;
+  }
+
+  const outgoing = [
+    hero.querySelector<HTMLElement>(".glow-purple"),
+    hero.querySelector<HTMLElement>(".orbit-outer"),
+  ].filter((element): element is HTMLElement => element !== null);
+  const aboutGlow = about.querySelector<HTMLElement>(".about-glow");
+  const vertical = motionEl(about, "about-vertical");
+
+  if (outgoing.length > 0) {
+    gsap.to(outgoing, {
+      y: () => (desk ? 105 : 70) * unit(),
+      opacity: 0.55,
+      ease: "none",
+      scrollTrigger: {
+        trigger: hero,
+        start: "55% top",
+        end: "bottom top",
+        scrub: 0.7,
+        invalidateOnRefresh: true,
+      },
+    });
+  }
+
+  const incoming = [aboutGlow, vertical].filter(
+    (element): element is HTMLElement => element !== null,
+  );
+  if (incoming.length > 0) {
+    gsap.fromTo(
+      incoming,
+      { opacity: 0.28 },
+      {
+        opacity: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: about,
+          start: "top bottom",
+          end: "top 25%",
+          scrub: 0.7,
+        },
+      },
+    );
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 /* 02 · Sobre mí                                                              */
 /* -------------------------------------------------------------------------- */
@@ -410,6 +577,9 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
   const vertical = motionEl(about, "about-vertical");
   const bandBack = motionEl(about, "about-band-back");
   const bandFront = motionEl(about, "about-band-front");
+  const bands = [bandBack, bandFront].filter(
+    (element): element is HTMLElement => element !== null,
+  );
 
   if (desk) {
     const timeline = gsap.timeline({
@@ -417,79 +587,117 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
       scrollTrigger: {
         trigger: about,
         start: "top top",
-        end: "+=80%",
+        end: "+=155%",
         pin: true,
-        scrub: 0.6,
+        scrub: 0.7,
         invalidateOnRefresh: true,
       },
     });
-    const length = 1 + 0.06 * words.length;
     timeline.fromTo(
       words,
       { color: COLOR_DIM },
-      { color: COLOR_INK, duration: 1, stagger: 0.06 },
+      { color: COLOR_INK, duration: 0.34, stagger: 0.018 },
       0,
     );
     if (vertical) {
       timeline.fromTo(
         vertical,
         { y: () => -80 * unit() },
-        { y: () => 80 * unit(), duration: length },
+        { y: () => 80 * unit(), duration: 1 },
         0,
       );
     }
     if (bandBack) {
       timeline.fromTo(
         bandBack,
-        { x: 0 },
-        { x: () => 180 * unit(), duration: length },
-        0,
+        { x: () => -60 * unit(), y: () => 45 * unit(), opacity: 0.25 },
+        {
+          x: () => 180 * unit(),
+          y: 0,
+          opacity: 1,
+          duration: 0.62,
+        },
+        0.24,
       );
     }
     if (bandFront) {
       timeline.fromTo(
         bandFront,
-        { x: 0 },
-        { x: () => -300 * unit(), duration: length },
-        0,
+        { x: () => 80 * unit(), y: () => 70 * unit(), opacity: 0.2 },
+        {
+          x: () => -300 * unit(),
+          y: 0,
+          opacity: 1,
+          duration: 0.62,
+        },
+        0.24,
+      );
+    }
+    if (bands.length > 0) {
+      timeline.to(
+        bands,
+        { y: () => 20 * unit(), opacity: 0.55, duration: 0.18 },
+        0.82,
       );
     }
     return;
   }
 
-  gsap.fromTo(
+  const timeline = gsap.timeline({
+    defaults: { ease: "none" },
+    scrollTrigger: {
+      trigger: about,
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.65,
+      invalidateOnRefresh: true,
+    },
+  });
+  timeline.fromTo(
     words,
     { color: COLOR_DIM },
-    {
-      color: COLOR_INK,
-      ease: "none",
-      stagger: 0.06,
-      scrollTrigger: {
-        trigger: words[0] ?? about,
-        start: "top 85%",
-        end: "top 35%",
-        scrub: 0.5,
-      },
-    },
+    { color: COLOR_INK, duration: 0.36, stagger: 0.018 },
+    0,
   );
-  const bands = {
-    trigger: about,
-    start: "top bottom",
-    end: "bottom top",
-    scrub: 0.5,
-  };
+  if (vertical) {
+    timeline.fromTo(
+      vertical,
+      { y: () => -40 * unit() },
+      { y: () => 40 * unit(), duration: 1 },
+      0,
+    );
+  }
   if (bandBack) {
-    gsap.fromTo(
+    timeline.fromTo(
       bandBack,
-      { x: 0 },
-      { x: () => 60 * unit(), ease: "none", scrollTrigger: bands },
+      { x: () => -35 * unit(), y: () => 95 * unit(), opacity: 0 },
+      {
+        x: () => 70 * unit(),
+        y: 0,
+        opacity: 1,
+        duration: 0.5,
+      },
+      0.3,
     );
   }
   if (bandFront) {
-    gsap.fromTo(
+    timeline.fromTo(
       bandFront,
-      { x: 0 },
-      { x: () => -180 * unit(), ease: "none", scrollTrigger: bands },
+      { x: () => 50 * unit(), y: () => 110 * unit(), opacity: 0 },
+      {
+        x: () => -190 * unit(),
+        y: 0,
+        opacity: 1,
+        duration: 0.5,
+      },
+      0.3,
+    );
+  }
+  if (bands.length > 0) {
+    timeline.to(
+      bands,
+      { y: () => 18 * unit(), opacity: 0.52, duration: 0.18 },
+      0.82,
     );
   }
 }
@@ -710,25 +918,28 @@ function experienceDesk({ gsap }: Kit): Cleanup {
     }
   };
 
-  const progress = { step: 0 };
+  const progress = { value: 0 };
   gsap.to(progress, {
-    step: jobs.length - 1,
+    value: 1,
     ease: "none",
     scrollTrigger: {
       trigger: experience,
       start: "top top",
-      end: () => `+=${(jobs.length - 1) * window.innerHeight}`,
+      end: () => `+=${jobs.length * window.innerHeight}`,
       pin: true,
-      scrub: 0.5,
+      scrub: 0.65,
       invalidateOnRefresh: true,
     },
     onUpdate: () => {
+      const step =
+        gsap.utils.clamp(0, 1, (progress.value - 0.1) / 0.8) *
+        (jobs.length - 1);
       const rowHeight = first.offsetHeight;
       const railTargets = [railActive, dot].filter(
         (element): element is HTMLElement => element !== null,
       );
-      gsap.set(railTargets, { y: progress.step * rowHeight });
-      show(Math.round(progress.step));
+      gsap.set(railTargets, { y: step * rowHeight });
+      show(Math.round(step));
     },
   });
 
@@ -742,27 +953,80 @@ function experienceDesk({ gsap }: Kit): Cleanup {
     company.textContent = initial.company;
     position.textContent = initial.position;
     if (ghost) ghost.textContent = initial.ghost;
+    gsap.set(
+      [railActive, dot].filter(
+        (element): element is HTMLElement => element !== null,
+      ),
+      { clearProps: "transform" },
+    );
   };
 }
 
-/** Mobile: los bloques de experiencia entran al llegar al viewport. */
-function experienceMobile({ gsap, ScrollTrigger }: Kit): void {
+/** Mobile: el puesto más próximo al centro del viewport activa la timeline. */
+function experienceMobile({ gsap, ScrollTrigger }: Kit): Cleanup {
   const experience = section("experience");
   if (!experience) {
-    return;
+    return () => {};
   }
-  ScrollTrigger.batch(motionEls(experience, "experience-job"), {
-    start: "top 88%",
-    once: true,
-    onEnter: (batch) =>
-      gsap.from(batch, {
-        y: 32,
-        opacity: 0,
-        duration: 0.7,
-        stagger: 0.08,
-        ease: "power3.out",
-      }),
+  const jobs = motionEls(experience, "experience-job");
+  if (jobs.length === 0) {
+    return () => {};
+  }
+
+  let active = 0;
+  const setActive = (next: number) => {
+    if (next === active) {
+      return;
+    }
+    jobs[active]?.classList.remove("is-active");
+    jobs[next]?.classList.add("is-active");
+    active = next;
+  };
+  const updateActive = () => {
+    const focus = window.innerHeight * 0.52;
+    let nearest = 0;
+    let distance = Number.POSITIVE_INFINITY;
+    jobs.forEach((job, index) => {
+      const box = job.getBoundingClientRect();
+      const gap = Math.abs(box.top + box.height / 2 - focus);
+      if (gap < distance) {
+        distance = gap;
+        nearest = index;
+      }
+    });
+    setActive(nearest);
+  };
+
+  jobs.forEach((job) => {
+    gsap.from(job, {
+      y: 26,
+      opacity: 0,
+      duration: 0.65,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: job,
+        start: "top 92%",
+        once: true,
+      },
+    });
   });
+
+  ScrollTrigger.create({
+    trigger: experience,
+    start: "top bottom",
+    end: "bottom top",
+    onEnter: updateActive,
+    onEnterBack: updateActive,
+    onUpdate: updateActive,
+    onRefresh: updateActive,
+  });
+
+  return () => {
+    jobs.forEach((job, index) =>
+      job.classList.toggle("is-active", index === 0),
+    );
+    active = 0;
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -781,20 +1045,59 @@ function workScene({ gsap }: Kit, desk: boolean): void {
   }
 
   if (!desk) {
-    gsap.fromTo(
-      window_,
-      { scale: 0.82 },
-      {
-        scale: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: work,
-          start: "top 85%",
-          end: "center center",
-          scrub: 0.5,
-        },
+    const featured = section("featured");
+    const featuredIntro = featured
+      ? motionEl(featured, "featured-intro")
+      : null;
+    const media = window_.querySelector<HTMLElement>(".window-media");
+    const timeline = gsap.timeline({
+      defaults: { ease: "none" },
+      scrollTrigger: {
+        trigger: work,
+        start: "top 45%",
+        end: "bottom 10%",
+        scrub: 0.65,
+        invalidateOnRefresh: true,
       },
-    );
+    });
+
+    timeline
+      .fromTo(window_, { scale: 0.84 }, { scale: 1, duration: 0.24 }, 0)
+      .to(window_, { scale: 2.9, duration: 0.7, ease: "power2.in" }, 0.24)
+      .to(
+        [motionEl(work, "work-selected"), ...motionEls(work, "work-meta")],
+        { y: () => -28 * unit(), opacity: 0, duration: 0.3 },
+        0.52,
+      )
+      .to(
+        motionEl(work, "work-w"),
+        { xPercent: -55, opacity: 0, duration: 0.32 },
+        0.58,
+      )
+      .to(
+        motionEl(work, "work-rk"),
+        { xPercent: 55, opacity: 0, duration: 0.32 },
+        0.58,
+      )
+      .to(motionEl(work, "work-glow"), { opacity: 0.2, duration: 0.25 }, 0.7)
+      .to(work, { backgroundColor: "rgba(11, 8, 18, 0)", duration: 0.22 }, 0.76)
+      .to(window_, { opacity: 0, duration: 0.16 }, 0.84);
+
+    if (media) {
+      timeline.to(
+        media,
+        { filter: "brightness(0.45) saturate(0.7)", duration: 0.28 },
+        0.62,
+      );
+    }
+    if (featuredIntro) {
+      timeline.fromTo(
+        featuredIntro,
+        { y: () => 46 * unit(), opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.38 },
+        0.48,
+      );
+    }
     return;
   }
 
@@ -821,9 +1124,11 @@ function workScene({ gsap }: Kit, desk: boolean): void {
     scrollTrigger: {
       trigger: work,
       start: "top top",
-      end: "+=120%",
+      end: () => `+=${work.offsetHeight}`,
       pin: true,
-      scrub: 0.6,
+      pinSpacing: false,
+      scrub: 0.7,
+      anticipatePin: 1,
       invalidateOnRefresh: true,
     },
   });
@@ -831,7 +1136,7 @@ function workScene({ gsap }: Kit, desk: boolean): void {
   timeline
     .to(
       motionEl(work, "work-selected"),
-      { yPercent: -140, opacity: 0, duration: 0.35 },
+      { yPercent: -140, opacity: 0, duration: 0.32 },
       0,
     )
     .to(motionEls(work, "work-meta"), { opacity: 0, duration: 0.2 }, 0)
@@ -846,12 +1151,23 @@ function workScene({ gsap }: Kit, desk: boolean): void {
       { xPercent: 80, opacity: 0, duration: 0.6 },
       0.1,
     )
-    .to(window_, { scale: coverScale, duration: 0.9, ease: "power2.in" }, 0.1);
+    .to(window_, { scale: coverScale, duration: 0.9, ease: "power2.in" }, 0.05)
+    .to(motionEl(work, "work-glow"), { opacity: 0.15, duration: 0.2 }, 0.78)
+    .to(work, { backgroundColor: "rgba(11, 8, 18, 0)", duration: 0.2 }, 0.8)
+    .to(window_, { opacity: 0, duration: 0.18 }, 0.8);
 
   if (media) {
     timeline
-      .to(media, { borderColor: "rgba(95, 209, 138, 0)", duration: 0.4 }, 0.15)
-      .to(media, { opacity: 0, duration: 0.3 }, 0.3);
+      .to(
+        media,
+        {
+          borderColor: "rgba(95, 209, 138, 0)",
+          filter: "brightness(0.38) saturate(0.65)",
+          duration: 0.24,
+        },
+        0.7,
+      )
+      .to(media, { opacity: 0.1, duration: 0.16 }, 0.8);
   }
 }
 
@@ -920,6 +1236,7 @@ function featuredDesk({ gsap }: Kit): Cleanup {
     }
   };
   featured.addEventListener("focusin", onFocus);
+  featuredToStack(gsap, featured);
 
   return () => featured.removeEventListener("focusin", onFocus);
 }
@@ -956,6 +1273,48 @@ function featuredMobile({ gsap }: Kit): void {
           end: "bottom top",
           scrub: 0.5,
         },
+      },
+    );
+  }
+  featuredToStack(gsap, featured);
+}
+
+/** Suaviza el último panel de EcuStock mientras el Stack entra por debajo. */
+function featuredToStack(gsap: Gsap, featured: HTMLElement): void {
+  const stack = section("stack");
+  if (!stack) {
+    return;
+  }
+  const outgoing = [
+    motionEl(featured, "featured-words"),
+    ...motionEls(featured, "featured-media"),
+  ].filter((element): element is HTMLElement => element !== null);
+  const stackGlow = stack.querySelector<HTMLElement>(".stack-glow");
+  const transition = {
+    trigger: stack,
+    start: "top bottom",
+    end: "top 28%",
+    scrub: 0.7,
+    invalidateOnRefresh: true,
+  };
+
+  if (outgoing.length > 0) {
+    gsap.to(outgoing, {
+      y: () => -55 * unit(),
+      opacity: 0.38,
+      ease: "none",
+      scrollTrigger: transition,
+    });
+  }
+  if (stackGlow) {
+    gsap.fromTo(
+      stackGlow,
+      { y: () => -90 * unit(), opacity: 0.25 },
+      {
+        y: 0,
+        opacity: 1,
+        ease: "none",
+        scrollTrigger: transition,
       },
     );
   }
@@ -1015,11 +1374,17 @@ function stackDesk({ gsap }: Kit): Cleanup {
     if (next === column.active) {
       return;
     }
-    for (const offset of [-1, 0, 1]) {
-      column.items[column.active + offset]?.classList.remove(
-        "is-focus",
-        "is-near",
-      );
+    if (column.active >= 0) {
+      for (const offset of [-1, 0, 1]) {
+        column.items[column.active + offset]?.classList.remove(
+          "is-focus",
+          "is-near",
+        );
+      }
+    }
+    if (next < 0) {
+      column.active = -1;
+      return;
     }
     column.items[next - 1]?.classList.add("is-near");
     column.items[next + 1]?.classList.add("is-near");
@@ -1028,11 +1393,21 @@ function stackDesk({ gsap }: Kit): Cleanup {
   };
 
   const progress = { value: 0 };
+  const maxCount = Math.max(1, ...columns.map((column) => column.count));
 
   const apply = () => {
+    const travelProgress = gsap.utils.clamp(
+      0,
+      1,
+      (progress.value - 0.05) / 0.88,
+    );
     for (const column of columns) {
-      const y = column.direction * column.distance * progress.value;
+      const y = column.direction * column.distance * travelProgress;
       gsap.set(column.loop, { y });
+      if (progress.value > 0.96) {
+        setActive(column, -1);
+        continue;
+      }
       const lineCenter = (column.centers[column.focusIndex] ?? 0) - y;
       let nearest = column.focusIndex;
       let best = Number.POSITIVE_INFINITY;
@@ -1067,10 +1442,11 @@ function stackDesk({ gsap }: Kit): Cleanup {
     scrollTrigger: {
       trigger: stack,
       start: "top top",
-      end: "+=150%",
+      end: () => `+=${Math.max(2.8, maxCount * 0.42) * window.innerHeight}`,
       pin: true,
-      scrub: 0.6,
+      scrub: 0.7,
       onRefresh: measure,
+      invalidateOnRefresh: true,
     },
     onUpdate: apply,
   });
@@ -1079,35 +1455,123 @@ function stackDesk({ gsap }: Kit): Cleanup {
   return () => {
     for (const column of columns) {
       setActive(column, column.focusIndex);
+      gsap.set(column.loop, { clearProps: "transform" });
     }
   };
 }
 
 /** Mobile: cada fila de tecnologías es una marquesina ligada al scroll. */
-function stackMobile({ gsap }: Kit): void {
+interface MobileStackRow {
+  marquee: HTMLElement;
+  items: HTMLElement[];
+  count: number;
+  toLeft: boolean;
+  cycle: number;
+  active: number;
+}
+
+function stackMobile({ gsap }: Kit): Cleanup {
   const stack = section("stack");
   if (!stack) {
-    return;
+    return () => {};
   }
-  motionEls(stack, "stack-marquee").forEach((marquee, index) => {
-    const shift = () => 240 * unit();
-    const toLeft = index % 2 === 0;
-    gsap.fromTo(
-      marquee,
-      { x: () => (toLeft ? 0 : -shift()) },
-      {
-        x: () => (toLeft ? -shift() : 0),
-        ease: "none",
-        scrollTrigger: {
-          trigger: marquee,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 0.5,
-          invalidateOnRefresh: true,
+
+  const rows: MobileStackRow[] = motionEls(stack, "stack-marquee").flatMap(
+    (marquee, index) => {
+      const column = marquee.closest<HTMLElement>("[data-count]");
+      const items = [...marquee.querySelectorAll<HTMLElement>(".marquee-item")];
+      const count = Number(column?.dataset.count ?? "0");
+      if (count < 1 || items.length <= count) {
+        return [];
+      }
+      return [
+        {
+          marquee,
+          items,
+          count,
+          toLeft: index % 2 === 0,
+          cycle: 0,
+          active: -1,
         },
-      },
-    );
+      ];
+    },
+  );
+  if (rows.length === 0) {
+    return () => {};
+  }
+
+  const setActive = (row: MobileStackRow, next: number) => {
+    if (next === row.active) {
+      return;
+    }
+    if (row.active >= 0) {
+      row.items[row.active]?.classList.remove("is-focus");
+      row.items[row.active - 1]?.classList.remove("is-near");
+      row.items[row.active + 1]?.classList.remove("is-near");
+    }
+    row.items[next]?.classList.add("is-focus");
+    row.items[next - 1]?.classList.add("is-near");
+    row.items[next + 1]?.classList.add("is-near");
+    row.active = next;
+  };
+
+  const progress = { value: 0 };
+  const apply = () => {
+    const focus = window.innerWidth * 0.54;
+    for (const row of rows) {
+      const x = row.toLeft
+        ? -row.cycle * progress.value
+        : -row.cycle * (1 - progress.value);
+      gsap.set(row.marquee, { x });
+      let nearest = 0;
+      let best = Number.POSITIVE_INFINITY;
+      row.items.forEach((item, index) => {
+        const box = item.getBoundingClientRect();
+        const gap = Math.abs(box.left + box.width / 2 - focus);
+        if (gap < best) {
+          best = gap;
+          nearest = index;
+        }
+      });
+      setActive(row, nearest);
+    }
+  };
+
+  const measure = () => {
+    for (const row of rows) {
+      gsap.set(row.marquee, { x: 0 });
+      const first = row.items[0];
+      const repeated = row.items[row.count];
+      row.cycle =
+        first && repeated
+          ? Math.abs(repeated.offsetLeft - first.offsetLeft)
+          : row.marquee.scrollWidth / 3;
+    }
+    apply();
+  };
+
+  gsap.to(progress, {
+    value: 1,
+    ease: "none",
+    scrollTrigger: {
+      trigger: stack,
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.7,
+      invalidateOnRefresh: true,
+      onRefresh: measure,
+    },
+    onUpdate: apply,
   });
+  measure();
+
+  return () => {
+    for (const row of rows) {
+      row.items.forEach((item) => item.classList.remove("is-focus", "is-near"));
+      gsap.set(row.marquee, { clearProps: "transform" });
+      row.active = -1;
+    }
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1119,67 +1583,141 @@ function stackMobile({ gsap }: Kit): void {
  * sentido contrario; cada nodo se enciende en orden y su título entra con
  * clip-path. Mobile: el riel se recorre ítem a ítem.
  */
-function practicesScene({ gsap }: Kit, desk: boolean): void {
+function practicesScene({ gsap }: Kit, desk: boolean): Cleanup {
   const practices = section("practices");
   if (!practices) {
-    return;
+    return () => {};
   }
   const items = motionEls(practices, "practices-item");
-
-  if (!desk) {
-    gsap.from(items, {
-      x: -24,
-      opacity: 0,
-      duration: 0.6,
-      stagger: 0.12,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: items[0] ?? practices,
-        start: "top 85%",
-        once: true,
-      },
-    });
-    return;
-  }
-
-  const passing = {
-    trigger: practices,
-    start: "top bottom",
-    end: "bottom top",
-    scrub: 1,
-  };
-  motionEls(practices, "practices-circle").forEach((circle, index) => {
-    gsap.to(circle, {
-      rotation: index % 2 === 0 ? 50 : -50,
-      ease: "none",
-      scrollTrigger: passing,
-    });
-  });
+  const nodes = motionEls(practices, "practices-node");
+  const circles = motionEls(practices, "practices-circle");
   const orbit = practices.querySelector<SVGElement>(
     "[data-motion='practices-orbit']",
   );
-  if (orbit) {
-    gsap.to(orbit, {
-      rotation: -70,
-      transformOrigin: "50% 50%",
-      ease: "none",
-      scrollTrigger: passing,
-    });
+  if (items.length === 0) {
+    return () => {};
   }
 
-  const nodes = motionEls(practices, "practices-node");
+  let active = 0;
+  const setActive = (next: number) => {
+    if (next === active) {
+      return;
+    }
+    items[active]?.classList.remove("is-active");
+    items[next]?.classList.add("is-active");
+    active = next;
+  };
+  const reset = () => {
+    items.forEach((item, index) =>
+      item.classList.toggle("is-active", index === 0),
+    );
+    active = 0;
+  };
+
+  if (!desk) {
+    const railActive = motionEl(practices, "practices-rail-active");
+    const glow = practices.querySelector<HTMLElement>(".practices-glow");
+    const progress = { value: 0 };
+    const apply = () => {
+      const stepProgress = gsap.utils.clamp(
+        0,
+        1,
+        (progress.value - 0.08) / 0.84,
+      );
+      setActive(Math.round(stepProgress * (items.length - 1)));
+      if (railActive) {
+        gsap.set(railActive, {
+          scaleY: 0.08 + progress.value * 0.92,
+          transformOrigin: "50% 0%",
+        });
+      }
+      circles.forEach((circle, index) => {
+        gsap.set(circle, {
+          rotation: (index % 2 === 0 ? 28 : -28) * progress.value,
+          scale: 1 + progress.value * 0.035,
+        });
+      });
+      if (glow) {
+        gsap.set(glow, { y: () => 45 * unit() * progress.value });
+      }
+    };
+
+    gsap.to(progress, {
+      value: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: practices,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.7,
+        invalidateOnRefresh: true,
+      },
+      onUpdate: apply,
+    });
+    apply();
+
+    return () => {
+      reset();
+      if (railActive) gsap.set(railActive, { clearProps: "transform" });
+      circles.forEach((circle) =>
+        gsap.set(circle, { clearProps: "transform" }),
+      );
+      if (glow) gsap.set(glow, { clearProps: "transform" });
+    };
+  }
+
   const names = motionEls(practices, "practices-name");
+  gsap.set(items, { opacity: 0.34 });
+  gsap.set(nodes, { opacity: 0.24, scale: 0.65 });
+
   const timeline = gsap.timeline({
-    scrollTrigger: { trigger: practices, start: "top 55%", once: true },
+    defaults: { ease: "none" },
+    scrollTrigger: {
+      trigger: practices,
+      start: "top top",
+      end: () => `+=${items.length * 0.7 * window.innerHeight}`,
+      pin: true,
+      scrub: 0.7,
+      invalidateOnRefresh: true,
+    },
   });
+  circles.forEach((circle, index) => {
+    timeline.to(
+      circle,
+      {
+        rotation: index % 2 === 0 ? 50 : -50,
+        duration: 1,
+      },
+      0,
+    );
+  });
+  if (orbit) {
+    timeline.to(
+      orbit,
+      {
+        rotation: -70,
+        transformOrigin: "50% 50%",
+        duration: 1,
+      },
+      0,
+    );
+  }
+
   names.forEach((name, index) => {
-    const at = index * 0.35;
+    const at = 0.07 + index * 0.22;
     const node = nodes[index];
+    const item = items[index];
+    const previous = items[index - 1];
+    if (previous) {
+      timeline.to(previous, { opacity: 0.4, duration: 0.08 }, at);
+    }
+    if (item) {
+      timeline.to(item, { opacity: 1, duration: 0.08 }, at);
+    }
     if (node) {
-      timeline.fromTo(
+      timeline.to(
         node,
-        { opacity: 0.25, scale: 0.6 },
-        { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" },
+        { opacity: 1, scale: 1, duration: 0.1, ease: "back.out(2)" },
         at,
       );
     }
@@ -1190,13 +1728,15 @@ function practicesScene({ gsap }: Kit, desk: boolean): void {
       { clipPath: fromRight ? "inset(0% 0% 0% 100%)" : "inset(0% 100% 0% 0%)" },
       {
         clipPath: "inset(0% 0% 0% 0%)",
-        duration: 0.7,
+        duration: 0.13,
         ease: "power3.out",
         clearProps: "clipPath",
       },
-      at + 0.1,
+      at,
     );
   });
+
+  return reset;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1230,6 +1770,27 @@ function educationScene({ gsap }: Kit, desk: boolean): void {
     if (desk && dot) {
       timeline.fromTo(dot, { x: () => -line.offsetWidth }, { x: 0 }, 0);
     }
+  }
+
+  for (const glow of education.querySelectorAll<HTMLElement>(
+    ".education-glow",
+  )) {
+    gsap.fromTo(
+      glow,
+      { y: () => -45 * unit(), opacity: 0.55 },
+      {
+        y: () => 65 * unit(),
+        opacity: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: education,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.8,
+          invalidateOnRefresh: true,
+        },
+      },
+    );
   }
 }
 

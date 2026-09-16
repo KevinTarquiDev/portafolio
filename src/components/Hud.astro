@@ -52,7 +52,7 @@ const navLinks: Array<{ href: string; label: string }> = [
 
   <div class="pointer-events-auto flex items-center gap-1.5 desk:gap-9">
     <nav
-      aria-label="Navegación principal"
+      aria-label={ui.a11y.mainNavigation}
       class="mono-label hidden items-center gap-9 desk:flex"
     >
       {navLinks.map((link) => (
@@ -61,7 +61,7 @@ const navLinks: Array<{ href: string; label: string }> = [
         </a>
       ))}
     </nav>
-    <LanguageSwitch locale={locale} />
+    <LanguageSwitch locale={locale} label={ui.a11y.languageSelector} />
     <div class="desk:hidden">
       <MobileMenu ui={ui} />
     </div>
@@ -96,3 +96,12 @@ const navLinks: Array<{ href: string; label: string }> = [
     ></span>
   </span>
 </div>
+
+<style>
+  @media (prefers-reduced-motion: reduce) {
+    [data-hud-rail],
+    [data-hud-counter] {
+      display: none;
+    }
+  }
+</style>

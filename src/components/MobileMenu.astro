@@ -67,7 +67,7 @@ const links: Array<{ href: string; label: string }> = [
       </svg>
     </button>
   </div>
-  <nav aria-label="Menú principal" class="mt-10 flex flex-col gap-6">
+  <nav aria-label={ui.a11y.mainNavigation} class="mt-10 flex flex-col gap-6">
     {links.map((link) => (
       <a href={link.href} class="display text-[56px] leading-none">
         {link.label}

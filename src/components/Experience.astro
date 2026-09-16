@@ -125,7 +125,7 @@ if (!active) {
             <p class="job-position">{item.position}</p>
             <p class="mono-label job-range">{item.range}</p>
           </div>
-          {index === 0 && <span class="job-dot" aria-hidden="true"></span>}
+          <span class="job-dot" aria-hidden="true"></span>
         </li>
       ))}
     </ol>
@@ -138,13 +138,21 @@ if (!active) {
 </section>
 
 <style>
-  /* ---------- Mobile · artboard M03 (390 × 250 + 240 por puesto) ---------- */
+  /* ---------- Mobile · timeline vertical narrativa ligada al scroll ---------- */
   .experience {
-    height: calc(var(--u) * (250 + 240 * var(--rows)));
+    height: auto;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-purple) 4%, var(--color-bg)) 0%,
+      transparent 16%,
+      transparent 88%,
+      color-mix(in srgb, var(--color-purple) 3%, var(--color-bg)) 100%
+    );
   }
 
   .stage {
-    height: 100%;
+    height: auto;
+    padding-top: calc(var(--u) * 250);
   }
 
   .experience-glow {
@@ -183,25 +191,36 @@ if (!active) {
   }
 
   .jobs {
-    position: absolute;
+    position: relative;
     z-index: 3;
     left: 0;
     right: 0;
-    top: calc(var(--u) * 250);
+    top: auto;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
+  .jobs::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    top: calc(var(--u) * 36);
+    right: calc(var(--ux) * 25);
+    bottom: calc(var(--u) * 36);
+    width: 1px;
+    background: linear-gradient(
+      transparent,
+      color-mix(in srgb, var(--color-green) 35%, transparent) 10%,
+      color-mix(in srgb, var(--color-green) 18%, transparent) 90%,
+      transparent
+    );
+  }
+
   .job {
     position: relative;
     display: flex;
-    height: calc(var(--u) * 240);
-    border-top: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
-  }
-
-  .job.is-active {
-    border-top-color: color-mix(in srgb, var(--color-ink) 35%, transparent);
+    min-height: max(calc(var(--u) * 270), 42svh);
   }
 
   .job-years {
@@ -217,13 +236,18 @@ if (!active) {
     rotate: 180deg;
     color: transparent;
     -webkit-text-stroke: 1px
-      color-mix(in srgb, var(--color-lilac) 45%, transparent);
+      color-mix(in srgb, var(--color-lilac) 30%, transparent);
+    transition:
+      color 0.35s ease,
+      -webkit-text-stroke-color 0.35s ease,
+      opacity 0.35s ease;
+    opacity: 0.7;
   }
 
   .is-active .job-years {
-    font-size: calc(var(--u) * 76);
     color: var(--color-ink);
     -webkit-text-stroke: 0;
+    opacity: 1;
   }
 
   .job-body {
@@ -231,8 +255,9 @@ if (!active) {
     flex-direction: column;
     justify-content: center;
     gap: calc(var(--u) * 10);
-    padding: 0 calc(var(--ux) * 20) 0 calc(var(--u) * 8);
-    opacity: 0.55;
+    padding: 0 calc(var(--ux) * 52) 0 calc(var(--u) * 8);
+    opacity: 0.8;
+    transition: opacity 0.35s ease;
   }
 
   .is-active .job-body {
@@ -241,6 +266,7 @@ if (!active) {
 
   .job-index {
     color: var(--color-muted);
+    transition: color 0.35s ease;
   }
 
   .is-active .job-index {
@@ -255,6 +281,11 @@ if (!active) {
     font-stretch: 75%;
     line-height: 0.95;
     letter-spacing: -0.012em;
+    color: var(--color-soft);
+    transition: color 0.35s ease;
+  }
+
+  .is-active .job-company {
     color: var(--color-ink);
   }
 
@@ -265,18 +296,69 @@ if (!active) {
     font-style: italic;
     line-height: 1;
     letter-spacing: -0.01em;
+    color: color-mix(in srgb, var(--color-lilac) 68%, transparent);
+    transition: color 0.35s ease;
+  }
+
+  .is-active .job-position {
     color: var(--color-lilac);
   }
 
   .job-dot {
     position: absolute;
+    z-index: 2;
     right: calc(var(--ux) * 20);
-    top: calc(var(--u) * 24);
+    top: 50%;
     width: calc(var(--u) * 10);
     height: calc(var(--u) * 10);
+    translate: 0 -50%;
+    border: 1px solid color-mix(in srgb, var(--color-green) 68%, transparent);
     border-radius: 9999px;
+    background: var(--color-bg);
+    transition:
+      scale 0.35s ease,
+      border-color 0.35s ease,
+      background-color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+
+  .is-active .job-dot {
+    scale: 1.45;
+    border-color: var(--color-green);
     background: var(--color-green);
-    box-shadow: 0 0 20px color-mix(in srgb, var(--color-green) 50%, transparent);
+    box-shadow: 0 0 22px color-mix(in srgb, var(--color-green) 52%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .job {
+      min-height: calc(var(--u) * 270);
+    }
+
+    .job-years {
+      color: var(--color-ink);
+      -webkit-text-stroke: 0;
+      opacity: 1;
+    }
+
+    .job-body {
+      opacity: 1;
+    }
+
+    .job-index {
+      color: var(--color-green);
+    }
+
+    .job-company {
+      color: var(--color-ink);
+    }
+
+    .job-position {
+      color: var(--color-lilac);
+    }
+
+    .job-dot {
+      border-color: color-mix(in srgb, var(--color-green) 75%, transparent);
+    }
   }
 
   /* ---------- Desktop · artboard 03 (1440×900) ---------- */
@@ -287,6 +369,7 @@ if (!active) {
 
     .stage {
       height: calc(var(--u) * 900);
+      padding-top: 0;
     }
 
     .experience-glow {
@@ -371,6 +454,7 @@ if (!active) {
     }
 
     .jobs {
+      position: absolute;
       z-index: 4;
       left: calc(var(--ux) * 830);
       right: auto;
@@ -378,9 +462,14 @@ if (!active) {
       width: calc(var(--u) * 560);
     }
 
+    .jobs::before {
+      display: none;
+    }
+
     .job {
       display: block;
       height: calc(var(--u) * 58);
+      min-height: 0;
       color: var(--color-muted);
       transition:
         color 0.4s ease,

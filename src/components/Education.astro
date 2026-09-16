@@ -71,7 +71,40 @@ const entries = portfolio.education.items.map((entry) => ({
 <style>
   /* ---------- Mobile · parte superior del artboard M06 ---------- */
   .entry {
-    height: calc(var(--u) * 760);
+    height: calc(var(--u) * 720);
+    background: linear-gradient(
+      180deg,
+      transparent 68%,
+      color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 100%
+    );
+  }
+
+  .entry:last-child::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: calc(var(--ux) * 31);
+    bottom: calc(var(--u) * -1);
+    width: 1px;
+    height: calc(var(--u) * 82);
+    background: linear-gradient(
+      transparent,
+      color-mix(in srgb, var(--color-green) 55%, transparent)
+    );
+  }
+
+  .entry:first-child::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: calc(var(--ux) * 31);
+    top: 0;
+    width: 1px;
+    height: calc(var(--u) * 96);
+    background: linear-gradient(
+      color-mix(in srgb, var(--color-green) 55%, transparent),
+      transparent
+    );
   }
 
   .stage {
@@ -192,6 +225,31 @@ const entries = portfolio.education.items.map((entry) => ({
   @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
     .entry {
       height: 100svh;
+    }
+
+    .entry:last-child::after {
+      left: auto;
+      right: 0;
+      bottom: 0;
+      width: calc(var(--ux) * 420);
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--color-green) 35%, transparent)
+      );
+    }
+
+    .entry:first-child::before {
+      left: 0;
+      top: 0;
+      width: calc(var(--ux) * 420);
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--color-green) 35%, transparent),
+        transparent
+      );
     }
 
     .stage {

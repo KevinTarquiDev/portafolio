@@ -147,9 +147,23 @@ const currentYear = new Date().getFullYear();
   .contact {
     background: linear-gradient(
       180deg,
-      var(--color-bg) 0%,
+      color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 0%,
       #150b25 40%,
       var(--color-deep) 100%
+    );
+  }
+
+  .contact::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: calc(var(--ux) * 31);
+    top: 0;
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(
+      color-mix(in srgb, var(--color-green) 55%, transparent),
+      transparent
     );
   }
 
@@ -157,7 +171,7 @@ const currentYear = new Date().getFullYear();
     display: flex;
     flex-direction: column;
     gap: 40px;
-    padding: 60px calc(var(--ux) * 20) 40px;
+    padding: 48px calc(var(--ux) * 20) 40px;
   }
 
   .contact-glow-green {
@@ -268,9 +282,21 @@ const currentYear = new Date().getFullYear();
     .contact {
       background: linear-gradient(
         180deg,
-        var(--color-bg) 0%,
+        color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 0%,
         #150b25 55%,
         var(--color-deep) 100%
+      );
+    }
+
+    .contact::before {
+      left: auto;
+      right: 0;
+      width: calc(var(--ux) * 420);
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--color-green) 35%, transparent),
+        transparent
       );
     }
 
