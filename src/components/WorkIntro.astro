@@ -1,6 +1,7 @@
 ---
-import MediaPlaceholder from "./MediaPlaceholder.astro";
+import { Picture } from "astro:assets";
 import SceneEyebrow from "./SceneEyebrow.astro";
+import ecuLanding from "../assets/projects/ecustock/landing.png";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import type { UiStrings } from "../i18n/ui";
 
@@ -33,9 +34,10 @@ const { items } = portfolio.workIntro;
       <span class="display word" aria-hidden="true">
         <span data-motion="work-w">W</span>
         <span class="window" data-motion="work-window">
-          <MediaPlaceholder
-            label={ui.featured.captionLanding}
-            dimensions="640×400"
+          <Picture
+            src={ecuLanding}
+            formats={["avif", "webp"]}
+            alt={ui.featured.captionLanding}
             class="window-media"
           />
           <span class="window-dot" data-motion="work-window-dot"></span>
@@ -132,7 +134,10 @@ const { items } = portfolio.workIntro;
   .window :global(.window-media) {
     position: absolute;
     inset: 0;
-    overflow: hidden;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     border: 2px solid var(--color-green);
     border-radius: 9999px;
   }
