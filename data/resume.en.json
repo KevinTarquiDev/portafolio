@@ -164,10 +164,20 @@
       "url": "https://webstockify.com",
       "type": "Own product",
       "roles": ["Full Stack Developer"],
-      "keywords": ["React", "TypeScript", "NestJS", "PostgreSQL", "Docker"],
+      "keywords": [
+        "React",
+        "TypeScript",
+        "NestJS",
+        "PostgreSQL",
+        "GitLab CI/CD",
+        "Docker",
+        "Kubernetes",
+        "Helm"
+      ],
       "highlights": [
-        "Developed a platform for small and medium-sized businesses with multi-user management, roles and permissions, products, categories, variants, inventory control, and web catalog publishing.",
-        "Implemented a multi-instance production deployment using Docker Compose, Nginx, Cloudflare Tunnel, and CI/CD pipelines, with isolated backend, database, and storage per client."
+        "Developed a platform for small and medium-sized businesses with multi-user management, roles and permissions, products, categories, variants, inventory control, and public web catalog.",
+        "Designed and implemented the deployment infrastructure for QA and production environments using Kubernetes (K3s), Helm, Ingress, Cloudflare, CI/CD, and backup strategies, with logical isolation between environments.",
+        "Implemented a multi-tenant architecture with centralized control and a dedicated PostgreSQL database per business."
       ]
     }
   ],

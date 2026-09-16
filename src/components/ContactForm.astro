@@ -45,7 +45,7 @@ const messages = {
   id="contact-form"
   action="/api/contact/"
   method="post"
-  class="flex flex-col gap-[22px] desk:gap-7"
+  class="flex flex-col gap-5.5 desk:gap-5"
 >
   <input type="hidden" name="locale" value={locale} />
   <input type="hidden" name="startedAt" data-contact-started-at value="" />
@@ -72,17 +72,13 @@ const messages = {
         name="name"
         type="text"
         required
-        minlength="2"
+        minlength="5"
         maxlength="100"
         autocomplete="name"
         aria-describedby="contact-name-error"
-        class="h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
+        class="field-input h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
       />
-      <p
-        id="contact-name-error"
-        class="text-sm text-purple-hi empty:hidden"
-        role="alert"
-      ></p>
+      <p id="contact-name-error" class="field-error" role="alert"></p>
     </div>
     <div class="flex flex-col gap-2.5">
       <label for="contact-email" class="mono-label text-soft">
@@ -96,13 +92,9 @@ const messages = {
         maxlength="254"
         autocomplete="email"
         aria-describedby="contact-email-error"
-        class="h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
+        class="field-input h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
       />
-      <p
-        id="contact-email-error"
-        class="text-sm text-purple-hi empty:hidden"
-        role="alert"
-      ></p>
+      <p id="contact-email-error" class="field-error" role="alert"></p>
     </div>
   </div>
   <div class="flex flex-col gap-2.5">
@@ -117,13 +109,9 @@ const messages = {
       minlength="10"
       maxlength="2000"
       aria-describedby="contact-message-error"
-      class="h-20 resize-none border-b border-ink/30 bg-transparent text-lg text-ink outline-none focus-visible:border-green desk:h-24 desk:text-xl"
+      class="field-input h-20 resize-none border-b border-ink/30 bg-transparent text-lg text-ink outline-none focus-visible:border-green desk:text-xl"
     ></textarea>
-    <p
-      id="contact-message-error"
-      class="text-sm text-purple-hi empty:hidden"
-      role="alert"
-    ></p>
+    <p id="contact-message-error" class="field-error" role="alert"></p>
   </div>
   <div class="flex flex-col gap-4 desk:flex-row desk:items-center desk:gap-5">
     <button
@@ -164,3 +152,33 @@ const messages = {
   set:html={JSON.stringify(messages)}
 ></script>
 <script src="../scripts/contact-form.ts"></script>
+
+<style>
+  /*
+   * El mensaje de error ocupa siempre el mismo espacio (1 línea a
+   * text-xs), esté o no visible: así al aparecer/desaparecer no
+   * desplaza el input siguiente ni el botón de envío. Los textos de
+   * error se mantienen cortos para no ocupar dos líneas en la columna
+   * angosta del grid de desktop.
+   */
+  .field-error {
+    min-height: 1rem;
+    color: var(--color-error);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+  }
+
+  .field-error:not(:empty) {
+    opacity: 1;
+  }
+
+  .field-input[aria-invalid="true"] {
+    border-color: var(--color-error);
+  }
+
+  .field-input[aria-invalid="true"]:focus-visible {
+    border-color: var(--color-error);
+  }
+</style>

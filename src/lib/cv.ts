@@ -26,6 +26,22 @@ export function getCvHref(locale: Locale): string {
 }
 
 /**
+ * Nombre de archivo sugerido al descargar el CV, distinto de la ruta
+ * pública: usa el nombre completo con guiones bajos y sin acentos
+ * ("Kevin_Andres_Tarqui_Tapia_CV.pdf"), con sufijo de idioma solo
+ * cuando no es el idioma principal (español).
+ */
+export function getCvDownloadName(locale: Locale): string {
+  const fullName = getResume(locale).basics.name;
+  const base = fullName
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\s+/g, "_");
+  const suffix = locale === "es" ? "" : `_${locale.toUpperCase()}`;
+  return `${base}_CV${suffix}.pdf`;
+}
+
+/**
  * Modelo de datos del CV: funciones puras y testeables que preparan
  * el contenido de cada sección desde el resume. El dibujo con pdfkit
  * (scripts/generate-cv.ts) solo recorre esta estructura.

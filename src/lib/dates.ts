@@ -73,6 +73,7 @@ export function formatMonthRange(
   const formatter = new Intl.DateTimeFormat(BCP47_BY_LOCALE[locale], {
     month: "short",
     year: "numeric",
+    timeZone: "UTC",
   });
 
   const startLabel = formatMonth(formatter, start);

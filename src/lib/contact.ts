@@ -26,7 +26,8 @@ export type ContactValidationResult =
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CONTROL_CHARS_PATTERN = /[\r\n]/;
 
-const NAME_MIN = 2;
+/** Nombre y apellido: "Ana Lopez" son 9 caracteres, "Ana Li" son 6. */
+const NAME_MIN = 5;
 const NAME_MAX = 100;
 const EMAIL_MAX = 254;
 const MESSAGE_MIN = 10;
@@ -34,6 +35,68 @@ const MESSAGE_MAX = 2000;
 
 function readString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function validateName(name: string): ContactFieldError | null {
+  if (!name) {
+    return "required";
+  }
+  if (CONTROL_CHARS_PATTERN.test(name)) {
+    return "invalid_characters";
+  }
+  if (name.length < NAME_MIN) {
+    return "too_short";
+  }
+  if (name.length > NAME_MAX) {
+    return "too_long";
+  }
+  return null;
+}
+
+function validateEmail(email: string): ContactFieldError | null {
+  if (!email) {
+    return "required";
+  }
+  if (email.length > EMAIL_MAX) {
+    return "too_long";
+  }
+  if (!EMAIL_PATTERN.test(email)) {
+    return "invalid_email";
+  }
+  return null;
+}
+
+function validateMessage(message: string): ContactFieldError | null {
+  if (!message) {
+    return "required";
+  }
+  if (message.length < MESSAGE_MIN) {
+    return "too_short";
+  }
+  if (message.length > MESSAGE_MAX) {
+    return "too_long";
+  }
+  return null;
+}
+
+/**
+ * Valida un único campo a partir de un valor desconocido. La usa tanto
+ * `validateContact` como la validación en tiempo real del cliente, para
+ * que ambas compartan exactamente las mismas reglas.
+ */
+export function validateContactField(
+  field: keyof ContactInput,
+  value: unknown,
+): ContactFieldError | null {
+  const str = readString(value);
+  switch (field) {
+    case "name":
+      return validateName(str);
+    case "email":
+      return validateEmail(str);
+    case "message":
+      return validateMessage(str);
+  }
 }
 
 /**
@@ -55,30 +118,19 @@ export function validateContact(input: unknown): ContactValidationResult {
 
   const errors: Partial<Record<keyof ContactInput, ContactFieldError>> = {};
 
-  if (!name) {
-    errors.name = "required";
-  } else if (CONTROL_CHARS_PATTERN.test(name)) {
-    errors.name = "invalid_characters";
-  } else if (name.length < NAME_MIN) {
-    errors.name = "too_short";
-  } else if (name.length > NAME_MAX) {
-    errors.name = "too_long";
+  const nameError = validateName(name);
+  if (nameError) {
+    errors.name = nameError;
   }
 
-  if (!email) {
-    errors.email = "required";
-  } else if (email.length > EMAIL_MAX) {
-    errors.email = "too_long";
-  } else if (!EMAIL_PATTERN.test(email)) {
-    errors.email = "invalid_email";
+  const emailError = validateEmail(email);
+  if (emailError) {
+    errors.email = emailError;
   }
 
-  if (!message) {
-    errors.message = "required";
-  } else if (message.length < MESSAGE_MIN) {
-    errors.message = "too_short";
-  } else if (message.length > MESSAGE_MAX) {
-    errors.message = "too_long";
+  const messageError = validateMessage(message);
+  if (messageError) {
+    errors.message = messageError;
   }
 
   if (Object.keys(errors).length > 0) {

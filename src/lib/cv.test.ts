@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildCvDocument, getCvHref, slugify } from "./cv";
+import { buildCvDocument, getCvDownloadName, getCvHref, slugify } from "./cv";
 import { getResume, type Locale } from "./resume";
 
 describe("slugify", () => {
@@ -13,6 +13,16 @@ describe("getCvHref", () => {
   test("construye la ruta del PDF por locale", () => {
     expect(getCvHref("es")).toBe("/cv/kevin-tarqui-cv-es.pdf");
     expect(getCvHref("en")).toBe("/cv/kevin-tarqui-cv-en.pdf");
+  });
+});
+
+describe("getCvDownloadName", () => {
+  test("usa el nombre completo sin acentos, sin sufijo en español", () => {
+    expect(getCvDownloadName("es")).toBe("Kevin_Andres_Tarqui_Tapia_CV.pdf");
+  });
+
+  test("agrega sufijo de idioma en inglés", () => {
+    expect(getCvDownloadName("en")).toBe("Kevin_Andres_Tarqui_Tapia_CV_EN.pdf");
   });
 });
 

@@ -1,6 +1,6 @@
 ---
 import type { UiStrings } from "../i18n/ui";
-import { getCvHref } from "../lib/cv";
+import { getCvDownloadName, getCvHref } from "../lib/cv";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import type { Locale } from "../lib/resume";
 import SignalDot from "./SignalDot.astro";
@@ -20,6 +20,7 @@ const [firstWord = "", ...restWords] = hero.displayName
 const secondWord = restWords.join(" ");
 
 const cvHref = getCvHref(locale);
+const cvDownloadName = getCvDownloadName(locale);
 ---
 
 <section id="top" data-scene-label={ui.hero.eyebrow} class="scene hero">
@@ -80,7 +81,12 @@ const cvHref = getCvHref(locale);
         </svg>
         <span>{ui.hero.ctaWork}</span>
       </a>
-      <a href={cvHref} download class="cta-cv" data-cursor="cta">
+      <a
+        href={cvHref}
+        download={cvDownloadName}
+        class="cta-cv"
+        data-cursor="cta"
+      >
         <span class="cta-cv-label">
           {ui.hero.ctaCv}
           <span class="mono-label cta-cv-badge">{ui.hero.cvBadge}</span>
@@ -97,11 +103,17 @@ const cvHref = getCvHref(locale);
 <style>
   /* ---------- Mobile · artboard M01 (390×844) ---------- */
   .hero {
-    height: calc(var(--u) * 720);
+    --mobile-stage-shift: clamp(
+      calc(var(--u) * 24),
+      4.5svh,
+      calc(var(--u) * 44)
+    );
+    height: max(100svh, calc(var(--u) * 720));
   }
 
   .stage {
     height: 100%;
+    transform: translateY(var(--mobile-stage-shift));
   }
 
   .glow-purple {
@@ -287,6 +299,7 @@ const cvHref = getCvHref(locale);
 
     .stage {
       height: calc(var(--u) * 900);
+      transform: none;
     }
 
     .glow-purple {

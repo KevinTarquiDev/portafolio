@@ -37,6 +37,9 @@
   --color-lilac: #c9b6f2;
   --color-green: #5fd18a;
 
+  /* Estado de error: uso exclusivo en validación de formularios */
+  --color-error: #ff6b6b;
+
   /* Tipografía */
   --font-sans:
     "Bricolage Grotesque Variable", "Arial Narrow", Arial, sans-serif;
@@ -114,6 +117,23 @@
   to {
     opacity: 1;
   }
+}
+
+/* Aviso breve de error en un input/textarea: usado por el formulario de contacto. */
+@keyframes field-shake {
+  25% {
+    translate: -4px 0;
+  }
+  50% {
+    translate: 3px 0;
+  }
+  75% {
+    translate: -2px 0;
+  }
+}
+
+.field-shake {
+  animation: field-shake 0.3s ease-in-out;
 }
 
 /* Título display: tipografía gigante, condensada y en negrita. */
