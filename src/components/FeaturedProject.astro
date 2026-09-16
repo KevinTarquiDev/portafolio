@@ -1,11 +1,11 @@
 ---
 import { Picture } from "astro:assets";
-import SignalDot from "./SignalDot.astro";
 import ecuAdmin from "../assets/projects/ecustock/admin.png";
 import ecuLanding from "../assets/projects/ecustock/landing.png";
 import ecuMobile from "../assets/projects/ecustock/mobile.png";
-import type { PortfolioViewModel } from "../lib/portfolio";
 import type { UiStrings } from "../i18n/ui";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import SignalDot from "./SignalDot.astro";
 
 export interface Props {
   portfolio: PortfolioViewModel;
@@ -146,7 +146,6 @@ const backgroundWords = project.keywords
         </p>
 
         <div class="scroll-hint" aria-hidden="true">
-          <span class="mono-label text-faint">{ui.featured.scrollHint}</span>
           <span class="scroll-hint-line"></span>
           <svg viewBox="0 0 24 24" fill="none">
             <path
@@ -168,8 +167,6 @@ const backgroundWords = project.keywords
   .featured {
     position: relative;
     z-index: 1;
-    /* El Stack abre con este tinte, así que la sutura termina en él. */
-    --seam-color: color-mix(in srgb, var(--color-purple) 22%, var(--color-bg));
     overflow: hidden;
   }
 
@@ -179,11 +176,6 @@ const backgroundWords = project.keywords
 
   .panel-media {
     height: calc(var(--u) * 640);
-    background: linear-gradient(
-      180deg,
-      transparent 52%,
-      color-mix(in srgb, var(--color-purple) 22%, var(--color-bg)) 100%
-    );
   }
 
   .stage {
@@ -401,15 +393,6 @@ const backgroundWords = project.keywords
 
   /* ---------- Desktop · artboard 05 (2 viewports de 1440×900) ---------- */
   @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
-    /*
-     * En desktop el Stack tapa su borde superior con .mask en color base,
-     * de modo que ahí la sutura tiene que fundirse con el fondo y no con
-     * el morado que declara el degradado de la sección.
-     */
-    .featured {
-      --seam-color: var(--color-bg);
-    }
-
     .panel-intro,
     .panel-media {
       height: 100svh;
@@ -690,8 +673,8 @@ const backgroundWords = project.keywords
       width: 50%;
     }
 
-    /* El "01" se queda fijo mientras pasa el segundo panel: no se recorta. */
-    :global(html.motion) .panel-intro {
+    /* Una sola superficie: halos y letras cruzan la unión de los paneles. */
+    :global(html.motion) .panel {
       overflow: visible;
     }
 

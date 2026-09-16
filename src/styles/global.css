@@ -181,37 +181,35 @@
 }
 
 /*
- * Sutura entre escenas.
- *
- * Cada escena recorta su contenido en el borde inferior (overflow: hidden),
- * así que al cruzar el límite ese recorte se lee como una línea horizontal
- * dura entre secciones. Esta banda disuelve el contenido en el color base
- * justo antes del corte, de modo que una escena se funde con la siguiente
- * en lugar de terminar de golpe.
- *
- * Solo hace falta abajo: el borde superior de la escena entrante no recorta
- * nada, porque su contenido empieza dentro.
+ * Ambos bordes comparten el mismo fondo. El fundido superior también es
+ * necesario: los halos y las letras decorativas pueden nacer fuera de la
+ * escena. La franja corta deja libres los títulos y controles interiores.
  */
 [data-scene-label] {
   position: relative;
-  /* Cada escena se aísla para que su sutura no pinte sobre las vecinas. */
   isolation: isolate;
+  --scene-fade: clamp(32px, 6svh, 64px);
 }
 
 [data-scene-label]::after {
   content: "";
   position: absolute;
-  inset-inline: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 7;
-  height: var(--seam, calc(var(--u) * 96));
   pointer-events: none;
   background: linear-gradient(
-    to top,
-    var(--seam-color, var(--color-bg)) 0%,
-    color-mix(in srgb, var(--seam-color, var(--color-bg)) 72%, transparent) 42%,
-    transparent 100%
+    to bottom,
+    var(--color-bg),
+    transparent var(--scene-fade),
+    transparent calc(100% - var(--scene-fade)),
+    var(--color-bg)
   );
+}
+
+/* El portal se disuelve con GSAP; el contacto conserva su fondo final. */
+#work::after,
+#contact::after {
+  display: none;
 }
 
 /* Resplandor radial decorativo (morado por defecto). */

@@ -33,7 +33,6 @@ export interface UiStrings {
     eyebrow: string;
     stackLabel: string;
     ctaVisit: string;
-    scrollHint: string;
     captionAdmin: string;
     captionLanding: string;
     captionMobile: string;
@@ -56,6 +55,7 @@ export interface UiStrings {
     labelEmail: string;
     labelPhone: string;
     labelLocation: string;
+    whatsappGreeting: string;
     formName: string;
     formEmail: string;
     formMessage: string;
@@ -130,7 +130,6 @@ const es: UiStrings = {
     eyebrow: "Proyecto destacado",
     stackLabel: "Stack",
     ctaVisit: "Visitar sitio",
-    scrollHint: "Scroll horizontal",
     captionAdmin: "Panel administrativo",
     captionLanding: "Landing pública",
     captionMobile: "Catálogo mobile",
@@ -153,6 +152,7 @@ const es: UiStrings = {
     labelEmail: "Email",
     labelPhone: "Teléfono",
     labelLocation: "Ubicación",
+    whatsappGreeting: "Hola, vi tu portafolio y me gustaría conversar contigo.",
     formName: "Nombre",
     formEmail: "Email",
     formMessage: "Mensaje",
@@ -227,7 +227,6 @@ const en: UiStrings = {
     eyebrow: "Featured project",
     stackLabel: "Stack",
     ctaVisit: "Visit site",
-    scrollHint: "Horizontal scroll",
     captionAdmin: "Admin panel",
     captionLanding: "Public landing",
     captionMobile: "Mobile catalog",
@@ -250,6 +249,8 @@ const en: UiStrings = {
     labelEmail: "Email",
     labelPhone: "Phone",
     labelLocation: "Location",
+    whatsappGreeting:
+      "Hi, I saw your portfolio and would like to get in touch.",
     formName: "Name",
     formEmail: "Email",
     formMessage: "Message",

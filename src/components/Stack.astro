@@ -134,7 +134,6 @@ const columns = portfolio.stack.groups.map((group, index) => {
   .stack {
     --stack-unit: min(var(--u), calc(100svh / 844));
     min-height: calc(var(--stack-unit) * 844);
-    --seam-color: color-mix(in srgb, var(--color-purple) 6%, var(--color-bg));
     overflow: clip;
     background: linear-gradient(
       180deg,
@@ -283,7 +282,7 @@ const columns = portfolio.stack.groups.map((group, index) => {
   @media (prefers-reduced-motion: no-preference) and (max-width: 1023px),
     (prefers-reduced-motion: no-preference) and (orientation: portrait) {
     :global(html.motion) .stack {
-      height: max(calc(var(--stack-unit) * 2800), 340svh);
+      height: 250svh;
     }
 
     :global(html.motion) .stage {

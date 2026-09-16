@@ -1,10 +1,10 @@
 ---
-import LanguageSwitch from "./LanguageSwitch.astro";
-import MobileMenu from "./MobileMenu.astro";
+import type { UiStrings } from "../i18n/ui";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import type { Locale } from "../lib/resume";
 import { SCENE_TOTAL, sceneIndex } from "../lib/scenes";
-import type { UiStrings } from "../i18n/ui";
+import LanguageSwitch from "./LanguageSwitch.astro";
+import MobileMenu from "./MobileMenu.astro";
 
 export interface Props {
   locale: Locale;
@@ -83,7 +83,7 @@ const navLinks: Array<{ href: string; label: string }> = [
 <div
   data-hud-counter
   aria-hidden="true"
-  class="pointer-events-none fixed right-[calc(var(--ux)*44)] bottom-[calc(var(--u)*48)] z-20 hidden items-center gap-3.5 desk:flex"
+  class="pointer-events-none fixed right-[calc(var(--ux)*44)] bottom-[calc(var(--u)*20)] z-20 hidden items-center gap-3.5 desk:flex"
 >
   <span data-hud-counter-text class="mono-label text-faint">
     {sceneIndex("top")} / {SCENE_TOTAL}

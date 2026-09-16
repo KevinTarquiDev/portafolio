@@ -97,14 +97,7 @@ const cvHref = getCvHref(locale);
 <style>
   /* ---------- Mobile · artboard M01 (390×844) ---------- */
   .hero {
-    height: calc(var(--u) * 844);
-    /* La sutura inferior se funde con el tinte con el que abre Sobre mí. */
-    --seam-color: color-mix(in srgb, var(--color-purple) 6%, var(--color-bg));
-    background: linear-gradient(
-      180deg,
-      transparent 72%,
-      color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 100%
-    );
+    height: calc(var(--u) * 784);
   }
 
   .stage {
@@ -156,11 +149,11 @@ const cvHref = getCvHref(locale);
     position: absolute;
     display: block;
     white-space: nowrap;
-    font-size: calc(var(--u) * 200);
+    font-size: calc(var(--u) * 178);
   }
 
   .word-first {
-    left: calc(var(--ux) * -10);
+    left: calc(var(--ux) * 10);
     top: calc(var(--u) * 120);
     z-index: 3;
     color: var(--color-ink);
@@ -168,16 +161,13 @@ const cvHref = getCvHref(locale);
 
   .word-second {
     display: block;
-    left: calc(var(--ux) * 2);
-    top: calc(var(--u) * 280);
+    right: calc(var(--ux) * 10);
+    top: calc(var(--u) * 272);
     z-index: 2;
   }
 
   .word-second .display {
-    /* Solo mobile: al tamaño de .word (200u) la palabra completa no entra
-       en una línea sin cortarse, así que las letras se sobremontan entre
-       sí para que quepa sin reducir el tamaño. Se resetea en desktop. */
-    font-size: calc(var(--u) * 185);
+    font-size: calc(var(--u) * 156);
   }
 
   .layer-outline {
@@ -197,7 +187,7 @@ const cvHref = getCvHref(locale);
     position: absolute;
     z-index: 4;
     left: calc(var(--ux) * 210);
-    top: calc(var(--u) * 494);
+    top: calc(var(--u) * 446);
     display: flex;
     flex-direction: column;
     gap: calc(var(--u) * 16);
@@ -215,7 +205,7 @@ const cvHref = getCvHref(locale);
     position: absolute;
     z-index: 4;
     left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 628);
+    top: calc(var(--u) * 570);
     width: calc(var(--u) * 350);
     margin: 0;
     font-size: calc(var(--u) * 25);
@@ -228,7 +218,7 @@ const cvHref = getCvHref(locale);
     z-index: 4;
     left: calc(var(--ux) * 20);
     right: calc(var(--ux) * 20);
-    top: calc(var(--u) * 756);
+    top: calc(var(--u) * 676);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -282,11 +272,6 @@ const cvHref = getCvHref(locale);
   @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
     .hero {
       height: 100svh;
-      --seam-color: color-mix(
-        in srgb,
-        var(--color-purple) 11%,
-        var(--color-bg)
-      );
     }
 
     .stage {
@@ -339,13 +324,13 @@ const cvHref = getCvHref(locale);
     }
 
     .word-first {
-      left: calc(var(--ux) * -10);
+      left: calc(var(--ux) * 40);
       top: calc(var(--u) * 48);
     }
 
     .word-second {
       left: auto;
-      right: calc(var(--ux) * -10);
+      right: calc(var(--ux) * 40);
       top: calc(var(--u) * 452);
     }
 
@@ -353,7 +338,6 @@ const cvHref = getCvHref(locale);
       /* Deshace la compresión mobile: en desktop la palabra ya entra bien
          al tamaño normal de .word (540u), igual que word-first. */
       font-size: calc(var(--u) * 540);
-      letter-spacing: -0.012em;
     }
 
     .layer-outline {

@@ -7,6 +7,7 @@ import {
   getPortfolio,
   phoneHref,
   splitCompanyName,
+  whatsappHref,
 } from "./portfolio";
 
 describe("splitCompanyName", () => {
@@ -32,6 +33,14 @@ describe("splitCompanyName", () => {
 describe("phoneHref", () => {
   test("normaliza un teléfono con espacios a tel:", () => {
     expect(phoneHref("+593 96 400 4859")).toBe("tel:+593964004859");
+  });
+});
+
+describe("whatsappHref", () => {
+  test("usa el teléfono del resume y codifica el saludo inicial", () => {
+    expect(whatsappHref("+593 96 400 4859", "Hola, ¿cómo estás?")).toBe(
+      "https://wa.me/593964004859?text=Hola%2C%20%C2%BFc%C3%B3mo%20est%C3%A1s%3F",
+    );
   });
 });
 

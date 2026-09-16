@@ -44,6 +44,15 @@ export function phoneHref(phone: string): string {
 }
 
 /**
+ * Construye un enlace público de WhatsApp con el teléfono canónico del
+ * resume y un saludo localizado definido por la interfaz.
+ */
+export function whatsappHref(phone: string, message: string): string {
+  const digits = phone.replace(/\D/g, "");
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
+
+/**
  * Quita el protocolo y la barra final de una URL para mostrarla
  * como texto ("https://webstockify.com/" -> "webstockify.com").
  */

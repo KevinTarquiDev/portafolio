@@ -27,7 +27,7 @@ interface Kit {
 type Cleanup = () => void;
 
 /** Colores de global.css usados como extremos de interpolación. */
-const COLOR_DIM = "#4e4760";
+const COLOR_DIM = "#9a92ad";
 const COLOR_INK = "#f2eef7";
 
 let entrancePlayed = false;
@@ -61,12 +61,12 @@ async function initMotion(): Promise<void> {
       cleanups.push(heroEntrance(kit));
     }
 
+    cleanups.push(heroOrbit(kit, desk));
     heroToAbout(kit, desk);
 
     // Orden de creación = orden del documento, necesario para que los
     // pins calculen bien el espacio que añaden.
     if (desk) {
-      cleanups.push(heroOrbit(kit));
       aboutScene(kit, true);
       cleanups.push(experienceDesk(kit));
       workScene(kit, true);
@@ -83,7 +83,7 @@ async function initMotion(): Promise<void> {
     }
     educationScene(kit, desk);
     contactScene(kit, desk);
-    cleanups.push(sceneHandoffs(kit, desk));
+    sceneHandoffs(kit, desk);
 
     return () => {
       for (const cleanup of cleanups) {
@@ -234,22 +234,51 @@ function setupBreakpointContinuity({ ScrollTrigger }: Kit): void {
 }
 
 /**
- * Parte un texto en letras (inline-block) para animarlas. revert() restaura
- * el texto original, que recupera el kerning de la fuente.
+ * Parte un texto en letras animables y conserva las posiciones que tenían
+ * con el kerning nativo. Así, al restaurar el texto no hay un salto final.
  */
 function splitChars(element: HTMLElement): {
   chars: HTMLElement[];
   revert: Cleanup;
 } {
   const original = element.textContent ?? "";
+  const text = original.trim();
+  element.textContent = text;
+
+  const textNode = element.firstChild;
+  const targetOffsets: number[] = [];
+  if (textNode instanceof Text) {
+    const elementLeft = element.getBoundingClientRect().left;
+    const range = document.createRange();
+    let offset = 0;
+    for (const char of [...text]) {
+      range.setStart(textNode, offset);
+      offset += char.length;
+      range.setEnd(textNode, offset);
+      targetOffsets.push(range.getBoundingClientRect().left - elementLeft);
+    }
+  }
+
   element.textContent = "";
-  const chars = [...original.trim()].map((char) => {
+  const chars = [...text].map((char) => {
     const span = document.createElement("span");
     span.textContent = char;
     span.style.display = "inline-block";
     element.appendChild(span);
     return span;
   });
+
+  chars.forEach((char, index) => {
+    const targetOffset = targetOffsets[index];
+    if (targetOffset === undefined) return;
+    const elementLeft = element.getBoundingClientRect().left;
+    const currentOffset = char.getBoundingClientRect().left - elementLeft;
+    const kerningAdjustment = targetOffset - currentOffset;
+    if (Math.abs(kerningAdjustment) > 0.01) {
+      char.style.marginLeft = `${kerningAdjustment}px`;
+    }
+  });
+
   return {
     chars,
     revert: () => {
@@ -263,120 +292,43 @@ function splitChars(element: HTMLElement): {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Pares con coreografía propia, que no deben recibir el encadenado
- * genérico: la O de Trabajo abre EcuStock (workScene) y EcuStock cede el
- * paso al Stack (featuredToStack). El Hero sí lo recibe: heroToAbout solo
- * desplaza sus piezas de fondo y el titular seguía llegando entero al
- * borde de la sección.
+ * Revela los encabezados mientras entran en la zona de lectura. No transforma
+ * el escenario: eso desplazaría los fondos, alteraría los sticky y atenuaría
+ * controles que el visitante todavía está usando.
  */
-const HANDOFF_SKIP: ReadonlySet<SceneId> = new Set(["work", "featured"]);
-
-/** Progreso de entrada y de salida de una escena, de 0 a 1. */
-interface HandoffState {
-  enter: number;
-  exit: number;
-}
-
-/**
- * Encadena cada escena con la siguiente. Mientras la entrante sube por el
- * viewport, la saliente se eleva y se apaga, de modo que en el momento del
- * relevo ya no queda contenido que el borde de la sección pueda recortar:
- * es lo que evita que el cambio se lea como un corte horizontal y lo que
- * hace que las escenas se perciban como un mismo scroll y no como bloques
- * independientes.
- *
- * Una escena intermedia entra y sale, así que ambos progresos se combinan
- * en un único punto de escritura: dos tweens sobre la misma opacidad se
- * pisarían al cruzarse.
- */
-function sceneHandoffs({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
-  // unit() mide con una sonda en el DOM: se cachea y solo se revisa cuando
-  // ScrollTrigger recalcula, no en cada scroll.
-  let shift = unit();
-  const measure = () => {
-    shift = unit();
-  };
-  ScrollTrigger.addEventListener("refresh", measure);
-
-  const enterShift = () => (desk ? 56 : 40) * shift;
-  const exitShift = () => (desk ? -72 : -52) * shift;
-
-  const states = new Map<SceneId, HandoffState>();
-  const stages = new Map<SceneId, HTMLElement[]>();
-
-  for (const id of SCENE_IDS) {
+function sceneHandoffs({ gsap }: Kit, desk: boolean): void {
+  for (const id of [
+    "about",
+    "experience",
+    "stack",
+    "practices",
+    "education",
+  ] as const) {
     const scene = section(id);
-    if (!scene) {
-      continue;
+    if (!scene) continue;
+    const titles = scene.querySelectorAll<HTMLElement>(
+      ".title, .mobile-title, .years, .degree",
+    );
+    for (const title of titles) {
+      if (title.offsetParent === null) continue;
+      gsap.fromTo(
+        title,
+        { y: () => (desk ? 36 : 24) * unit(), opacity: 0.65 },
+        {
+          y: 0,
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: title,
+            start: "top 92%",
+            end: "top 65%",
+            scrub: 0.35,
+            invalidateOnRefresh: true,
+          },
+        },
+      );
     }
-    stages.set(id, [...scene.querySelectorAll<HTMLElement>(".stage")]);
-    // Sin transición propia una escena ya está presente: enter = 1.
-    states.set(id, { enter: 1, exit: 0 });
   }
-
-  const apply = (id: SceneId) => {
-    const state = states.get(id);
-    const targets = stages.get(id);
-    if (!state || !targets || targets.length === 0) {
-      return;
-    }
-    gsap.set(targets, {
-      y: (1 - state.enter) * enterShift() + state.exit * exitShift(),
-      opacity: (0.25 + 0.75 * state.enter) * (1 - 0.88 * state.exit),
-    });
-  };
-
-  SCENE_IDS.forEach((id, index) => {
-    const nextId = SCENE_IDS[index + 1];
-    if (!nextId || HANDOFF_SKIP.has(id)) {
-      return;
-    }
-    const outgoing = section(id);
-    const incoming = section(nextId);
-    const outgoingState = states.get(id);
-    const incomingState = states.get(nextId);
-    if (!outgoing || !incoming || !outgoingState || !incomingState) {
-      return;
-    }
-
-    incomingState.enter = 0;
-    apply(nextId);
-
-    gsap.to(outgoingState, {
-      exit: 1,
-      ease: "none",
-      scrollTrigger: {
-        trigger: incoming,
-        start: "top 85%",
-        end: "top top",
-        scrub: 0.7,
-        invalidateOnRefresh: true,
-      },
-      onUpdate: () => apply(id),
-    });
-
-    gsap.to(incomingState, {
-      enter: 1,
-      ease: "none",
-      scrollTrigger: {
-        trigger: incoming,
-        start: "top bottom",
-        end: "top 35%",
-        scrub: 0.7,
-        invalidateOnRefresh: true,
-      },
-      onUpdate: () => apply(nextId),
-    });
-  });
-
-  return () => {
-    ScrollTrigger.removeEventListener("refresh", measure);
-    for (const targets of stages.values()) {
-      if (targets.length > 0) {
-        gsap.set(targets, { clearProps: "transform,opacity" });
-      }
-    }
-  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -397,40 +349,45 @@ function setupHud({ gsap, ScrollTrigger }: Kit): void {
   const progress = document.querySelector<HTMLElement>("[data-hud-progress]");
   const total = String(SCENE_IDS.length).padStart(2, "0");
 
-  if (progress) {
-    ScrollTrigger.create({
-      trigger: document.body,
-      start: "top top",
-      end: "bottom bottom",
-      refreshPriority: -1,
-      onUpdate: (self) => {
-        gsap.set(progress, { width: `${self.progress * 100}%` });
-      },
-    });
-  }
-
-  SCENE_IDS.forEach((id, index) => {
-    const scene = section(id);
-    if (!scene) {
-      return;
-    }
-    const indexLabel = String(index + 1).padStart(2, "0");
-    const label = scene.dataset.sceneLabel ?? "";
-
-    ScrollTrigger.create({
-      trigger: scene,
-      start: "top center",
-      end: "bottom center",
-      refreshPriority: -1,
-      onToggle: (self) => {
-        if (!self.isActive) {
-          return;
-        }
-        if (railIndex) railIndex.textContent = indexLabel;
-        if (railLabel && label) railLabel.textContent = label;
-        if (counterText) counterText.textContent = `${indexLabel} / ${total}`;
-      },
-    });
+  // Medir los contenedores incluye todo el recorrido de cada pin. Con
+  // onToggle por sección, un salto de ancla puede omitir varias entradas.
+  let starts: { top: number; index: string; label: string }[] = [];
+  let active = "";
+  const update = () => {
+    const focus = window.scrollY + window.innerHeight * 0.5;
+    const current = starts.findLast((scene) => scene.top <= focus);
+    if (!current || current.index === active) return;
+    active = current.index;
+    if (railIndex) railIndex.textContent = current.index;
+    if (railLabel) railLabel.textContent = current.label;
+    if (counterText) counterText.textContent = `${current.index} / ${total}`;
+  };
+  ScrollTrigger.create({
+    trigger: document.body,
+    start: "top top",
+    end: "bottom bottom",
+    refreshPriority: -1,
+    onRefresh: () => {
+      starts = SCENE_IDS.flatMap((id, index) => {
+        const scene = section(id);
+        return scene
+          ? [
+              {
+                top:
+                  sceneContainer(scene).getBoundingClientRect().top +
+                  window.scrollY,
+                index: String(index + 1).padStart(2, "0"),
+                label: scene.dataset.sceneLabel ?? "",
+              },
+            ]
+          : [];
+      });
+      update();
+    },
+    onUpdate: (self) => {
+      if (progress) gsap.set(progress, { width: `${self.progress * 100}%` });
+      update();
+    },
   });
 }
 
@@ -564,7 +521,7 @@ function heroEntrance({ gsap }: Kit): Cleanup {
 }
 
 /** El anillo discontinuo rota muy lento; el punto verde sigue su órbita. */
-function heroOrbit({ gsap, ScrollTrigger }: Kit): Cleanup {
+function heroOrbit({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
   const hero = section("top");
   const ring = hero?.querySelector<HTMLElement>(".orbit-inner");
   const orbit = hero?.querySelector<HTMLElement>(".orbit-outer");
@@ -594,7 +551,7 @@ function heroOrbit({ gsap, ScrollTrigger }: Kit): Cleanup {
     ease: "none",
   });
   const travel = gsap.to(state, {
-    angle: Math.PI * 2,
+    angle: Math.PI * 2 * (desk ? 1 : -1),
     duration: 90,
     repeat: -1,
     ease: "none",
@@ -686,8 +643,8 @@ function heroToAbout({ gsap }: Kit, desk: boolean): void {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Desktop: pin corto; el párrafo se enciende palabra a palabra, BACKEND
- * vertical con parallax inverso y las bandas avanzan en sentidos opuestos.
+ * Desktop: pin corto. En ambos formatos, el párrafo se enciende palabra a
+ * palabra, BACKEND tiene parallax inverso y las bandas entran desde abajo.
  */
 function aboutScene({ gsap }: Kit, desk: boolean): void {
   const about = section("about");
@@ -705,7 +662,7 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
       scrollTrigger: {
         trigger: about,
         start: "top top",
-        end: "+=155%",
+        end: "+=110%",
         pin: true,
         scrub: 0.7,
         invalidateOnRefresh: true,
@@ -725,8 +682,7 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
         0,
       );
     }
-    // Las aspas ya giran solas (marquesina CSS): el scroll solo las monta
-    // en su sitio y añade un contrapeso lateral muy leve.
+    // Entrada y contrapeso lateral de las bandas durante el pin.
     if (bandBack) {
       timeline.fromTo(
         bandBack,
@@ -756,56 +712,71 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
     return;
   }
 
-  const timeline = gsap.timeline({
+  gsap.fromTo(
+    words,
+    { color: COLOR_DIM },
+    {
+      color: COLOR_INK,
+      stagger: 0.025,
+      ease: "none",
+      scrollTrigger: {
+        trigger: motionEl(about, "about-summary"),
+        start: "top 85%",
+        end: "bottom 65%",
+        scrub: 0.35,
+      },
+    },
+  );
+  if (vertical) {
+    gsap.fromTo(
+      vertical,
+      { y: () => -40 * unit() },
+      {
+        y: () => 40 * unit(),
+        ease: "none",
+        scrollTrigger: {
+          trigger: about,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.5,
+          invalidateOnRefresh: true,
+        },
+      },
+    );
+  }
+
+  const bandTimeline = gsap.timeline({
     defaults: { ease: "none" },
     scrollTrigger: {
       trigger: about,
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 0.65,
+      start: "bottom bottom",
+      end: "+=65%",
+      pin: true,
+      anticipatePin: 1,
+      scrub: 0.45,
       invalidateOnRefresh: true,
     },
   });
-  timeline.fromTo(
-    words,
-    { color: COLOR_DIM },
-    { color: COLOR_INK, duration: 0.36, stagger: 0.018 },
-    0,
-  );
-  if (vertical) {
-    timeline.fromTo(
-      vertical,
-      { y: () => -40 * unit() },
-      { y: () => 40 * unit(), duration: 1 },
+  if (bandBack) {
+    bandTimeline.fromTo(
+      bandBack,
+      { x: () => -24 * unit(), y: () => 96 * unit(), opacity: 0 },
+      { x: () => 24 * unit(), y: 0, opacity: 1, duration: 0.7 },
       0,
     );
   }
-  if (bandBack) {
-    timeline.fromTo(
-      bandBack,
-      { x: () => -28 * unit(), y: () => 90 * unit(), opacity: 0 },
-      {
-        x: () => 28 * unit(),
-        y: 0,
-        opacity: 1,
-        duration: 0.56,
-      },
-      0.26,
-    );
-  }
   if (bandFront) {
-    timeline.fromTo(
+    bandTimeline.fromTo(
       bandFront,
-      { x: () => 28 * unit(), y: () => 116 * unit(), opacity: 0 },
-      {
-        x: () => -28 * unit(),
-        y: 0,
-        opacity: 1,
-        duration: 0.56,
-      },
-      0.26,
+      { x: () => 24 * unit(), y: () => 120 * unit(), opacity: 0 },
+      { x: () => -24 * unit(), y: 0, opacity: 1, duration: 0.7 },
+      0,
     );
   }
+  const bands = [bandBack, bandFront].filter(
+    (band): band is HTMLElement => band !== null,
+  );
+  bandTimeline.to(bands, { opacity: 1, duration: 0.3 }, 0.7);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -932,9 +903,9 @@ function maskSwap(
 }
 
 /**
- * Desktop: escena fijada ~300vh. El año cambia dígito a dígito, empresa y
- * rol entran con máscara, el nodo baja por el riel y el nombre fantasma
- * se desliza y cambia con cada empresa.
+ * Desktop: el recorrido depende del número de puestos. El año cambia dígito
+ * a dígito con un giro vertical; empresa y rol entran con máscara, el nodo
+ * baja por el riel y el nombre fantasma cambia con cada empresa.
  */
 function experienceDesk({ gsap }: Kit): Cleanup {
   const experience = section("experience");
@@ -1031,7 +1002,7 @@ function experienceDesk({ gsap }: Kit): Cleanup {
     scrollTrigger: {
       trigger: experience,
       start: "top top",
-      end: () => `+=${jobs.length * window.innerHeight}`,
+      end: () => `+=${jobs.length * window.innerHeight * 0.7}`,
       pin: true,
       scrub: 0.65,
       invalidateOnRefresh: true,
@@ -1104,8 +1075,9 @@ function experienceMobile({ gsap, ScrollTrigger }: Kit): Cleanup {
   };
 
   jobs.forEach((job) => {
-    gsap.from(job, {
-      y: 26,
+    const body = job.querySelector<HTMLElement>(".job-body");
+    if (!body) return;
+    gsap.from(body, {
       opacity: 0,
       duration: 0.65,
       ease: "power3.out",
@@ -1197,31 +1169,32 @@ function workScene({ gsap }: Kit, desk: boolean): void {
     .to(motionEl(work, "work-window-dot"), { opacity: 0, duration: 0.15 }, 0)
     .to(
       motionEl(work, "work-w"),
-      { xPercent: -apart, opacity: 0, duration: 0.6 },
+      { xPercent: -apart, opacity: 0, duration: 0.5, ease: "power1.out" },
       0.1,
     )
     .to(
       motionEl(work, "work-rk"),
-      { xPercent: apart, opacity: 0, duration: 0.6 },
+      { xPercent: apart, opacity: 0, duration: 0.5, ease: "power1.out" },
       0.1,
     )
-    .to(window_, { scale: coverScale, duration: 0.9, ease: "power2.in" }, 0.05)
-    .to(motionEl(work, "work-glow"), { opacity: 0.15, duration: 0.2 }, 0.78)
-    .to(work, { backgroundColor: "rgba(11, 8, 18, 0)", duration: 0.2 }, 0.8)
-    .to(window_, { opacity: 0, duration: 0.18 }, 0.8);
+    .to(
+      window_,
+      { scale: coverScale, duration: 0.9, ease: "power1.inOut" },
+      0.05,
+    )
+    .to(window_, { opacity: 0, duration: 0.9, ease: "power1.out" }, 0.05)
+    .to(motionEl(work, "work-glow"), { opacity: 0, duration: 0.75 }, 0.05)
+    .to(work, { backgroundColor: "rgba(11, 8, 18, 0)", duration: 0.8 }, 0.15);
 
   if (media) {
-    timeline
-      .to(
-        media,
-        {
-          borderColor: "rgba(95, 209, 138, 0)",
-          filter: "brightness(0.38) saturate(0.65)",
-          duration: 0.24,
-        },
-        0.7,
-      )
-      .to(media, { opacity: 0.1, duration: 0.16 }, 0.8);
+    timeline.to(
+      media,
+      {
+        borderColor: "rgba(95, 209, 138, 0)",
+        duration: 0.65,
+      },
+      0.05,
+    );
   }
 }
 
@@ -1241,7 +1214,8 @@ function featuredDesk({ gsap }: Kit): Cleanup {
     return () => {};
   }
 
-  const travel = () => track.scrollWidth - featured.clientWidth;
+  // Los halos pueden sobresalir de los paneles; no forman parte del viaje.
+  const travel = () => track.offsetWidth - featured.clientWidth;
 
   const timeline = gsap.timeline({
     defaults: { ease: "none" },
@@ -1295,24 +1269,29 @@ function featuredDesk({ gsap }: Kit): Cleanup {
   return () => featured.removeEventListener("focusin", onFocus);
 }
 
-/** Mobile: las capturas entran escalonadas y las palabras de fondo derivan. */
+/** Mobile: cada captura entra al ser visible y las palabras de fondo derivan. */
 function featuredMobile({ gsap }: Kit): void {
   const featured = section("featured");
   if (!featured) {
     return;
   }
-  gsap.from(motionEls(featured, "featured-media"), {
-    y: 40,
-    opacity: 0,
-    duration: 0.8,
-    stagger: 0.12,
-    ease: "power3.out",
-    scrollTrigger: {
-      trigger: motionEl(featured, "featured-words") ?? featured,
-      start: "top 80%",
-      once: true,
-    },
-  });
+  for (const media of motionEls(featured, "featured-media")) {
+    gsap.fromTo(
+      media,
+      { y: 28, opacity: 0.45 },
+      {
+        y: 0,
+        opacity: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: media,
+          start: "top 95%",
+          end: "top 65%",
+          scrub: 0.35,
+        },
+      },
+    );
+  }
   const words = motionEl(featured, "featured-words");
   if (words) {
     gsap.fromTo(
@@ -1333,20 +1312,14 @@ function featuredMobile({ gsap }: Kit): void {
   featuredToStack(gsap, featured);
 }
 
-/** Suaviza el último panel de EcuStock mientras el Stack entra por debajo. */
+/** Enlaza los fondos de EcuStock y Stack conservando legibles las capturas. */
 function featuredToStack(gsap: Gsap, featured: HTMLElement): void {
   const stack = section("stack");
   if (!stack) {
     return;
   }
-  const outgoing = [
-    motionEl(featured, "featured-words"),
-    ...motionEls(featured, "featured-media"),
-  ].filter((element): element is HTMLElement => element !== null);
+  const outgoing = motionEl(featured, "featured-words");
   const stackGlow = stack.querySelector<HTMLElement>(".stack-glow");
-  // Arranca con el Stack ya asomando: en mobile las capturas están todavía
-  // en pantalla cuando su borde superior cruza el viewport, y apagarlas
-  // desde ahí las dejaba ilegibles la mitad del recorrido.
   const transition = {
     trigger: stack,
     start: "top 78%",
@@ -1355,7 +1328,7 @@ function featuredToStack(gsap: Gsap, featured: HTMLElement): void {
     invalidateOnRefresh: true,
   };
 
-  if (outgoing.length > 0) {
+  if (outgoing) {
     gsap.to(outgoing, {
       y: () => -55 * unit(),
       opacity: 0.45,
@@ -1499,7 +1472,7 @@ function stackDesk({ gsap }: Kit): Cleanup {
     scrollTrigger: {
       trigger: stack,
       start: "top top",
-      end: () => `+=${Math.max(2.8, maxCount * 0.42) * window.innerHeight}`,
+      end: () => `+=${Math.max(2, maxCount * 0.3) * window.innerHeight}`,
       pin: true,
       scrub: 0.7,
       onRefresh: measure,
@@ -1640,7 +1613,7 @@ function stackMobile({ gsap }: Kit): Cleanup {
  * sentido contrario; cada nodo se enciende en orden y su título entra con
  * clip-path. Mobile: el riel se recorre ítem a ítem.
  */
-function practicesScene({ gsap }: Kit, desk: boolean): Cleanup {
+function practicesScene({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
   const practices = section("practices");
   if (!practices) {
     return () => {};
@@ -1676,12 +1649,6 @@ function practicesScene({ gsap }: Kit, desk: boolean): Cleanup {
     const glow = practices.querySelector<HTMLElement>(".practices-glow");
     const progress = { value: 0 };
     const apply = () => {
-      const stepProgress = gsap.utils.clamp(
-        0,
-        1,
-        (progress.value - 0.08) / 0.84,
-      );
-      setActive(Math.round(stepProgress * (items.length - 1)));
       if (railActive) {
         gsap.set(railActive, {
           scaleY: 0.08 + progress.value * 0.92,
@@ -1695,7 +1662,7 @@ function practicesScene({ gsap }: Kit, desk: boolean): Cleanup {
         });
       });
       if (glow) {
-        gsap.set(glow, { y: () => 45 * unit() * progress.value });
+        gsap.set(glow, { y: 36 * progress.value });
       }
     };
 
@@ -1703,15 +1670,40 @@ function practicesScene({ gsap }: Kit, desk: boolean): Cleanup {
       value: 1,
       ease: "none",
       scrollTrigger: {
-        trigger: practices,
-        start: "top top",
-        end: "bottom bottom",
+        trigger: items[0],
+        endTrigger: items.at(-1),
+        start: "center 65%",
+        end: "center 45%",
         scrub: 0.7,
         invalidateOnRefresh: true,
       },
       onUpdate: apply,
     });
     apply();
+
+    items.forEach((item, index) => {
+      ScrollTrigger.create({
+        trigger: item,
+        start: "top 60%",
+        onEnter: () => setActive(index),
+        onLeaveBack: () => setActive(Math.max(0, index - 1)),
+      });
+      gsap.fromTo(
+        item,
+        { x: -16, opacity: 0.55 },
+        {
+          x: 0,
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: item,
+            start: "top 92%",
+            end: "top 65%",
+            scrub: 0.35,
+          },
+        },
+      );
+    });
 
     return () => {
       reset();
@@ -1732,7 +1724,7 @@ function practicesScene({ gsap }: Kit, desk: boolean): Cleanup {
     scrollTrigger: {
       trigger: practices,
       start: "top top",
-      end: () => `+=${items.length * 0.7 * window.innerHeight}`,
+      end: () => `+=${items.length * 0.5 * window.innerHeight}`,
       pin: true,
       scrub: 0.7,
       invalidateOnRefresh: true,
@@ -1856,9 +1848,8 @@ function educationScene({ gsap }: Kit, desk: boolean): void {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Clímax: HABLEMOS entra enorme (1.4 → 1), el punto verde se posa como
- * punto final, el fondo evoluciona hacia morado profundo y los datos y el
- * formulario entran con un stagger corto.
+ * El título se asienta con una escala leve, el punto verde llega a su
+ * posición y cada dato o formulario aparece cuando entra en pantalla.
  */
 function contactScene({ gsap }: Kit, desk: boolean): void {
   const contact = section("contact");
@@ -1870,7 +1861,7 @@ function contactScene({ gsap }: Kit, desk: boolean): void {
   if (desk && title) {
     gsap.fromTo(
       title,
-      { scale: 1.4, transformOrigin: "0% 100%" },
+      { scale: 1.08, transformOrigin: "0% 100%" },
       {
         scale: 1,
         ease: "power2.out",
@@ -1941,16 +1932,17 @@ function contactScene({ gsap }: Kit, desk: boolean): void {
 
   const form = motionEl(contact, "contact-form");
   const rows = motionEls(contact, "contact-row");
-  gsap.from([...rows, ...(form ? [form] : [])], {
-    y: 24,
-    opacity: 0,
-    duration: 0.7,
-    stagger: 0.06,
-    ease: "power3.out",
-    scrollTrigger: {
-      trigger: rows[0] ?? contact,
-      start: "top 88%",
-      once: true,
-    },
-  });
+  for (const element of [...rows, ...(form ? [form] : [])]) {
+    gsap.from(element, {
+      y: 20,
+      opacity: 0,
+      duration: 0.65,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: element,
+        start: "top 92%",
+        once: true,
+      },
+    });
+  }
 }

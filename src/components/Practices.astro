@@ -100,7 +100,7 @@ const orbitText = Array.from({ length: 3 }, () =>
 <style>
   /* ---------- Mobile · parte inferior del artboard M05 ---------- */
   .practices {
-    height: calc(var(--u) * 720);
+    height: auto;
     background: linear-gradient(
       180deg,
       color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 0%,
@@ -110,7 +110,7 @@ const orbitText = Array.from({ length: 3 }, () =>
   }
 
   .stage {
-    height: 100%;
+    padding: calc(var(--u) * 80) 0 calc(var(--u) * 64);
   }
 
   .practices-glow {
@@ -149,20 +149,18 @@ const orbitText = Array.from({ length: 3 }, () =>
   }
 
   .practices :global(.eyebrow) {
-    position: absolute;
+    position: relative;
     z-index: 6;
     left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 40);
   }
 
   .title {
-    position: absolute;
+    position: relative;
     z-index: 3;
     left: calc(var(--ux) * 18);
-    top: calc(var(--u) * 70);
     display: flex;
     flex-direction: column;
-    margin: 0;
+    margin: calc(var(--u) * 24) 0 calc(var(--u) * 32);
   }
 
   .title-top {
@@ -180,9 +178,9 @@ const orbitText = Array.from({ length: 3 }, () =>
     position: absolute;
     z-index: 3;
     left: calc(var(--ux) * 31);
-    top: calc(var(--u) * 270);
+    top: calc(var(--u) * 286);
     width: 1px;
-    height: calc(var(--u) * 570);
+    bottom: calc(var(--u) * 100);
     overflow: hidden;
     background: color-mix(in srgb, var(--color-ink) 12%, transparent);
   }
@@ -201,11 +199,10 @@ const orbitText = Array.from({ length: 3 }, () =>
   }
 
   .list {
-    position: absolute;
+    position: relative;
     z-index: 4;
     left: 0;
     right: 0;
-    top: calc(var(--u) * 250);
     display: flex;
     flex-direction: column;
     margin: 0;
@@ -219,8 +216,9 @@ const orbitText = Array.from({ length: 3 }, () =>
     flex-direction: column;
     justify-content: center;
     gap: 6px;
-    height: calc(var(--u) * 108);
-    padding-left: calc(var(--ux) * 60);
+    min-height: calc(var(--u) * 108);
+    padding: calc(var(--u) * 16) calc(var(--ux) * 20) calc(var(--u) * 16)
+      calc(var(--ux) * 60);
     opacity: 0.8;
     transition: opacity 0.35s ease;
   }
@@ -269,7 +267,7 @@ const orbitText = Array.from({ length: 3 }, () =>
   .practice-name {
     margin: 0;
     font-family: var(--font-display);
-    font-size: calc(var(--u) * 48);
+    font-size: calc(var(--u) * 44);
     font-weight: 700;
     font-stretch: 75%;
     line-height: 0.9;
@@ -291,19 +289,6 @@ const orbitText = Array.from({ length: 3 }, () =>
 
   .is-active .practice-keywords {
     color: var(--color-soft);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html.motion) .practices {
-      height: 260svh;
-      overflow: clip;
-    }
-
-    :global(html.motion) .stage {
-      position: sticky;
-      top: 0;
-      height: 100svh;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -338,6 +323,7 @@ const orbitText = Array.from({ length: 3 }, () =>
 
     .stage {
       height: calc(var(--u) * 900);
+      padding: 0;
     }
 
     .practices :global(.eyebrow),
@@ -425,6 +411,8 @@ const orbitText = Array.from({ length: 3 }, () =>
     }
 
     .title {
+      position: absolute;
+      margin: 0;
       z-index: 5;
       left: 0;
       right: 0;
@@ -471,6 +459,7 @@ const orbitText = Array.from({ length: 3 }, () =>
     }
 
     .list {
+      position: absolute;
       inset: 0;
     }
 
@@ -478,6 +467,7 @@ const orbitText = Array.from({ length: 3 }, () =>
       position: absolute;
       gap: 8px;
       height: auto;
+      min-height: 0;
       padding: 0;
       opacity: 1;
     }
