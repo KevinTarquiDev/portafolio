@@ -57,7 +57,7 @@ async function initMotion(): Promise<void> {
 
     if (!entrancePlayed) {
       entrancePlayed = true;
-      cleanups.push(heroEntrance(kit, desk));
+      cleanups.push(heroEntrance(kit));
     }
 
     // Orden de creación = orden del documento, necesario para que los
@@ -249,7 +249,7 @@ function setupCursor(gsap: Gsap): void {
  * Entrada: la primera palabra llega desde la izquierda y la segunda desde
  * la derecha, letra a letra; el relleno morado sube con clip-path.
  */
-function heroEntrance({ gsap }: Kit, desk: boolean): Cleanup {
+function heroEntrance({ gsap }: Kit): Cleanup {
   const hero = section("top");
   if (!hero) {
     return () => {};
@@ -286,24 +286,18 @@ function heroEntrance({ gsap }: Kit, desk: boolean): Cleanup {
 
   fromLeft(motionEl(hero, "hero-first"), 0);
 
-  if (desk) {
-    const second = motionEl(hero, "hero-second");
-    for (const layer of second?.children ?? []) {
-      if (layer instanceof HTMLElement) fromRight(layer, 0.15);
-    }
-    const fill = motionEl(hero, "hero-fill");
-    if (fill) {
-      timeline.fromTo(
-        fill,
-        { clipPath: "inset(45% 0% 55% 0%)" },
-        { clipPath: "inset(0% 0% 55% 0%)", duration: 1, ease: "power3.inOut" },
-        0.9,
-      );
-    }
-  } else {
-    const [outline, fill] = motionEls(hero, "hero-frag");
-    fromRight(outline ?? null, 0.12);
-    fromLeft(fill ?? null, 0.24);
+  const second = motionEl(hero, "hero-second");
+  for (const layer of second?.children ?? []) {
+    if (layer instanceof HTMLElement) fromRight(layer, 0.15);
+  }
+  const fill = motionEl(hero, "hero-fill");
+  if (fill) {
+    timeline.fromTo(
+      fill,
+      { clipPath: "inset(45% 0% 55% 0%)" },
+      { clipPath: "inset(0% 0% 55% 0%)", duration: 1, ease: "power3.inOut" },
+      0.9,
+    );
   }
 
   const details = ["hero-meta", "hero-tagline", "hero-ctas"]

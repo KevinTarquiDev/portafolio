@@ -19,18 +19,6 @@ const [firstWord = "", ...restWords] = hero.displayName
   .split(" ");
 const secondWord = restWords.join(" ");
 
-/**
- * Composición mobile: la segunda palabra se fragmenta en dos bloques
- * (contorno + relleno). Si es corta, se muestra entera en el bloque relleno.
- */
-const secondWordFragments =
-  secondWord.length > 5
-    ? [
-        secondWord.slice(0, Math.ceil(secondWord.length / 2)),
-        secondWord.slice(Math.ceil(secondWord.length / 2)),
-      ]
-    : ["", secondWord];
-
 const cvHref = getCvHref(locale);
 ---
 
@@ -52,7 +40,7 @@ const cvHref = getCvHref(locale);
         {firstWord}
       </span>
 
-      {/* Desktop: segunda palabra en contorno con relleno parcial */}
+      {/* Segunda palabra en contorno con relleno parcial (mobile y desktop) */}
       <span
         class="word word-second"
         aria-hidden="true"
@@ -62,24 +50,6 @@ const cvHref = getCvHref(locale);
         <span class="display layer-fill" data-motion="hero-fill">
           {secondWord}
         </span>
-      </span>
-
-      {/* Mobile: segunda palabra fragmentada */}
-      {secondWordFragments[0] && (
-        <span
-          class="display text-outline word frag frag-outline"
-          aria-hidden="true"
-          data-motion="hero-frag"
-        >
-          {secondWordFragments[0]}
-        </span>
-      )}
-      <span
-        class="display word frag frag-fill"
-        aria-hidden="true"
-        data-motion="hero-frag"
-      >
-        {secondWordFragments[1]}
       </span>
     </h1>
 
@@ -184,28 +154,36 @@ const cvHref = getCvHref(locale);
 
   .word-first {
     left: calc(var(--ux) * -10);
-    top: calc(var(--u) * 96);
+    top: calc(var(--u) * 120);
     z-index: 3;
     color: var(--color-ink);
   }
 
   .word-second {
-    display: none;
+    display: block;
+    left: calc(var(--ux) * 2);
+    top: calc(var(--u) * 280);
+    z-index: 2;
   }
 
-  .frag-outline {
-    left: calc(var(--ux) * 112);
-    top: calc(var(--u) * 262);
-    z-index: 2;
+  .word-second .display {
+    /* Solo mobile: al tamaño de .word (200u) la palabra completa no entra
+       en una línea sin cortarse, así que las letras se sobremontan entre
+       sí para que quepa sin reducir el tamaño. Se resetea en desktop. */
+    font-size: calc(var(--u) * 185);
+  }
+
+  .layer-outline {
+    display: block;
     --stroke: 1.5px;
     --stroke-color: var(--color-purple-hi);
   }
 
-  .frag-fill {
-    left: calc(var(--ux) * -8);
-    top: calc(var(--u) * 428);
-    z-index: 2;
+  .layer-fill {
+    position: absolute;
+    inset: 0;
     color: var(--color-purple);
+    clip-path: inset(0 0 55% 0);
   }
 
   .meta {
@@ -349,32 +327,25 @@ const cvHref = getCvHref(locale);
     }
 
     .word-first {
-      left: calc(var(--ux) * -40);
+      left: calc(var(--ux) * -10);
       top: calc(var(--u) * 48);
     }
 
     .word-second {
-      display: block;
-      right: calc(var(--ux) * -150);
+      left: auto;
+      right: calc(var(--ux) * -10);
       top: calc(var(--u) * 452);
-      z-index: 2;
+    }
+
+    .word-second .display {
+      /* Deshace la compresión mobile: en desktop la palabra ya entra bien
+         al tamaño normal de .word (540u), igual que word-first. */
+      font-size: calc(var(--u) * 540);
+      letter-spacing: -0.012em;
     }
 
     .layer-outline {
-      display: block;
       --stroke: 2px;
-      --stroke-color: var(--color-purple-hi);
-    }
-
-    .layer-fill {
-      position: absolute;
-      inset: 0;
-      color: var(--color-purple);
-      clip-path: inset(0 0 55% 0);
-    }
-
-    .frag {
-      display: none;
     }
 
     .meta {
