@@ -97,7 +97,7 @@ const cvHref = getCvHref(locale);
 <style>
   /* ---------- Mobile · artboard M01 (390×844) ---------- */
   .hero {
-    height: calc(var(--u) * 784);
+    height: calc(var(--u) * 720);
   }
 
   .stage {
@@ -186,26 +186,37 @@ const cvHref = getCvHref(locale);
   .meta {
     position: absolute;
     z-index: 4;
-    left: calc(var(--ux) * 210);
-    top: calc(var(--u) * 446);
+    left: calc(var(--ux) * 20);
+    right: calc(var(--ux) * 20);
+    top: calc(var(--u) * 414);
     display: flex;
-    flex-direction: column;
-    gap: calc(var(--u) * 16);
+    align-items: center;
+    gap: calc(var(--u) * 12);
   }
 
   .meta-headline {
-    width: calc(var(--u) * 150);
+    flex: 0 0 calc(var(--u) * 118);
   }
 
   .meta-line {
-    display: none;
+    display: block;
+    flex: 1;
+    min-width: calc(var(--u) * 24);
+    height: 1px;
+    background: color-mix(in srgb, var(--color-ink) 25%, transparent);
+  }
+
+  .meta-location {
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-align: right;
   }
 
   .tagline {
     position: absolute;
     z-index: 4;
     left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 570);
+    top: calc(var(--u) * 478);
     width: calc(var(--u) * 350);
     margin: 0;
     font-size: calc(var(--u) * 25);
@@ -218,7 +229,7 @@ const cvHref = getCvHref(locale);
     z-index: 4;
     left: calc(var(--ux) * 20);
     right: calc(var(--ux) * 20);
-    top: calc(var(--u) * 676);
+    top: calc(var(--u) * 592);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -346,6 +357,7 @@ const cvHref = getCvHref(locale);
 
     .meta {
       left: calc(var(--ux) * 44);
+      right: auto;
       top: calc(var(--u) * 462);
       flex-direction: row;
       align-items: center;
@@ -353,11 +365,14 @@ const cvHref = getCvHref(locale);
     }
 
     .meta-headline {
+      flex: initial;
       width: auto;
     }
 
     .meta-line {
       display: block;
+      flex: none;
+      min-width: 0;
       width: calc(var(--u) * 180);
       height: 1px;
       background: color-mix(in srgb, var(--color-ink) 25%, transparent);
