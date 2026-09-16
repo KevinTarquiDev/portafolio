@@ -63,6 +63,7 @@ async function initMotion(): Promise<void> {
 
     cleanups.push(heroOrbit(kit, desk));
     heroToAbout(kit, desk);
+    cleanups.push(headerAutoHide(kit, desk));
 
     // Orden de creación = orden del documento, necesario para que los
     // pins calculen bien el espacio que añaden.
@@ -335,6 +336,65 @@ function sceneHandoffs({ gsap }: Kit, desk: boolean): void {
 /* HUD y cursor                                                               */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Oculta el header al bajar y lo revela al subir, solo en desktop: en
+ * mobile el botón del menú vive en ese mismo header, así que ahí se
+ * mantiene siempre visible.
+ */
+function headerAutoHide({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
+  const header = document.querySelector<HTMLElement>("[data-hud]");
+  if (!header) {
+    return () => {};
+  }
+
+  if (!desk) {
+    gsap.set(header, { clearProps: "transform" });
+    return () => {};
+  }
+
+  const REVEAL_ZONE = 80; // px: cerca del top el header siempre queda visible
+  let hidden = false;
+
+  const setHidden = (next: boolean) => {
+    if (next === hidden) return;
+    hidden = next;
+    gsap.to(header, {
+      yPercent: next ? -100 : 0,
+      duration: 0.35,
+      ease: "power2.out",
+      overwrite: true,
+    });
+  };
+
+  const trigger = ScrollTrigger.create({
+    trigger: document.body,
+    start: "top top",
+    end: "bottom bottom",
+    // Igual que setupHud: se refresca después de los pins (que suman
+    // espacio al documento) para medir el alto final real, si no su
+    // "end" queda corto y deja de actualizar pasado ese punto.
+    refreshPriority: -1,
+    onUpdate: (self) => {
+      if (self.scroll() <= REVEAL_ZONE) {
+        setHidden(false);
+        return;
+      }
+      setHidden(self.direction === 1);
+    },
+  });
+
+  // El foco de teclado siempre revela la navegación, aunque el scroll
+  // vaya hacia abajo: si no, un link enfocado quedaría fuera de vista.
+  const onFocusIn = () => setHidden(false);
+  header.addEventListener("focusin", onFocusIn);
+
+  return () => {
+    trigger.kill();
+    header.removeEventListener("focusin", onFocusIn);
+    gsap.set(header, { clearProps: "transform" });
+  };
+}
+
 /** Índice, rótulo y barra de progreso del HUD ligados al scroll. */
 function setupHud({ gsap, ScrollTrigger }: Kit): void {
   const railIndex = document.querySelector<HTMLElement>(
@@ -535,10 +595,14 @@ function heroOrbit({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
     gsap.set(dot, { x: 0, y: 0 });
     const ringBox = orbit.getBoundingClientRect();
     const dotBox = dot.getBoundingClientRect();
-    const dx =
-      dotBox.left + dotBox.width / 2 - (ringBox.left + ringBox.width / 2);
-    const dy =
-      dotBox.top + dotBox.height / 2 - (ringBox.top + ringBox.height / 2);
+    // heroToAbout traslada .orbit-outer en "y" al hacer scroll cerca del
+    // final del hero; sin descontarlo aquí, medir en ese instante captura
+    // el anillo desplazado y la órbita queda descentrada.
+    const ringOffsetY = Number(gsap.getProperty(orbit, "y")) || 0;
+    const ringCenterX = ringBox.left + ringBox.width / 2;
+    const ringCenterY = ringBox.top + ringBox.height / 2 - ringOffsetY;
+    const dx = dotBox.left + dotBox.width / 2 - ringCenterX;
+    const dy = dotBox.top + dotBox.height / 2 - ringCenterY;
     geometry = { radius: ringBox.width / 2, angle: Math.atan2(dy, dx), dx, dy };
   };
   measure();
@@ -571,6 +635,10 @@ function heroOrbit({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
     end: "bottom top",
     onRefresh: measure,
     onToggle: (self) => {
+      // Recargar la página con scroll restaurado en una sección inferior
+      // puede dejar la primera medición desalineada con el layout final;
+      // al reentrar el Hero en pantalla se vuelve a medir para corregirlo.
+      if (self.isActive) measure();
       for (const tween of [spin, travel]) {
         if (self.isActive) tween.play();
         else tween.pause();
