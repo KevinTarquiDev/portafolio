@@ -1,0 +1,184 @@
+---
+/**
+ * Formulario de contacto: estructura accesible + honeypot + envío
+ * progresivo. Sin JS, hace un POST normal a /api/contact/ y el
+ * servidor redirige a /{locale}/contact/sent/ o /error/. Con JS,
+ * contact-form.ts intercepta el submit y muestra el resultado inline.
+ */
+import type { Locale } from "../lib/resume";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  locale: Locale;
+  ui: UiStrings;
+}
+
+const { locale, ui } = Astro.props;
+
+const messages = {
+  success: ui.contact.formSuccess,
+  submitting: ui.contact.formSubmitting,
+  submit: ui.contact.formSubmit,
+  genericError: ui.contact.formErrorGeneric,
+  errors: {
+    name: {
+      required: ui.contact.formErrorNameRequired,
+      too_short: ui.contact.formErrorNameLength,
+      too_long: ui.contact.formErrorNameLength,
+      invalid_characters: ui.contact.formErrorNameLength,
+    },
+    email: {
+      required: ui.contact.formErrorEmailRequired,
+      invalid_email: ui.contact.formErrorEmailInvalid,
+      too_long: ui.contact.formErrorEmailInvalid,
+    },
+    message: {
+      required: ui.contact.formErrorMessageRequired,
+      too_short: ui.contact.formErrorMessageLength,
+      too_long: ui.contact.formErrorMessageLength,
+    },
+  },
+};
+---
+
+<form
+  id="contact-form"
+  action="/api/contact/"
+  method="post"
+  class="flex flex-col gap-5.5 desk:gap-5"
+>
+  <input type="hidden" name="locale" value={locale} />
+  <input type="hidden" name="startedAt" data-contact-started-at value="" />
+
+  {/* Honeypot: invisible para personas, atractivo para bots. */}
+  <div class="absolute left-[-9999px]" aria-hidden="true">
+    <label for="contact-company">Empresa</label>
+    <input
+      id="contact-company"
+      name="company"
+      type="text"
+      tabindex="-1"
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="grid gap-[22px] desk:grid-cols-2 desk:gap-7">
+    <div class="flex flex-col gap-2.5">
+      <label for="contact-name" class="mono-label text-soft">
+        {ui.contact.formName}
+      </label>
+      <input
+        id="contact-name"
+        name="name"
+        type="text"
+        required
+        minlength="5"
+        maxlength="100"
+        autocomplete="name"
+        aria-describedby="contact-name-error"
+        class="field-input h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
+      />
+      <p id="contact-name-error" class="field-error" role="alert"></p>
+    </div>
+    <div class="flex flex-col gap-2.5">
+      <label for="contact-email" class="mono-label text-soft">
+        {ui.contact.formEmail}
+      </label>
+      <input
+        id="contact-email"
+        name="email"
+        type="email"
+        required
+        maxlength="254"
+        autocomplete="email"
+        aria-describedby="contact-email-error"
+        class="field-input h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
+      />
+      <p id="contact-email-error" class="field-error" role="alert"></p>
+    </div>
+  </div>
+  <div class="flex flex-col gap-2.5">
+    <label for="contact-message" class="mono-label text-soft">
+      {ui.contact.formMessage}
+    </label>
+    <textarea
+      id="contact-message"
+      name="message"
+      rows="3"
+      required
+      minlength="10"
+      maxlength="2000"
+      aria-describedby="contact-message-error"
+      class="field-input h-20 resize-none border-b border-ink/30 bg-transparent text-lg text-ink outline-none focus-visible:border-green desk:text-xl"
+    ></textarea>
+    <p id="contact-message-error" class="field-error" role="alert"></p>
+  </div>
+  <div class="flex flex-col gap-4 desk:flex-row desk:items-center desk:gap-5">
+    <button
+      type="submit"
+      data-cursor="cta"
+      class="mt-2 flex h-14 w-full items-center justify-center gap-3 rounded-full bg-green text-lg font-bold font-stretch-85% text-bg disabled:opacity-60 desk:mt-0 desk:h-15 desk:w-fit desk:gap-3.5 desk:px-[30px] desk:text-xl"
+    >
+      <span data-contact-submit-label>{ui.contact.formSubmit}</span>
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M4 12h16M13 5l7 7-7 7"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+    </button>
+    <p
+      data-contact-status
+      role="status"
+      aria-live="polite"
+      class="text-sm text-body empty:hidden"
+    ></p>
+  </div>
+</form>
+
+<script
+  is:inline
+  type="application/json"
+  data-contact-messages
+  set:html={JSON.stringify(messages)}
+></script>
+<script src="../scripts/contact-form.ts"></script>
+
+<style>
+  /*
+   * El mensaje de error ocupa siempre el mismo espacio (1 línea a
+   * text-xs), esté o no visible: así al aparecer/desaparecer no
+   * desplaza el input siguiente ni el botón de envío. Los textos de
+   * error se mantienen cortos para no ocupar dos líneas en la columna
+   * angosta del grid de desktop.
+   */
+  .field-error {
+    min-height: 1rem;
+    color: var(--color-error);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+  }
+
+  .field-error:not(:empty) {
+    opacity: 1;
+  }
+
+  .field-input[aria-invalid="true"] {
+    border-color: var(--color-error);
+  }
+
+  .field-input[aria-invalid="true"]:focus-visible {
+    border-color: var(--color-error);
+  }
+</style>

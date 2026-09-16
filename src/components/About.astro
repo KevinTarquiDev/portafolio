@@ -1,0 +1,434 @@
+---
+import SceneEyebrow from "./SceneEyebrow.astro";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+const { about } = portfolio;
+
+const roleWords = about.role.split(" ");
+const summaryWords = about.summaryShort.split(" ");
+
+/**
+ * Cada banda es una marquesina: dos grupos idénticos que se desplazan
+ * media pista, de modo que el bucle no tiene salto. La banda frontal
+ * arranca el listado en otro punto para que ambas nunca coincidan.
+ */
+const bandBackItems = about.focusAreas;
+const bandFrontItems = [
+  ...about.focusAreas.slice(2),
+  ...about.focusAreas.slice(0, 2),
+];
+const bandGroups = [0, 1];
+---
+
+<section id="about" data-scene-label={ui.about.eyebrow} class="scene about">
+  <div class="stage">
+    <div class="glow about-glow" aria-hidden="true"></div>
+    <span
+      class="display text-outline vertical-word"
+      aria-hidden="true"
+      data-motion="about-vertical"
+    >
+      {about.focus.toUpperCase()}
+    </span>
+
+    <SceneEyebrow scene="about" label={ui.about.eyebrow} class="eyebrow" />
+
+    <p class="title">
+      <span class="display title-role">
+        {roleWords.map((word, index) => (
+          <>
+            <span class="title-role-word">{word}</span>
+            {index < roleWords.length - 1 && " "}
+          </>
+        ))}
+      </span>
+      <span class="serif title-connector">{ui.about.connector}</span>
+      <span class="display title-focus">
+        {about.focus.toUpperCase()}
+        <span class="title-dot" aria-hidden="true"></span>
+      </span>
+    </p>
+
+    <p class="summary" data-motion="about-summary">
+      {summaryWords.map((word, index) => (
+        <>
+          <span class="summary-word">{word}</span>
+          {index < summaryWords.length - 1 && " "}
+        </>
+      ))}
+    </p>
+
+    <div
+      class="band band-back"
+      aria-hidden="true"
+      data-motion="about-band-back"
+    >
+      <div class="band-track">
+        {bandGroups.map(() => (
+          <div class="band-group">
+            {bandBackItems.map((area) => (
+              <>
+                <span class="display band-text">{area}</span>
+                <span class="band-dot"></span>
+              </>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+    <div
+      class="band band-front"
+      aria-hidden="true"
+      data-motion="about-band-front"
+    >
+      <div class="band-track">
+        {bandGroups.map(() => (
+          <div class="band-group">
+            {bandFrontItems.map((area) => (
+              <>
+                <span class="display band-text">{area}</span>
+                <span class="band-dot"></span>
+              </>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ---------- Mobile · artboard M02 (390×844) ---------- */
+  .about {
+    height: auto;
+    overflow: clip;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-purple) 3%, var(--color-bg)) 0%,
+      transparent 22%,
+      transparent 78%,
+      color-mix(in srgb, var(--color-purple) 4%, var(--color-bg)) 100%
+    );
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 24);
+    padding: calc(var(--u) * 80) calc(var(--ux) * 20) calc(var(--u) * 210);
+  }
+
+  .about-glow {
+    left: calc(var(--ux) * -200);
+    top: calc(var(--u) * -100);
+    width: calc(var(--u) * 700);
+    height: calc(var(--u) * 700);
+  }
+
+  .vertical-word {
+    position: absolute;
+    left: calc(var(--ux) * 280);
+    top: calc(var(--u) * -20);
+    font-size: calc(var(--u) * 150);
+    writing-mode: vertical-rl;
+    white-space: nowrap;
+    pointer-events: none;
+    --stroke: 1px;
+    --stroke-color: color-mix(in srgb, var(--color-purple-hi) 35%, transparent);
+  }
+
+  .about :global(.eyebrow) {
+    position: relative;
+    z-index: 6;
+  }
+
+  .title {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    color: var(--color-ink);
+  }
+
+  .title-role {
+    display: flex;
+    flex-direction: column;
+    font-size: calc(var(--u) * 112);
+  }
+
+  .title-connector {
+    margin: calc(var(--u) * 6) 0 0 calc(var(--u) * 40);
+    font-size: calc(var(--u) * 46);
+    line-height: 1.05;
+    color: var(--color-lilac);
+  }
+
+  .title-focus {
+    display: flex;
+    align-items: flex-end;
+    gap: calc(var(--u) * 6);
+    font-size: calc(var(--u) * 96);
+  }
+
+  .title-dot {
+    display: block;
+    flex-shrink: 0;
+    width: calc(var(--u) * 20);
+    height: calc(var(--u) * 20);
+    margin-bottom: calc(var(--u) * 8);
+    border-radius: 9999px;
+    background: var(--color-green);
+  }
+
+  .summary {
+    position: relative;
+    z-index: 4;
+    max-width: 38rem;
+    margin: 0;
+    font-size: calc(var(--u) * 20);
+    line-height: 1.3;
+    color: var(--color-ink);
+  }
+
+  /*
+   * Aspas: dos barras giradas en sentidos opuestos que se cruzan por el
+   * centro y se separan en los extremos. El contenido de cada una es una
+   * marquesina de dos grupos idénticos que avanzan con el scroll.
+   */
+  .band {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .band-track {
+    display: flex;
+    width: max-content;
+    animation: band-marquee var(--band-duration) linear infinite;
+    will-change: transform;
+  }
+
+  @keyframes band-marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .band-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: calc(var(--u) * var(--band-gap));
+    padding-right: calc(var(--u) * var(--band-gap));
+  }
+
+  .band-back {
+    z-index: 3;
+    left: calc(var(--ux) * -80);
+    bottom: calc(var(--u) * 88);
+    width: calc(var(--ux) * 560);
+    height: calc(var(--u) * 56);
+    background: var(--color-deep);
+    rotate: 9deg;
+    --band-size: 34;
+    --band-gap: 20;
+    --band-duration: 46s;
+  }
+
+  .band-back .band-track {
+    animation-direction: reverse;
+  }
+
+  .band-front {
+    z-index: 4;
+    left: calc(var(--ux) * -80);
+    bottom: calc(var(--u) * 88);
+    width: calc(var(--ux) * 560);
+    height: calc(var(--u) * 60);
+    background: var(--color-purple);
+    rotate: -9deg;
+    --band-size: 36;
+    --band-gap: 20;
+    --band-duration: 34s;
+  }
+
+  .band-text {
+    flex-shrink: 0;
+    font-size: calc(var(--u) * var(--band-size));
+    line-height: 1;
+  }
+
+  .band-back .band-text {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--color-lilac);
+  }
+
+  .band-front .band-text {
+    color: var(--color-ink);
+  }
+
+  .band-dot {
+    display: block;
+    flex-shrink: 0;
+    width: calc(var(--u) * 8);
+    height: calc(var(--u) * 8);
+    border-radius: 9999px;
+  }
+
+  .band-back .band-dot {
+    background: var(--color-lilac);
+  }
+
+  .band-front .band-dot {
+    background: var(--color-green);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--color-green) 50%, transparent);
+  }
+
+  /* ---------- Desktop · artboard 02 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .about,
+    :global(html.motion) .about {
+      height: 100svh;
+      /*
+       * El resplandor superior nace dentro de la escena, no en su borde:
+       * si arranca a plena intensidad en el 0% se ve una línea morada
+       * justo donde termina el Hero.
+       */
+      background:
+        radial-gradient(
+          ellipse 50% 36% at 76% 24%,
+          color-mix(in srgb, var(--color-purple) 30%, var(--color-bg)) 0%,
+          color-mix(in srgb, var(--color-purple) 22%, var(--color-bg)) 34%,
+          color-mix(in srgb, var(--color-purple) 5%, var(--color-bg)) 72%,
+          transparent 100%
+        ),
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--color-purple) 3%, var(--color-bg)) 0%,
+          transparent 22%,
+          transparent 78%,
+          color-mix(in srgb, var(--color-purple) 4%, var(--color-bg)) 100%
+        );
+    }
+
+    .stage,
+    :global(html.motion) .about .stage {
+      display: block;
+      padding: 0;
+      position: absolute;
+      top: 50%;
+      height: calc(var(--u) * 900);
+      translate: 0 -50%;
+    }
+
+    .about-glow {
+      left: calc(var(--ux) * -300);
+      top: calc(var(--u) * -300);
+      width: calc(var(--u) * 1000);
+      height: calc(var(--u) * 1000);
+    }
+
+    .vertical-word {
+      left: calc(var(--ux) * 52);
+      top: calc(var(--u) * -40);
+      font-size: calc(var(--u) * 270);
+      rotate: 180deg;
+      --stroke: 1.5px;
+      --stroke-color: color-mix(
+        in srgb,
+        var(--color-purple-hi) 45%,
+        transparent
+      );
+    }
+
+    .about :global(.eyebrow) {
+      position: absolute;
+      left: calc(var(--ux) * 360);
+      top: calc(var(--u) * 132);
+    }
+
+    .title {
+      position: absolute;
+      z-index: 5;
+      left: calc(var(--ux) * 352);
+      top: calc(var(--u) * 170);
+    }
+
+    .title-role {
+      display: block;
+      font-size: calc(var(--u) * 160);
+    }
+
+    .title-connector {
+      margin: 0 0 0 calc(var(--u) * 130);
+      font-size: calc(var(--u) * 118);
+      line-height: 0.95;
+    }
+
+    .title-focus {
+      gap: calc(var(--u) * 10);
+      font-size: calc(var(--u) * 160);
+    }
+
+    .title-dot {
+      width: calc(var(--u) * 30);
+      height: calc(var(--u) * 30);
+      margin-bottom: calc(var(--u) * 14);
+      box-shadow: 0 0 50px
+        color-mix(in srgb, var(--color-green) 50%, transparent);
+    }
+
+    .summary {
+      position: absolute;
+      z-index: 5;
+      left: calc(var(--ux) * 360);
+      top: calc(var(--u) * 555);
+      width: calc(var(--u) * 650);
+      max-width: none;
+      font-size: calc(var(--u) * 27);
+      letter-spacing: -0.01em;
+    }
+
+    .band-back {
+      bottom: auto;
+      left: calc(var(--ux) * -220);
+      top: calc(var(--u) * 762);
+      width: calc(var(--ux) * 1880);
+      height: calc(var(--u) * 86);
+      rotate: 4deg;
+      --band-size: 52;
+      --band-gap: 36;
+    }
+
+    .band-front {
+      bottom: auto;
+      left: calc(var(--ux) * -220);
+      top: calc(var(--u) * 762);
+      width: calc(var(--ux) * 1880);
+      height: calc(var(--u) * 86);
+      rotate: -4deg;
+      --band-size: 52;
+      --band-gap: 36;
+    }
+
+    .band-dot {
+      width: calc(var(--u) * 12);
+      height: calc(var(--u) * 12);
+    }
+
+    .band-front .band-dot {
+      box-shadow: none;
+    }
+  }
+</style>

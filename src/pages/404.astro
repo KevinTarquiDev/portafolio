@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { ui } from "../i18n/ui";
+import { localePath } from "../i18n/config";
+import { getPortfolio } from "../lib/portfolio";
+
+const locale = "es" as const;
+const portfolio = getPortfolio(locale);
+const strings = ui[locale];
+
+const title = `${strings.notFound.title} · ${portfolio.hero.displayName}`;
+---
+
+<BaseLayout
+  locale={locale}
+  portfolio={portfolio}
+  ui={strings}
+  title={title}
+  description={strings.notFound.message}
+  noindex
+>
+  <section class="flex min-h-screen flex-col items-start justify-center gap-10 px-5 lg:px-11">
+    <div lang="es">
+      <h1 class="display text-5xl lg:text-7xl">{ui.es.notFound.title}</h1>
+      <p class="mt-4 max-w-md text-xl text-body">{ui.es.notFound.message}</p>
+      <a
+        href={localePath("es")}
+        class="mt-6 inline-block text-lg text-green underline"
+      >
+        {ui.es.notFound.cta}
+      </a>
+    </div>
+    <div lang="en">
+      <h1 class="display text-5xl lg:text-7xl">{ui.en.notFound.title}</h1>
+      <p class="mt-4 max-w-md text-xl text-body">{ui.en.notFound.message}</p>
+      <a
+        href={localePath("en")}
+        class="mt-6 inline-block text-lg text-green underline"
+      >
+        {ui.en.notFound.cta}
+      </a>
+    </div>
+  </section>
+</BaseLayout>

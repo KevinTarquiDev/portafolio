@@ -1,0 +1,65 @@
+---
+import bricolageLatinWoff2 from "@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-standard-normal.woff2?url";
+import Hud from "../components/Hud.astro";
+import Seo from "../components/Seo.astro";
+import "../styles/global.css";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { Locale } from "../lib/resume";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  locale: Locale;
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+
+const {
+  locale,
+  portfolio,
+  ui,
+  title,
+  description,
+  noindex = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={locale} class="no-js">
+  <head>
+    <Seo
+      title={title}
+      description={description}
+      locale={locale}
+      noindex={noindex}
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={bricolageLatinWoff2}
+      crossorigin="anonymous"
+    />
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen overflow-x-hidden bg-bg text-ink">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded focus:bg-green focus:px-4 focus:py-2 focus:text-bg"
+    >
+      {ui.a11y.skipToContent}
+    </a>
+    <Hud locale={locale} portfolio={portfolio} ui={ui} />
+    <main id="main">
+      <slot />
+    </main>
+    <div class="grain" aria-hidden="true"></div>
+    <script>
+      document.documentElement.classList.replace("no-js", "js");
+    </script>
+    <script src="../scripts/language-switch.ts"></script>
+    <script src="../scripts/motion.ts"></script>
+  </body>
+</html>

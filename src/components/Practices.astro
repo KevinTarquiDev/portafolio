@@ -1,0 +1,515 @@
+---
+import SceneEyebrow from "./SceneEyebrow.astro";
+import SignalDot from "./SignalDot.astro";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+const { items } = portfolio.practices;
+
+/** Texto que orbita el título: los nombres de las prácticas en bucle. */
+const orbitText = Array.from({ length: 3 }, () =>
+  items.map((practice) => `${practice.name.toUpperCase()} · `).join(""),
+).join("");
+---
+
+<section
+  id="practices"
+  data-scene-label={ui.practices.eyebrow}
+  class="scene practices"
+>
+  <div class="stage">
+    <div class="glow practices-glow" aria-hidden="true"></div>
+    <div class="rings" aria-hidden="true" data-motion="practices-rings">
+      <span class="circle circle-1" data-motion="practices-circle"></span>
+      <span class="circle circle-2" data-motion="practices-circle"></span>
+      <span class="circle circle-3" data-motion="practices-circle"></span>
+      <span class="circle circle-4" data-motion="practices-circle"></span>
+    </div>
+
+    <svg
+      class="orbit"
+      viewBox="0 0 1440 900"
+      aria-hidden="true"
+      data-motion="practices-orbit"
+    >
+      <defs>
+        <path
+          id="practices-orbit"
+          d="M 720 450 m -330 0 a 330 330 0 1 1 660 0 a 330 330 0 1 1 -660 0"
+        ></path>
+      </defs>
+      <text>
+        <textPath href="#practices-orbit">{orbitText}</textPath>
+      </text>
+    </svg>
+
+    <SceneEyebrow
+      scene="practices"
+      label={ui.practices.eyebrow}
+      as="p"
+      class="eyebrow"
+    />
+
+    <h2 class="title">
+      <span class="serif title-top">{ui.practices.titleTop}</span>
+      <span class="display title-bottom">{ui.practices.titleBottom}</span>
+    </h2>
+
+    {items.map((_, index) => (
+      <SignalDot
+        class={`node node-${index + 1}`}
+        data-motion="practices-node"
+      />
+    ))}
+
+    <span class="rail" aria-hidden="true">
+      <span class="rail-fill" data-motion="practices-rail-active"></span>
+    </span>
+    <ol class="list">
+      {items.map((practice, index) => (
+        <li
+          class:list={[
+            "practice",
+            `practice-${index + 1}`,
+            index === 0 && "is-active",
+          ]}
+          data-motion="practices-item"
+        >
+          <span class="marker" aria-hidden="true"></span>
+          <span class="mono-label text-green practice-index">
+            {practice.index}
+          </span>
+          <h3 class="practice-name" data-motion="practices-name">
+            {practice.name}
+          </h3>
+          <p class="mono-label practice-keywords">
+            {practice.keywords.join(" · ")}
+          </p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  /* ---------- Mobile · parte inferior del artboard M05 ---------- */
+  .practices {
+    height: auto;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 0%,
+      transparent 22%,
+      transparent 100%
+    );
+  }
+
+  .stage {
+    padding: calc(var(--u) * 80) 0 calc(var(--u) * 64);
+  }
+
+  .practices-glow {
+    left: calc(var(--ux) * -170);
+    top: calc(var(--u) * -150);
+    display: block;
+    width: calc(var(--u) * 650);
+    height: calc(var(--u) * 650);
+    opacity: 0.55;
+    --glow-strength: 10%;
+  }
+
+  .orbit,
+  .practices :global(.node) {
+    display: none;
+  }
+
+  .circle {
+    position: absolute;
+    border: 1px solid color-mix(in srgb, var(--color-lilac) 10%, transparent);
+    border-radius: 9999px;
+    opacity: 0.72;
+  }
+
+  .circle-1 {
+    left: calc(var(--ux) * 120);
+    top: calc(var(--u) * -20);
+    width: calc(var(--u) * 460);
+    height: calc(var(--u) * 460);
+  }
+
+  .circle-2,
+  .circle-3,
+  .circle-4 {
+    display: none;
+  }
+
+  .practices :global(.eyebrow) {
+    position: relative;
+    z-index: 6;
+    left: calc(var(--ux) * 20);
+  }
+
+  .title {
+    position: relative;
+    z-index: 3;
+    left: calc(var(--ux) * 18);
+    display: flex;
+    flex-direction: column;
+    margin: calc(var(--u) * 24) 0 calc(var(--u) * 32);
+  }
+
+  .title-top {
+    font-size: calc(var(--u) * 60);
+    line-height: 1;
+    color: var(--color-lilac);
+  }
+
+  .title-bottom {
+    font-size: calc(var(--u) * 110);
+    color: var(--color-ink);
+  }
+
+  .rail {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--ux) * 31);
+    top: calc(var(--u) * 286);
+    width: 1px;
+    bottom: calc(var(--u) * 100);
+    overflow: hidden;
+    background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .rail-fill {
+    position: absolute;
+    inset: 0;
+    display: block;
+    background: linear-gradient(
+      var(--color-green),
+      color-mix(in srgb, var(--color-green) 38%, transparent)
+    );
+    transform: scaleY(0);
+    transform-origin: top;
+    will-change: transform;
+  }
+
+  .list {
+    position: relative;
+    z-index: 4;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .practice {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    min-height: calc(var(--u) * 108);
+    padding: calc(var(--u) * 16) calc(var(--ux) * 20) calc(var(--u) * 16)
+      calc(var(--ux) * 60);
+    opacity: 0.8;
+    transition: opacity 0.35s ease;
+  }
+
+  .practice.is-active {
+    opacity: 1;
+  }
+
+  .marker {
+    position: absolute;
+    left: calc(var(--ux) * 27);
+    top: calc(var(--u) * 27);
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--color-green);
+    border-radius: 9999px;
+    background: var(--color-bg);
+    transition:
+      width 0.35s ease,
+      height 0.35s ease,
+      translate 0.35s ease,
+      border-color 0.35s ease,
+      background-color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+
+  .is-active .marker {
+    width: 14px;
+    height: 14px;
+    translate: -3px -3px;
+    border: 0;
+    background: var(--color-green);
+    box-shadow: 0 0 28px color-mix(in srgb, var(--color-green) 50%, transparent);
+  }
+
+  .practice-index {
+    font-size: 11px;
+    color: color-mix(in srgb, var(--color-green) 55%, transparent);
+    transition: color 0.35s ease;
+  }
+
+  .is-active .practice-index {
+    color: var(--color-green);
+  }
+
+  .practice-name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: calc(var(--u) * 44);
+    font-weight: 700;
+    font-stretch: 75%;
+    line-height: 0.9;
+    letter-spacing: -0.012em;
+    color: var(--color-soft);
+    transition: color 0.35s ease;
+  }
+
+  .is-active .practice-name {
+    color: var(--color-ink);
+  }
+
+  .practice-keywords {
+    margin: 0;
+    font-size: 10px;
+    color: var(--color-muted);
+    transition: color 0.35s ease;
+  }
+
+  .is-active .practice-keywords {
+    color: var(--color-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .practice {
+      opacity: 1;
+    }
+
+    .practice-index {
+      color: var(--color-green);
+    }
+
+    .practice-name {
+      color: var(--color-ink);
+    }
+
+    .practice-keywords {
+      color: var(--color-soft);
+    }
+
+    .rail-fill {
+      transform: scaleY(1);
+      opacity: 0.45;
+      will-change: auto;
+    }
+  }
+
+  /* ---------- Desktop · artboard 08 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .practices {
+      height: 100svh;
+    }
+
+    .stage {
+      height: calc(var(--u) * 900);
+      padding: 0;
+    }
+
+    .practices :global(.eyebrow),
+    .rail,
+    .marker {
+      display: none;
+    }
+
+    :global(html.motion) .practices {
+      height: 100svh;
+      overflow: hidden;
+    }
+
+    :global(html.motion) .stage {
+      position: absolute;
+      top: 50%;
+      height: calc(var(--u) * 900);
+    }
+
+    .practices-glow {
+      left: calc(50% - var(--u) * 450);
+      top: 0;
+      display: block;
+      width: calc(var(--u) * 900);
+      height: calc(var(--u) * 900);
+      opacity: 1;
+      --glow-strength: 30%;
+    }
+
+    .rings {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+    }
+
+    .circle {
+      display: block;
+      translate: -50% -50%;
+      opacity: 1;
+    }
+
+    .circle-1 {
+      left: 0;
+      top: 0;
+      width: calc(var(--u) * 300);
+      height: calc(var(--u) * 300);
+      border-color: color-mix(in srgb, var(--color-lilac) 22%, transparent);
+    }
+
+    .circle-2 {
+      width: calc(var(--u) * 540);
+      height: calc(var(--u) * 540);
+      border-color: color-mix(in srgb, var(--color-lilac) 12%, transparent);
+    }
+
+    .circle-3 {
+      width: calc(var(--u) * 780);
+      height: calc(var(--u) * 780);
+      border-style: dashed;
+      border-color: color-mix(in srgb, var(--color-lilac) 14%, transparent);
+    }
+
+    .circle-4 {
+      width: calc(var(--u) * 1120);
+      height: calc(var(--u) * 1120);
+      border-color: color-mix(in srgb, var(--color-lilac) 6%, transparent);
+    }
+
+    .orbit {
+      position: absolute;
+      z-index: 2;
+      left: calc(50% - var(--u) * 720);
+      top: 0;
+      display: block;
+      width: calc(var(--u) * 1440);
+      height: calc(var(--u) * 900);
+      overflow: visible;
+    }
+
+    .orbit text {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 5px;
+      fill: color-mix(in srgb, var(--color-lilac) 40%, transparent);
+    }
+
+    .title {
+      position: absolute;
+      margin: 0;
+      z-index: 5;
+      left: 0;
+      right: 0;
+      top: calc(var(--u) * 360);
+      align-items: center;
+    }
+
+    .title-top {
+      font-size: calc(var(--u) * 88);
+      line-height: 0.9;
+    }
+
+    .title-bottom {
+      font-size: calc(var(--u) * 130);
+    }
+
+    .practices :global(.node) {
+      position: absolute;
+      z-index: 6;
+      display: inline-flex;
+      width: calc(var(--u) * 44);
+      height: calc(var(--u) * 44);
+      --dot: calc(var(--u) * 14);
+    }
+
+    .practices :global(.node-1) {
+      left: calc(50% - var(--u) * 360);
+      top: calc(var(--u) * 233);
+    }
+
+    .practices :global(.node-2) {
+      left: calc(50% + var(--u) * 316);
+      top: calc(var(--u) * 233);
+    }
+
+    .practices :global(.node-3) {
+      left: calc(50% + var(--u) * 316);
+      top: calc(var(--u) * 623);
+    }
+
+    .practices :global(.node-4) {
+      left: calc(50% - var(--u) * 360);
+      top: calc(var(--u) * 623);
+    }
+
+    .list {
+      position: absolute;
+      inset: 0;
+    }
+
+    .practice {
+      position: absolute;
+      gap: 8px;
+      height: auto;
+      min-height: 0;
+      padding: 0;
+      opacity: 1;
+    }
+
+    .practice-1,
+    .practice-4 {
+      left: calc(var(--ux) * 120);
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .practice-2,
+    .practice-3 {
+      right: calc(var(--ux) * 110);
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .practice-1,
+    .practice-2 {
+      top: calc(var(--u) * 110);
+    }
+
+    .practice-3,
+    .practice-4 {
+      top: calc(var(--u) * 690);
+    }
+
+    .practice-index {
+      font-size: 12px;
+      color: var(--color-green);
+    }
+
+    .practice-name {
+      font-size: calc(var(--u) * 72);
+      white-space: nowrap;
+      color: var(--color-ink);
+    }
+
+    .practice-keywords {
+      font-size: 12px;
+      color: var(--color-soft);
+    }
+  }
+</style>

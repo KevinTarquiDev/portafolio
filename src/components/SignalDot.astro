@@ -1,0 +1,40 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/**
+ * El punto verde que recorre el sitio: un anillo con un punto luminoso
+ * dentro. Cada escena lo posiciona y dimensiona desde su CSS con
+ * width/height (anillo) y la variable --dot (punto interior).
+ */
+export type Props = HTMLAttributes<"span">;
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<span class:list={["signal-dot", className]} aria-hidden="true" {...rest}>
+  <span></span>
+</span>
+
+<style>
+  .signal-dot {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid color-mix(in srgb, var(--color-green) 40%, transparent);
+    border-radius: 9999px;
+  }
+
+  .signal-dot > span {
+    display: block;
+    flex-shrink: 0;
+    width: var(--dot, 14px);
+    height: var(--dot, 14px);
+    border-radius: 9999px;
+    background: var(--color-green);
+    box-shadow: 0 0 calc(var(--dot, 14px) * 2)
+      color-mix(in srgb, var(--color-green) 50%, transparent);
+  }
+</style>

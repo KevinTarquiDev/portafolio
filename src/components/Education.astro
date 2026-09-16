@@ -1,0 +1,338 @@
+---
+import SceneEyebrow from "./SceneEyebrow.astro";
+import { parseResumeDate } from "../lib/dates";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { UiStrings } from "../i18n/ui";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+
+const entries = portfolio.education.items.map((entry) => ({
+  ...entry,
+  startYear: String(parseResumeDate(entry.startDate).year),
+  endYear: entry.endDate
+    ? String(parseResumeDate(entry.endDate).year)
+    : undefined,
+}));
+---
+
+<section
+  id="education"
+  data-scene-label={ui.education.eyebrow}
+  class="education"
+>
+  {entries.map((entry, index) => (
+    <div class="scene entry">
+      <div class="stage">
+        <div class="glow education-glow" aria-hidden="true"></div>
+        {index === 0 && (
+          <SceneEyebrow
+            scene="education"
+            label={ui.education.eyebrow}
+            class="eyebrow"
+          />
+        )}
+
+        <p class="years">
+          <span class="display year-start">{entry.startYear}</span>
+          <span
+            class="timeline"
+            aria-hidden="true"
+            data-motion="education-line"
+          >
+            <span class="timeline-dot" data-motion="education-dot"></span>
+          </span>
+          <span class="sr-only">—</span>
+          <span class:list={["display year-end", !entry.endYear && "is-label"]}>
+            {entry.endYear ?? ui.experience.current}
+          </span>
+        </p>
+
+        <div class="degree">
+          <h3 class="degree-area">{entry.area}</h3>
+          <p class="serif degree-institution">{entry.institution}</p>
+        </div>
+
+        {entry.status && (
+          <p class="mono-label status">
+            <span class="status-dot" aria-hidden="true"></span>
+            {entry.status}
+          </p>
+        )}
+      </div>
+    </div>
+  ))}
+</section>
+
+<style>
+  /* ---------- Mobile · parte superior del artboard M06 ---------- */
+  .entry {
+    height: calc(var(--u) * 720);
+    background: linear-gradient(
+      180deg,
+      transparent 68%,
+      color-mix(in srgb, var(--color-purple) 6%, var(--color-bg)) 100%
+    );
+  }
+
+  .entry:last-child::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: calc(var(--ux) * 31);
+    bottom: calc(var(--u) * -1);
+    width: 1px;
+    height: calc(var(--u) * 82);
+    background: linear-gradient(
+      transparent,
+      color-mix(in srgb, var(--color-green) 55%, transparent)
+    );
+  }
+
+  .entry:first-child::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: calc(var(--ux) * 31);
+    top: 0;
+    width: 1px;
+    height: calc(var(--u) * 96);
+    background: linear-gradient(
+      color-mix(in srgb, var(--color-green) 55%, transparent),
+      transparent
+    );
+  }
+
+  .stage {
+    height: 100%;
+  }
+
+  .education-glow {
+    left: calc(var(--ux) * -150);
+    top: calc(var(--u) * 100);
+    width: calc(var(--u) * 600);
+    height: calc(var(--u) * 600);
+    --glow-strength: 18%;
+  }
+
+  .education :global(.eyebrow) {
+    position: absolute;
+    z-index: 6;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 96);
+  }
+
+  .years {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--ux) * 16);
+    top: calc(var(--u) * 130);
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  .year-start,
+  .year-end {
+    font-size: calc(var(--u) * 140);
+    color: var(--color-ink);
+  }
+
+  .year-start {
+    font-weight: 200;
+    color: var(--color-lilac);
+  }
+
+  .year-end.is-label {
+    font-size: calc(var(--u) * 70);
+  }
+
+  .timeline {
+    position: relative;
+    display: block;
+    width: 1px;
+    height: calc(var(--u) * 48);
+    margin-left: calc(var(--u) * 6);
+    background: linear-gradient(
+        color-mix(in srgb, var(--color-lilac) 30%, transparent),
+        var(--color-green)
+      )
+      no-repeat 0 0 / 100% 100%;
+  }
+
+  .timeline-dot {
+    display: none;
+  }
+
+  .degree {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 440);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 14);
+    width: calc(var(--u) * 350);
+  }
+
+  .degree-area {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: calc(var(--u) * 56);
+    font-weight: 700;
+    font-stretch: 75%;
+    line-height: 0.92;
+    letter-spacing: -0.012em;
+    color: var(--color-ink);
+  }
+
+  .degree-institution {
+    margin: 0;
+    font-size: calc(var(--u) * 30);
+    line-height: 1.05;
+    color: var(--color-lilac);
+  }
+
+  .status {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 610);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 10px 16px;
+    border: 1px solid color-mix(in srgb, var(--color-green) 45%, transparent);
+    border-radius: 9999px;
+    color: var(--color-ink);
+  }
+
+  .status-dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: var(--color-green);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--color-green) 50%, transparent);
+  }
+
+  /* ---------- Desktop · artboard 09 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .entry {
+      height: 100svh;
+    }
+
+    .entry:last-child::after {
+      left: auto;
+      right: 0;
+      bottom: 0;
+      width: calc(var(--ux) * 420);
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--color-green) 35%, transparent)
+      );
+    }
+
+    .entry:first-child::before {
+      left: 0;
+      top: 0;
+      width: calc(var(--ux) * 420);
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--color-green) 35%, transparent),
+        transparent
+      );
+    }
+
+    .stage {
+      height: calc(var(--u) * 900);
+    }
+
+    .education-glow {
+      left: calc(var(--ux) * 800);
+      top: calc(var(--u) * 300);
+      width: calc(var(--u) * 900);
+      height: calc(var(--u) * 900);
+    }
+
+    .education :global(.eyebrow) {
+      left: calc(var(--ux) * 120);
+      top: calc(var(--u) * 150);
+    }
+
+    .years {
+      left: calc(var(--ux) * 112);
+      top: calc(var(--u) * 250);
+      flex-direction: row;
+      align-items: center;
+      gap: calc(var(--u) * 28);
+    }
+
+    .year-start,
+    .year-end {
+      font-size: calc(var(--u) * 250);
+    }
+
+    .year-end.is-label {
+      font-size: calc(var(--u) * 120);
+    }
+
+    .timeline {
+      width: calc(var(--u) * 330);
+      height: 1px;
+      margin: 0;
+      background: linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--color-lilac) 30%, transparent),
+          var(--color-green)
+        )
+        no-repeat 0 0 / 100% 100%;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      right: -8px;
+      top: -8px;
+      display: block;
+      width: 16px;
+      height: 16px;
+      border-radius: 9999px;
+      background: var(--color-green);
+      box-shadow: 0 0 32px
+        color-mix(in srgb, var(--color-green) 50%, transparent);
+    }
+
+    .degree {
+      left: calc(var(--ux) * 120);
+      top: calc(var(--u) * 560);
+      gap: calc(var(--u) * 18);
+      width: auto;
+    }
+
+    .degree-area {
+      font-size: calc(var(--u) * 88);
+      line-height: 0.9;
+      white-space: nowrap;
+    }
+
+    .degree-institution {
+      font-size: calc(var(--u) * 46);
+      line-height: 1;
+    }
+
+    .status {
+      left: calc(var(--ux) * 1020);
+      top: calc(var(--u) * 590);
+      gap: 12px;
+      padding: 12px 20px;
+    }
+  }
+</style>

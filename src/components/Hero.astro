@@ -1,0 +1,475 @@
+---
+import type { UiStrings } from "../i18n/ui";
+import { getCvDownloadName, getCvHref } from "../lib/cv";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import type { Locale } from "../lib/resume";
+import SignalDot from "./SignalDot.astro";
+
+export interface Props {
+  locale: Locale;
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { locale, portfolio, ui } = Astro.props;
+const { hero } = portfolio;
+
+const [firstWord = "", ...restWords] = hero.displayName
+  .toUpperCase()
+  .split(" ");
+const secondWord = restWords.join(" ");
+
+const cvHref = getCvHref(locale);
+const cvDownloadName = getCvDownloadName(locale);
+---
+
+<section id="top" data-scene-label={ui.hero.eyebrow} class="scene hero">
+  <div class="stage">
+    <div class="glow glow-purple" aria-hidden="true"></div>
+    <div class="glow glow-green" aria-hidden="true"></div>
+    <div class="orbit orbit-outer" aria-hidden="true"></div>
+    <div class="orbit orbit-inner" aria-hidden="true"></div>
+    <SignalDot class="orbit-dot" data-motion="hero-dot" />
+
+    <h1 class="name">
+      <span class="sr-only">{hero.displayName}</span>
+      <span
+        class="display word word-first"
+        aria-hidden="true"
+        data-motion="hero-first"
+      >
+        {firstWord}
+      </span>
+
+      {/* Segunda palabra en contorno con relleno parcial (mobile y desktop) */}
+      <span
+        class="word word-second"
+        aria-hidden="true"
+        data-motion="hero-second"
+      >
+        <span class="display text-outline layer-outline">{secondWord}</span>
+        <span class="display layer-fill" data-motion="hero-fill">
+          {secondWord}
+        </span>
+      </span>
+    </h1>
+
+    <p class="meta" data-motion="hero-meta">
+      <span class="mono-label text-green meta-headline">{hero.headline}</span>
+      <span class="meta-line" aria-hidden="true"></span>
+      <span class="mono-label text-soft meta-location">
+        {hero.location.city} —{" "}
+        <span class="desk:hidden">{hero.location.countryCode}</span>
+        <span class="hidden desk:inline">{hero.location.countryName}</span>
+      </span>
+    </p>
+
+    <p class="serif tagline" data-motion="hero-tagline">
+      {hero.tagline}
+    </p>
+
+    <div class="ctas" data-motion="hero-ctas">
+      <a href="#work" data-cursor="cta" class="cta-work">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 4v16M5 13l7 7 7-7"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+        <span>{ui.hero.ctaWork}</span>
+      </a>
+      <a
+        href={cvHref}
+        download={cvDownloadName}
+        class="cta-cv"
+        data-cursor="cta"
+      >
+        <span class="cta-cv-label">
+          {ui.hero.ctaCv}
+          <span class="mono-label cta-cv-badge">{ui.hero.cvBadge}</span>
+        </span>
+      </a>
+    </div>
+
+    <span class="mini-ring" aria-hidden="true">
+      <span></span>
+    </span>
+  </div>
+</section>
+
+<style>
+  /* ---------- Mobile · artboard M01 (390×844) ---------- */
+  .hero {
+    --mobile-stage-shift: clamp(
+      calc(var(--u) * 24),
+      4.5svh,
+      calc(var(--u) * 44)
+    );
+    height: max(100svh, calc(var(--u) * 720));
+  }
+
+  .stage {
+    height: 100%;
+    transform: translateY(var(--mobile-stage-shift));
+  }
+
+  .glow-purple {
+    left: calc(var(--ux) * -120);
+    top: calc(var(--u) * 80);
+    width: calc(var(--u) * 700);
+    height: calc(var(--u) * 700);
+    --glow-strength: 40%;
+  }
+
+  .glow-green {
+    display: none;
+  }
+
+  .orbit {
+    position: absolute;
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+
+  .orbit-outer {
+    left: calc(var(--ux) * 60);
+    top: calc(var(--u) * 150);
+    width: calc(var(--u) * 520);
+    height: calc(var(--u) * 520);
+    border: 1px solid color-mix(in srgb, var(--color-lilac) 16%, transparent);
+  }
+
+  .orbit-inner,
+  .mini-ring {
+    display: none;
+  }
+
+  .hero :global(.orbit-dot) {
+    position: absolute;
+    z-index: 1;
+    left: calc(var(--ux) * 84);
+    top: calc(var(--u) * 210);
+    width: calc(var(--u) * 36);
+    height: calc(var(--u) * 36);
+    --dot: calc(var(--u) * 12);
+  }
+
+  .word {
+    position: absolute;
+    display: block;
+    white-space: nowrap;
+    font-size: calc(var(--u) * 178);
+  }
+
+  .word-first {
+    left: calc(var(--ux) * 10);
+    top: calc(var(--u) * 120);
+    z-index: 3;
+    color: var(--color-ink);
+  }
+
+  .word-second {
+    display: block;
+    right: calc(var(--ux) * 10);
+    top: calc(var(--u) * 272);
+    z-index: 2;
+  }
+
+  .word-second .display {
+    font-size: calc(var(--u) * 156);
+  }
+
+  .layer-outline {
+    display: block;
+    --stroke: 1.5px;
+    --stroke-color: var(--color-purple-hi);
+  }
+
+  .layer-fill {
+    position: absolute;
+    inset: 0;
+    color: var(--color-purple);
+    clip-path: inset(0 0 55% 0);
+  }
+
+  .meta {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    right: calc(var(--ux) * 20);
+    top: calc(var(--u) * 414);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 12);
+  }
+
+  .meta-headline {
+    flex: 0 0 calc(var(--u) * 118);
+  }
+
+  .meta-line {
+    display: block;
+    flex: 1;
+    min-width: calc(var(--u) * 24);
+    height: 1px;
+    background: color-mix(in srgb, var(--color-ink) 25%, transparent);
+  }
+
+  .meta-location {
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .tagline {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 478);
+    width: calc(var(--u) * 350);
+    margin: 0;
+    font-size: calc(var(--u) * 25);
+    line-height: 1.12;
+    color: var(--color-prose);
+  }
+
+  .ctas {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    right: calc(var(--ux) * 20);
+    top: calc(var(--u) * 592);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cta-work {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: calc(var(--u) * 52);
+    padding-inline: calc(var(--u) * 22);
+    border-radius: 9999px;
+    background: var(--color-green);
+    color: var(--color-bg);
+    font-size: calc(var(--u) * 17);
+    font-weight: 700;
+    font-stretch: 85%;
+  }
+
+  .cta-work svg {
+    order: 1;
+    width: calc(var(--u) * 22);
+    height: calc(var(--u) * 22);
+  }
+
+  .cta-cv {
+    display: flex;
+    align-items: center;
+    height: calc(var(--u) * 52);
+    border-bottom: 1px solid var(--color-ink);
+    font-size: calc(var(--u) * 17);
+    font-weight: 600;
+    font-stretch: 85%;
+  }
+
+  .cta-cv:hover {
+    color: var(--color-green);
+  }
+
+  .cta-cv-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cta-cv-badge {
+    display: none;
+  }
+
+  /* ---------- Desktop · artboard 01 (1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .hero {
+      height: 100svh;
+    }
+
+    .stage {
+      height: calc(var(--u) * 900);
+      transform: none;
+    }
+
+    .glow-purple {
+      left: calc(var(--ux) * 560);
+      top: calc(var(--u) * 120);
+      width: calc(var(--u) * 1100);
+      height: calc(var(--u) * 1100);
+    }
+
+    .glow-green {
+      display: block;
+      left: calc(var(--ux) * -260);
+      top: calc(var(--u) * 560);
+      width: calc(var(--u) * 700);
+      height: calc(var(--u) * 700);
+      --glow-color: var(--color-green);
+      --glow-strength: 8%;
+    }
+
+    .orbit-outer {
+      left: calc(var(--ux) * 820);
+      top: calc(var(--u) * 90);
+      width: calc(var(--u) * 720);
+      height: calc(var(--u) * 720);
+    }
+
+    .orbit-inner {
+      display: block;
+      left: calc(var(--ux) * 820 + var(--u) * 120);
+      top: calc(var(--u) * 210);
+      width: calc(var(--u) * 480);
+      height: calc(var(--u) * 480);
+      border: 1px dashed color-mix(in srgb, var(--color-lilac) 10%, transparent);
+    }
+
+    .hero :global(.orbit-dot) {
+      left: calc(var(--ux) * 820 + var(--u) * 158);
+      top: calc(var(--u) * 116);
+      width: calc(var(--u) * 44);
+      height: calc(var(--u) * 44);
+      --dot: calc(var(--u) * 14);
+    }
+
+    .word {
+      font-size: calc(var(--u) * 540);
+    }
+
+    .word-first {
+      left: calc(var(--ux) * 40);
+      top: calc(var(--u) * 48);
+    }
+
+    .word-second {
+      left: auto;
+      right: calc(var(--ux) * 40);
+      top: calc(var(--u) * 452);
+    }
+
+    .word-second .display {
+      /* Deshace la compresión mobile: en desktop la palabra ya entra bien
+         al tamaño normal de .word (540u), igual que word-first. */
+      font-size: calc(var(--u) * 540);
+    }
+
+    .layer-outline {
+      --stroke: 2px;
+    }
+
+    .meta {
+      left: calc(var(--ux) * 44);
+      right: auto;
+      top: calc(var(--u) * 462);
+      flex-direction: row;
+      align-items: center;
+      gap: calc(var(--u) * 20);
+    }
+
+    .meta-headline {
+      flex: initial;
+      width: auto;
+    }
+
+    .meta-line {
+      display: block;
+      flex: none;
+      min-width: 0;
+      width: calc(var(--u) * 180);
+      height: 1px;
+      background: color-mix(in srgb, var(--color-ink) 25%, transparent);
+    }
+
+    .tagline {
+      z-index: 5;
+      left: calc(var(--ux) * 44);
+      top: calc(var(--u) * 508);
+      width: calc(var(--u) * 330);
+      font-size: calc(var(--u) * 31);
+    }
+
+    .ctas {
+      z-index: 5;
+      top: auto;
+      right: auto;
+      left: calc(var(--ux) * 44);
+      bottom: calc(var(--u) * 56);
+      justify-content: flex-start;
+      gap: calc(var(--u) * 36);
+    }
+
+    .cta-work svg {
+      order: 0;
+    }
+
+    .cta-work {
+      flex-direction: column;
+      justify-content: center;
+      gap: calc(var(--u) * 10);
+      width: calc(var(--u) * 172);
+      height: calc(var(--u) * 172);
+      padding: 0;
+      font-size: calc(var(--u) * 20);
+      letter-spacing: -0.01em;
+      box-shadow: 0 0 80px
+        color-mix(in srgb, var(--color-green) 25%, transparent);
+    }
+
+    .cta-cv {
+      flex-direction: column;
+      align-items: stretch;
+      gap: calc(var(--u) * 8);
+      height: auto;
+      font-size: calc(var(--u) * 22);
+      border-bottom: 0;
+    }
+
+    .cta-cv::after {
+      content: "";
+      display: block;
+      height: 1px;
+      background: var(--color-ink);
+    }
+
+    .cta-cv-badge {
+      display: inline-block;
+      padding: 3px 6px;
+      border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--color-soft);
+    }
+
+    .mini-ring {
+      position: absolute;
+      z-index: 6;
+      left: calc(var(--ux) * 44 + var(--u) * 132);
+      top: calc(var(--u) * 676);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: calc(var(--u) * 40);
+      height: calc(var(--u) * 40);
+      border: 1px solid var(--color-green);
+      border-radius: 9999px;
+    }
+
+    .mini-ring span {
+      width: 4px;
+      height: 4px;
+      border-radius: 9999px;
+      background: var(--color-green);
+    }
+  }
+</style>

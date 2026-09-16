@@ -1,0 +1,710 @@
+---
+import { Picture } from "astro:assets";
+import ecuAdmin from "../assets/projects/ecustock/admin.png";
+import ecuLanding from "../assets/projects/ecustock/landing.png";
+import ecuMobile from "../assets/projects/ecustock/mobile.png";
+import type { UiStrings } from "../i18n/ui";
+import type { PortfolioViewModel } from "../lib/portfolio";
+import SignalDot from "./SignalDot.astro";
+
+export interface Props {
+  portfolio: PortfolioViewModel;
+  ui: UiStrings;
+}
+
+const { portfolio, ui } = Astro.props;
+const project = portfolio.featuredProject;
+
+const media = [
+  // speed: velocidad relativa durante el scroll horizontal (parallax).
+  {
+    key: "admin",
+    letter: "A",
+    caption: ui.featured.captionAdmin,
+    src: ecuAdmin,
+    speed: 0.7,
+  },
+  {
+    key: "landing",
+    letter: "B",
+    caption: ui.featured.captionLanding,
+    src: ecuLanding,
+    speed: 1,
+  },
+  {
+    key: "mobile",
+    letter: "C",
+    caption: ui.featured.captionMobile,
+    src: ecuMobile,
+    speed: 1.3,
+  },
+] as const;
+
+/** Palabras gigantes de fondo del segundo panel (desplazamiento en contra). */
+const backgroundWords = project.keywords
+  .slice(0, 4)
+  .map((word) => word.toUpperCase());
+---
+
+<section id="featured" data-scene-label={ui.featured.eyebrow} class="featured">
+  <div class="track" data-motion="featured-track">
+    <div class="scene panel panel-intro">
+      <div class="stage">
+        <div class="glow intro-glow" aria-hidden="true"></div>
+        <span
+          class="display text-outline index"
+          aria-hidden="true"
+          data-motion="featured-index"
+        >
+          {project.index}
+        </span>
+
+        <p class="mono-label text-green eyebrow">
+          {ui.featured.eyebrow} — {project.type}
+        </p>
+        <h3 class="display name">{project.name}</h3>
+        <p class="serif description">{project.description}</p>
+
+        <div class="stack">
+          <span class="mono-label text-muted stack-label">
+            {ui.featured.stackLabel}
+          </span>
+          <ul class="keywords">
+            {project.keywords.map((keyword) => (
+              <li>{keyword}</li>
+            ))}
+          </ul>
+        </div>
+
+        <a
+          href={project.url}
+          target="_blank"
+          rel="noopener"
+          data-cursor="cta"
+          class="visit"
+        >
+          <span class="visit-label">
+            {ui.featured.ctaVisit}
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M7 17L17 7M8 7h9v9"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+          </span>
+          <span class="visit-line" aria-hidden="true"></span>
+          <span class="mono-label text-soft visit-url">
+            {project.urlDisplay}
+          </span>
+          <span class="sr-only">({ui.a11y.opensInNewTab})</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="scene panel panel-media">
+      <div class="stage">
+        <div class="glow media-glow" aria-hidden="true"></div>
+        <div class="glow media-glow-green" aria-hidden="true"></div>
+        <div class="words" aria-hidden="true" data-motion="featured-words">
+          {backgroundWords.map((word) => (
+            <span class="display text-outline word">{word}</span>
+          ))}
+        </div>
+        <div class="media-ring" aria-hidden="true"></div>
+
+        {media.map((item) => (
+          <>
+            <span
+              class="mono-label text-soft media-caption"
+              data-media={item.key}
+              aria-hidden="true"
+            >
+              {item.letter} — {item.caption}
+            </span>
+            <div
+              class="media"
+              data-media={item.key}
+              data-motion="featured-media"
+              data-speed={item.speed}
+            >
+              <Picture
+                src={item.src}
+                formats={["avif", "webp"]}
+                alt={item.caption}
+                class="media-shot"
+              />
+            </div>
+          </>
+        ))}
+
+        <SignalDot class="media-dot" />
+        <p class="mono-label text-muted captions-mobile" aria-hidden="true">
+          {media.map((item) => item.caption).join(" · ")}
+        </p>
+
+        <div class="scroll-hint" aria-hidden="true">
+          <span class="scroll-hint-line"></span>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M4 12h16M13 5l7 7-7 7"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ---------- Mobile · parte central del artboard M04 ---------- */
+  .featured {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .panel-intro {
+    height: calc(var(--u) * 480);
+  }
+
+  .panel-media {
+    height: calc(var(--u) * 640);
+  }
+
+  .stage {
+    height: 100%;
+  }
+
+  .intro-glow,
+  .media-glow,
+  .stack-label,
+  .visit-line,
+  .visit-url,
+  .media-caption,
+  .media-ring,
+  .featured :global(.media-dot),
+  .scroll-hint {
+    display: none;
+  }
+
+  .index {
+    position: absolute;
+    z-index: 1;
+    left: calc(var(--ux) * 210);
+    top: 0;
+    font-size: calc(var(--u) * 300);
+    --stroke: 1px;
+    --stroke-color: color-mix(in srgb, var(--color-purple-hi) 35%, transparent);
+  }
+
+  .eyebrow {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 50);
+    margin: 0;
+  }
+
+  .name {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 14);
+    top: calc(var(--u) * 80);
+    margin: 0;
+    font-size: calc(var(--u) * 118);
+    white-space: nowrap;
+    color: var(--color-ink);
+  }
+
+  .description {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 200);
+    width: calc(var(--u) * 340);
+    margin: 0;
+    font-size: calc(var(--u) * 27);
+    line-height: 1.1;
+    color: var(--color-prose);
+  }
+
+  .stack {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 320);
+    width: calc(var(--u) * 350);
+  }
+
+  .keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .keywords li {
+    padding: 6px 10px;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+    border-radius: 9999px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--color-soft);
+  }
+
+  .visit {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 410);
+    display: flex;
+    align-items: center;
+    height: calc(var(--u) * 52);
+    padding-inline: calc(var(--u) * 22);
+    border-radius: 9999px;
+    background: var(--color-green);
+    color: var(--color-bg);
+    font-size: calc(var(--u) * 17);
+    font-weight: 700;
+    font-stretch: 85%;
+  }
+
+  .visit-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .visit svg {
+    width: calc(var(--u) * 18);
+    height: calc(var(--u) * 18);
+  }
+
+  .media-glow-green {
+    left: 0;
+    top: calc(var(--u) * 100);
+    width: calc(var(--u) * 700);
+    height: calc(var(--u) * 700);
+    --glow-color: var(--color-green);
+    --glow-strength: 8%;
+  }
+
+  .words {
+    position: absolute;
+    z-index: 1;
+    left: calc(var(--ux) * -30);
+    top: calc(var(--u) * 20);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .word {
+    font-size: calc(var(--u) * 140);
+    white-space: nowrap;
+    --stroke: 1px;
+    --stroke-color: color-mix(in srgb, var(--color-lilac) 9%, transparent);
+  }
+
+  .word:nth-child(2) {
+    margin-left: calc(var(--u) * 80);
+  }
+
+  .word:nth-child(n + 3) {
+    display: none;
+  }
+
+  .media {
+    position: absolute;
+  }
+
+  .media :global(.media-shot) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /*
+   * En 390px una captura de escritorio solo se lee si ocupa casi todo el
+   * ancho: las tres van al máximo que permite el lienzo y solapan únicamente
+   * por las esquinas, no sobre el contenido útil de la de debajo.
+   */
+  .media :global(.media-shot) {
+    border-radius: calc(var(--u) * 8);
+  }
+
+  .media[data-media="admin"] {
+    z-index: 2;
+    left: calc(var(--ux) * 10);
+    top: calc(var(--u) * 36);
+    width: calc(var(--u) * 372);
+    height: calc(var(--u) * 233);
+    box-shadow: 0 30px 80px rgb(0 0 0 / 0.55);
+  }
+
+  .media[data-media="landing"] {
+    z-index: 3;
+    left: calc(var(--ux) * 10);
+    top: calc(var(--u) * 320);
+    width: calc(var(--u) * 300);
+    height: calc(var(--u) * 188);
+    box-shadow: 0 30px 80px rgb(0 0 0 / 0.6);
+  }
+
+  .media[data-media="mobile"] {
+    z-index: 4;
+    left: calc(var(--ux) * 224);
+    top: calc(var(--u) * 210);
+    width: calc(var(--u) * 152);
+    height: calc(var(--u) * 328);
+    border-radius: calc(var(--u) * 18);
+    box-shadow: 0 30px 80px rgb(0 0 0 / 0.6);
+  }
+
+  .media[data-media="admin"] :global(.media-shot),
+  .media[data-media="landing"] :global(.media-shot) {
+    border: 1px solid color-mix(in srgb, var(--color-lilac) 16%, transparent);
+  }
+
+  .media[data-media="mobile"] :global(.media-shot) {
+    border: 2px solid color-mix(in srgb, var(--color-green) 50%, transparent);
+    border-radius: calc(var(--u) * 18);
+  }
+
+  .captions-mobile {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--ux) * 20);
+    top: calc(var(--u) * 566);
+    margin: 0;
+    font-size: 10px;
+  }
+
+  /* ---------- Desktop · artboard 05 (2 viewports de 1440×900) ---------- */
+  @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
+    .panel-intro,
+    .panel-media {
+      height: 100svh;
+    }
+
+    .media :global(.media-shot) {
+      border-radius: 0;
+    }
+
+    .media[data-media="admin"] :global(.media-shot),
+    .media[data-media="landing"] :global(.media-shot) {
+      border: 0;
+    }
+
+    .stage {
+      height: calc(var(--u) * 900);
+    }
+
+    .intro-glow,
+    .media-glow {
+      display: block;
+    }
+
+    .intro-glow {
+      left: calc(var(--ux) * -200);
+      top: calc(var(--u) * 300);
+      width: calc(var(--u) * 1000);
+      height: calc(var(--u) * 1000);
+      --glow-strength: 25%;
+    }
+
+    .index {
+      left: calc(var(--ux) * 880);
+      top: calc(var(--u) * -40);
+      font-size: calc(var(--u) * 640);
+      --stroke: 1.5px;
+    }
+
+    .eyebrow {
+      left: calc(var(--ux) * 104);
+      top: calc(var(--u) * 150);
+    }
+
+    .name {
+      z-index: 5;
+      left: calc(var(--ux) * 90);
+      top: calc(var(--u) * 212);
+      font-size: calc(var(--u) * 330);
+    }
+
+    .description {
+      z-index: 5;
+      left: calc(var(--ux) * 104);
+      top: calc(var(--u) * 560);
+      width: calc(var(--u) * 640);
+      font-size: calc(var(--u) * 44);
+      line-height: 1.08;
+    }
+
+    .stack {
+      z-index: 5;
+      left: calc(var(--ux) * 104);
+      top: calc(var(--u) * 770);
+      display: flex;
+      align-items: center;
+      gap: calc(var(--u) * 22);
+      width: auto;
+    }
+
+    .stack-label {
+      display: inline;
+      color: var(--color-muted);
+    }
+
+    .keywords {
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: calc(var(--u) * 22);
+    }
+
+    .keywords li {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--u) * 22);
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      font-family: var(--font-sans);
+      font-size: calc(var(--u) * 22);
+      font-weight: 500;
+      font-stretch: 85%;
+      letter-spacing: normal;
+      text-transform: none;
+      color: var(--color-ink);
+    }
+
+    .keywords li::before {
+      content: "";
+      display: block;
+      width: 1px;
+      height: calc(var(--u) * 18);
+      background: color-mix(in srgb, var(--color-ink) 20%, transparent);
+    }
+
+    .visit {
+      z-index: 5;
+      left: calc(var(--ux) * 880);
+      top: calc(var(--u) * 590);
+      flex-direction: column;
+      align-items: stretch;
+      gap: calc(var(--u) * 12);
+      height: auto;
+      padding: 0;
+      border-radius: 0;
+      background: none;
+      color: var(--color-ink);
+      font-size: calc(var(--u) * 64);
+      font-stretch: 75%;
+      line-height: 1;
+      letter-spacing: -0.012em;
+    }
+
+    .visit:hover {
+      color: var(--color-green);
+    }
+
+    .visit-label {
+      gap: calc(var(--u) * 14);
+    }
+
+    .visit svg {
+      width: calc(var(--u) * 44);
+      height: calc(var(--u) * 44);
+      color: var(--color-green);
+    }
+
+    .visit-line {
+      display: block;
+      height: 2px;
+      background: var(--color-green);
+    }
+
+    .visit-url {
+      display: block;
+      letter-spacing: 0.16em;
+    }
+
+    /* Segundo panel: coordenadas del artboard menos 1440 */
+    .media-glow {
+      left: calc(var(--ux) * 260);
+      top: calc(var(--u) * -200);
+      width: calc(var(--u) * 1400);
+      height: calc(var(--u) * 1400);
+    }
+
+    .media-glow-green {
+      left: calc(var(--ux) * 860);
+      top: calc(var(--u) * 300);
+      --glow-strength: 10%;
+    }
+
+    .words {
+      left: 0;
+      top: calc(var(--u) * 40);
+      gap: calc(var(--u) * 14);
+    }
+
+    .word {
+      font-size: calc(var(--u) * 200);
+      --stroke: 1.2px;
+    }
+
+    .word {
+      --stroke-color: color-mix(in srgb, var(--color-lilac) 14%, transparent);
+    }
+
+    .word:nth-child(1) {
+      margin-left: calc(var(--u) * -60);
+    }
+
+    .word:nth-child(2) {
+      margin-left: calc(var(--u) * 380);
+    }
+
+    .word:nth-child(3) {
+      display: block;
+      margin-left: calc(var(--u) * 120);
+    }
+
+    .word:nth-child(4) {
+      display: block;
+      margin-left: calc(var(--u) * 560);
+    }
+
+    .media-ring {
+      position: absolute;
+      left: calc(var(--ux) * 840);
+      top: calc(var(--u) * 160);
+      display: block;
+      width: calc(var(--u) * 640);
+      height: calc(var(--u) * 640);
+      border: 1px solid color-mix(in srgb, var(--color-lilac) 14%, transparent);
+      border-radius: 9999px;
+    }
+
+    .media-caption {
+      position: absolute;
+      z-index: 5;
+      display: block;
+    }
+
+    .media-caption[data-media="admin"] {
+      left: calc(var(--ux) * 120);
+      top: calc(var(--u) * 104);
+    }
+
+    .media-caption[data-media="landing"] {
+      left: calc(var(--ux) * 640);
+      top: calc(var(--u) * 846);
+    }
+
+    .media-caption[data-media="mobile"] {
+      left: calc(var(--ux) * 1060);
+      top: calc(var(--u) * 158);
+    }
+
+    .media[data-media="admin"] {
+      left: calc(var(--ux) * 120);
+      top: calc(var(--u) * 134);
+      width: calc(var(--u) * 960);
+      height: calc(var(--u) * 600);
+      box-shadow: 0 40px 120px rgb(0 0 0 / 0.55);
+    }
+
+    .media[data-media="landing"] {
+      left: calc(var(--ux) * 640);
+      top: calc(var(--u) * 430);
+      width: calc(var(--u) * 640);
+      height: calc(var(--u) * 400);
+      box-shadow: 0 40px 120px rgb(0 0 0 / 0.6);
+    }
+
+    .media[data-media="mobile"] {
+      left: calc(var(--ux) * 1060);
+      top: calc(var(--u) * 190);
+      width: calc(var(--u) * 270);
+      height: calc(var(--u) * 480);
+      border-radius: calc(var(--u) * 30);
+      box-shadow: 0 40px 120px rgb(0 0 0 / 0.6);
+    }
+
+    .media[data-media="mobile"] :global(.media-shot) {
+      border-radius: calc(var(--u) * 30);
+    }
+
+    .featured :global(.media-dot) {
+      position: absolute;
+      z-index: 6;
+      left: calc(var(--ux) * 1060 + var(--u) * 248);
+      top: calc(var(--u) * 168);
+      display: inline-flex;
+      width: calc(var(--u) * 44);
+      height: calc(var(--u) * 44);
+      --dot: calc(var(--u) * 14);
+    }
+
+    .captions-mobile {
+      display: none;
+    }
+
+    /* Con motion, los dos paneles se colocan en fila para el scroll horizontal. */
+    :global(html.motion) .track {
+      display: flex;
+      width: 200%;
+    }
+
+    :global(html.motion) .panel {
+      flex-shrink: 0;
+      width: 50%;
+    }
+
+    /* Una sola superficie: halos y letras cruzan la unión de los paneles. */
+    :global(html.motion) .panel {
+      overflow: visible;
+    }
+
+    /* La indicación solo tiene sentido con el scroll horizontal activo. */
+    :global(html.motion) .scroll-hint {
+      display: flex;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      z-index: 5;
+      left: calc(var(--ux) * 120);
+      bottom: calc(var(--u) * 48);
+      align-items: center;
+      gap: 14px;
+      color: var(--color-faint);
+    }
+
+    .scroll-hint-line {
+      display: block;
+      width: calc(var(--u) * 220);
+      height: 1px;
+      background: color-mix(in srgb, var(--color-ink) 20%, transparent);
+    }
+
+    .scroll-hint svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+</style>

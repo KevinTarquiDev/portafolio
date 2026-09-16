@@ -1,30 +1,52 @@
-# Logs
-logs
-*.log
+# Build output
+dist/
+
+# Astro generated files
+.astro/
+
+# Dependencies
+node_modules/
+
+# Package manager / runtime logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-*.tsbuildinfo
+bun-debug.log*
 
 # Environment variables
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Vercel
+.vercel/
+
+# Temporary / generated files
+.tmp/
+.generated/
+.cache/
+
+# CV en PDF: artefacto derivado de resume.*.json, se regenera con
+# `bun run cv:generate` (ver scripts/generate-cv.ts)
+public/cv/*.pdf
+
+# Test / coverage output
+coverage/
+playwright-report/
+test-results/
+
+# OS files
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+Desktop.ini
+
+# IDEs
+.idea/
+
+# Local VS Code workspace settings
+.vscode/
+
+# Miscellaneous
+*.log
+*.tmp

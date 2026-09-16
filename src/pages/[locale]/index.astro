@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Hero from "../../components/Hero.astro";
+import About from "../../components/About.astro";
+import Experience from "../../components/Experience.astro";
+import WorkIntro from "../../components/WorkIntro.astro";
+import FeaturedProject from "../../components/FeaturedProject.astro";
+import Stack from "../../components/Stack.astro";
+import Practices from "../../components/Practices.astro";
+import Education from "../../components/Education.astro";
+import Contact from "../../components/Contact.astro";
+import { locales } from "../../i18n/config";
+import { ui } from "../../i18n/ui";
+import { getPortfolio } from "../../lib/portfolio";
+import type { Locale } from "../../lib/resume";
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({
+    params: { locale },
+    props: { locale },
+  }));
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const portfolio = getPortfolio(locale);
+const strings = ui[locale];
+
+const title = `${portfolio.hero.displayName} ${strings.meta.titleSeparator} ${portfolio.hero.headline}`;
+const description = portfolio.hero.tagline;
+---
+
+<BaseLayout
+  locale={locale}
+  portfolio={portfolio}
+  ui={strings}
+  title={title}
+  description={description}
+>
+  <Hero locale={locale} portfolio={portfolio} ui={strings} />
+  <About portfolio={portfolio} ui={strings} />
+  <Experience portfolio={portfolio} ui={strings} />
+  <WorkIntro portfolio={portfolio} ui={strings} />
+  <FeaturedProject portfolio={portfolio} ui={strings} />
+  <Stack portfolio={portfolio} ui={strings} />
+  <Practices portfolio={portfolio} ui={strings} />
+  <Education portfolio={portfolio} ui={strings} />
+  <Contact locale={locale} portfolio={portfolio} ui={strings} />
+</BaseLayout>
