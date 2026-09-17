@@ -4,7 +4,7 @@
     "label": "Full Stack Developer",
     "email": "kevin.tarqui.dev@gmail.com",
     "phone": "+593 96 400 4859",
-    "summary": "Full Stack Developer focused on building web applications, REST APIs, and microservices for real-world business environments. I have experience with Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker, and Git. My experience covers frontend and backend development, database design and integration, authentication, validations, business logic, incident resolution, and deployments to QA and production environments. I focus on building maintainable solutions that align with business needs and deliver a strong user experience.",
+    "summary": "Full Stack Developer focused on building web applications, REST APIs, and microservices for real-world business environments. I have experience with Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker, and Git. My experience covers frontend and backend development, database design and integration, authentication, validations, business logic, incident resolution, and deployments to QA and production environments. I integrate AI-assisted tools into my workflow to streamline analysis, development, documentation, and problem-solving while maintaining technical judgment and software quality. I focus on building maintainable solutions that align with business needs and deliver a strong user experience.",
     "location": {
       "city": "Cuenca",
       "region": "Azuay",
@@ -29,7 +29,7 @@
       "role": "Full Stack",
       "focus": "backend"
     },
-    "x-summaryShort": "Full Stack Developer with a backend focus and experience building web applications, REST APIs, microservices, frontend and backend systems, databases, and production deployments.",
+    "x-summaryShort": "Full Stack Developer with a backend focus and experience in web applications, REST APIs, microservices, frontend and backend development, databases, production deployments, and AI-assisted development with OpenAI Codex and Claude Code.",
     "x-focusAreas": [
       "Web applications",
       "REST APIs",

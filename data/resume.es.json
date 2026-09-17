@@ -4,7 +4,7 @@
     "label": "Desarrollador Full Stack",
     "email": "kevin.tarqui.dev@gmail.com",
     "phone": "+593 96 400 4859",
-    "summary": "Desarrollador Full Stack orientado a la construcción de aplicaciones web, APIs REST y microservicios para entornos reales de negocio. Cuento con experiencia en Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker y Git. Mi experiencia abarca desarrollo frontend y backend, diseño e integración con bases de datos, autenticación, validaciones, lógica de negocio, resolución de incidencias y despliegues en ambientes de QA y producción. Me enfoco en construir soluciones mantenibles, alineadas con las necesidades del negocio y orientadas a brindar una buena experiencia de usuario.",
+    "summary": "Desarrollador Full Stack orientado a la construcción de aplicaciones web, APIs REST y microservicios para entornos reales de negocio. Cuento con experiencia en Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker y Git. Mi experiencia abarca desarrollo frontend y backend, diseño e integración con bases de datos, autenticación, validaciones, lógica de negocio, resolución de incidencias y despliegues en ambientes de QA y producción. Integro herramientas de IA asistida en mi flujo de trabajo para agilizar el análisis, desarrollo, documentación y resolución de problemas, manteniendo el criterio técnico y la calidad de las soluciones. Me enfoco en construir soluciones mantenibles, alineadas con las necesidades del negocio y orientadas a brindar una buena experiencia de usuario.",
     "location": {
       "city": "Cuenca",
       "region": "Azuay",
@@ -29,7 +29,7 @@
       "role": "Full Stack",
       "focus": "backend"
     },
-    "x-summaryShort": "Desarrollador Full Stack con orientación al backend y experiencia en el desarrollo de aplicaciones web, APIs REST, microservicios, sistemas frontend y backend, bases de datos y despliegues en producción.",
+    "x-summaryShort": "Desarrollador Full Stack con orientación al backend y experiencia en aplicaciones web, APIs REST, microservicios, frontend, backend, bases de datos, despliegues en producción y desarrollo asistido por IA con OpenAI Codex y Claude Code.",
     "x-focusAreas": [
       "Aplicaciones web",
       "APIs REST",
