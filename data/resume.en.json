@@ -4,7 +4,7 @@
     "label": "Full Stack Developer",
     "email": "kevin.tarqui.dev@gmail.com",
     "phone": "+593 96 400 4859",
-    "summary": "Full Stack Developer focused on building web applications, REST APIs, and microservices for real-world business environments. I have experience with Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker, and Git. My experience covers frontend and backend development, database design and integration, authentication, validations, business logic, incident resolution, and deployments to QA and production environments. I focus on building maintainable solutions with a good user experience and aligned with business needs.",
+    "summary": "Full Stack Developer focused on building web applications, REST APIs, and microservices for real-world business environments. I have experience with Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker, and Git. My experience covers frontend and backend development, database design and integration, authentication, validations, business logic, incident resolution, and deployments to QA and production environments. I focus on building maintainable solutions that align with business needs and deliver a strong user experience.",
     "location": {
       "city": "Cuenca",
       "region": "Azuay",
@@ -42,7 +42,7 @@
     "x-availability": [
       "Immediate availability",
       "On-site and hybrid in Cuenca",
-      "Remote nationally and internationally"
+      "Available for international remote work"
     ]
   },
   "work": [
@@ -54,7 +54,7 @@
       "endDate": "2026-05",
       "summary": "Development and maintenance of web solutions for internal systems, a restaurant platform, and a multitenant e-commerce application.",
       "highlights": [
-        "Developed and maintained web solutions for internal systems, a restaurant platform, and a multitenant e-commerce application, with greater involvement in frontend development and backend support.",
+        "Developed and maintained web solutions for internal systems, a restaurant platform, and a multi-tenant e-commerce application, with a primary focus on frontend development while also contributing to backend development.",
         "Built responsive interfaces and reusable components for forms, tables, and business workflows using React, TypeScript, and Tailwind CSS, integrated with REST APIs.",
         "Collaborated on the implementation and maintenance of backend features with NestJS and Spring Boot, including endpoints, DTOs, repositories, validations, authentication, error handling, and SQL queries.",
         "Participated in incident resolution, stabilization, refactoring, and delivery of complete modules, using Docker for test environments and Scrum, Jira, Git, and Notion for collaborative work."
@@ -69,7 +69,7 @@
       "summary": "Backend development of microservices with Java and Spring Boot to digitize physical forms for an Ecuadorian public-sector entity.",
       "highlights": [
         "Developed microservices with Java and Spring Boot to digitize physical forms for an Ecuadorian public-sector entity, modeling sections, questions, options, and dependencies between responses.",
-        "Implemented endpoints, entities, validations, error and state handling, business logic, service-to-service communication, and scheduled jobs.",
+        "Implemented endpoints, entities, validations, error handling, state management, business logic, service-to-service communication, and scheduled jobs.",
         "Designed PostgreSQL schemas and integrated Keycloak for authentication, survey registration, management of different user types, and categorization of confidential PDF documents.",
         "Participated directly in QA and production deployments by building and publishing Docker images and updating services on the server."
       ]
@@ -89,14 +89,14 @@
     {
       "name": "UDIPSAI - Universidad Católica de Cuenca",
       "location": "Cuenca, Ecuador",
-      "position": "Community Engagement Project",
+      "position": "Community Outreach Project",
       "description": "Software and data",
       "startDate": "2024-05",
       "endDate": "2024-07",
       "summary": "Digitization, data migration, and support in refactoring the institutional system.",
       "highlights": [
         "Digitized and updated 730 institutional records, supporting the migration of information from physical records and Excel files into the internal system and its database.",
-        "Collaborated on the refactoring of the UDIPSAI system and requirements gathering for the Speech Therapy area."
+        "Collaborated on refactoring the UDIPSAI system and gathering requirements for the Speech Therapy department."
       ]
     }
   ],
@@ -133,11 +133,11 @@
       ]
     },
     {
-      "name": "Data & Security",
+      "name": "Data and Security",
       "keywords": ["PostgreSQL", "SQL Server", "Database Modeling", "Keycloak"]
     },
     {
-      "name": "Tools & Methodologies",
+      "name": "Tools and methodology",
       "keywords": [
         "Docker",
         "Git",
@@ -145,6 +145,9 @@
         "GitLab",
         "Jira",
         "Notion",
+        "OpenAI Codex",
+        "Claude Code",
+        "AI-assisted development",
         "Scrum",
         "SDD"
       ]
@@ -163,11 +166,11 @@
   "projects": [
     {
       "name": "EcuStock",
-      "description": "Self-developed inventory management and web catalog product.",
+      "description": "Independent inventory management and web catalog platform.",
       "startDate": "2026-04",
       "endDate": "2026-08",
       "url": "https://webstockify.com",
-      "type": "Own product",
+      "type": "Independent Project",
       "roles": ["Full Stack Developer"],
       "keywords": [
         "React",
@@ -177,11 +180,11 @@
         "PostgreSQL",
         "GitLab CI/CD",
         "Docker",
-        "Kubernetes (K3)",
+        "Kubernetes (K3s)",
         "Cloudflare"
       ],
       "highlights": [
-        "Developed a platform for small and medium-sized businesses with multi-user management, roles and permissions, products, categories, variants, inventory control, and public web catalog.",
+        "Developed a platform for small and medium-sized businesses with multi-user management, roles and permissions, products, categories, variants, inventory control, and a public web catalog.",
         "Designed and implemented the deployment infrastructure for QA and production environments using Kubernetes (K3s), Helm, Ingress, Cloudflare, CI/CD, and backup strategies, with logical isolation between environments.",
         "Implemented a multi-tenant architecture with centralized control and a dedicated PostgreSQL database per business."
       ]
@@ -202,7 +205,13 @@
     },
     {
       "name": "Workflow",
-      "keywords": ["Git", "Code Review", "Scrum", "SDD"]
+      "keywords": [
+        "Git",
+        "Code Review",
+        "Scrum",
+        "SDD",
+        "AI-assisted development"
+      ]
     }
   ]
 }
