@@ -166,7 +166,13 @@ export function buildCvDocument(locale: Locale): CvDocument {
     experience: resume.work.map((job) => ({
       company: job.name,
       position: job.position,
-      detail: [job.description, job.location].filter(Boolean).join(SEPARATOR),
+      detail: [
+        job.description,
+        job["x-remote"] ? strings.remote : undefined,
+        job.location,
+      ]
+        .filter(Boolean)
+        .join(SEPARATOR),
       dateRange: formatMonthRange(job.startDate, job.endDate, locale, present),
       highlights: [...job.highlights],
     })),

@@ -83,6 +83,7 @@ export interface UiStrings {
     sectionSkills: string;
     sectionLanguages: string;
     mainStack: string;
+    remote: string;
   };
   notFound: {
     title: string;
@@ -181,6 +182,7 @@ const es: UiStrings = {
     sectionSkills: "Competencias técnicas",
     sectionLanguages: "Idiomas",
     mainStack: "Stack principal",
+    remote: "Remoto",
   },
   notFound: {
     title: "Página no encontrada",
@@ -280,6 +282,7 @@ const en: UiStrings = {
     sectionSkills: "Technical skills",
     sectionLanguages: "Languages",
     mainStack: "Main stack",
+    remote: "Remote",
   },
   notFound: {
     title: "Page not found",
