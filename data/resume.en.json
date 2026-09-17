@@ -4,7 +4,7 @@
     "label": "Full Stack Developer",
     "email": "kevin.tarqui.dev@gmail.com",
     "phone": "+593 96 400 4859",
-    "summary": "Full Stack Developer focused on building web applications, REST APIs, and microservices for real-world business environments. I have experience with Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker, and Git. My experience covers frontend and backend development, database design and integration, authentication, validations, business logic, incident resolution, and deployments to QA and production environments. I integrate AI-assisted tools into my workflow to streamline analysis, development, documentation, and problem-solving while maintaining technical judgment and software quality. I focus on building maintainable solutions that align with business needs and deliver a strong user experience.",
+    "summary": "Full Stack Developer with experience building web applications, REST APIs, and microservices for real-world business environments, covering frontend and backend development, database integration, authentication, incident resolution, and deployments to QA and production. I integrate AI-assisted tools into my workflow to streamline analysis, development, and documentation while maintaining technical judgment and software quality. I focus on building maintainable solutions that align with business needs and deliver a strong user experience.",
     "location": {
       "city": "Cuenca",
       "region": "Azuay",
@@ -139,16 +139,14 @@
     {
       "name": "Tools and methodology",
       "keywords": [
-        "Docker",
         "Git",
         "GitHub",
-        "GitLab",
+        "GitLab CI/CD",
+        "Docker",
         "Jira",
         "Notion",
-        "OpenAI Codex",
-        "Claude Code",
-        "AI-assisted development",
         "Scrum",
+        "AI-assisted development",
         "SDD"
       ]
     }

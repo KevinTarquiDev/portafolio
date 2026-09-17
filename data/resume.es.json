@@ -4,7 +4,7 @@
     "label": "Desarrollador Full Stack",
     "email": "kevin.tarqui.dev@gmail.com",
     "phone": "+593 96 400 4859",
-    "summary": "Desarrollador Full Stack orientado a la construcción de aplicaciones web, APIs REST y microservicios para entornos reales de negocio. Cuento con experiencia en Java, Spring Boot, React, TypeScript, NestJS, PostgreSQL, SQL Server, Docker y Git. Mi experiencia abarca desarrollo frontend y backend, diseño e integración con bases de datos, autenticación, validaciones, lógica de negocio, resolución de incidencias y despliegues en ambientes de QA y producción. Integro herramientas de IA asistida en mi flujo de trabajo para agilizar el análisis, desarrollo, documentación y resolución de problemas, manteniendo el criterio técnico y la calidad de las soluciones. Me enfoco en construir soluciones mantenibles, alineadas con las necesidades del negocio y orientadas a brindar una buena experiencia de usuario.",
+    "summary": "Desarrollador Full Stack con experiencia en aplicaciones web, APIs REST y microservicios para entornos reales de negocio, abarcando desarrollo frontend y backend, integración con bases de datos, autenticación, resolución de incidencias y despliegues en QA y producción. Integro herramientas de IA asistida en mi flujo de trabajo para agilizar el análisis, desarrollo y documentación, manteniendo el criterio técnico y la calidad de las soluciones. Me enfoco en construir soluciones mantenibles, alineadas con las necesidades del negocio y orientadas a una buena experiencia de usuario.",
     "location": {
       "city": "Cuenca",
       "region": "Azuay",
@@ -144,16 +144,14 @@
     {
       "name": "Herramientas y metodología",
       "keywords": [
-        "Docker",
         "Git",
         "GitHub",
-        "GitLab",
+        "GitLab CI/CD",
+        "Docker",
         "Jira",
         "Notion",
-        "OpenAI Codex",
-        "Claude Code",
-        "Desarrollo asistido por IA",
         "Scrum",
+        "Desarrollo asistido por IA",
         "SDD"
       ]
     }
