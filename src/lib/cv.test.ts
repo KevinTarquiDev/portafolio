@@ -56,8 +56,11 @@ describe("buildCvDocument", () => {
     "el stack del proyecto se deriva de sus keywords (%s)",
     (locale) => {
       const [project] = getResume(locale).projects;
-      const [stackLine] =
-        buildCvDocument(locale).projects[0].highlights.slice(-1);
+      const [cvProject] = buildCvDocument(locale).projects;
+      if (!project || !cvProject) {
+        throw new Error("el resume debe tener al menos un proyecto");
+      }
+      const [stackLine] = cvProject.highlights.slice(-1);
       for (const keyword of project.keywords) {
         expect(stackLine).toContain(keyword);
       }

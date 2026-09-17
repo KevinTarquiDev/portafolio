@@ -4,10 +4,10 @@ import SignalDot from "./SignalDot.astro";
 import { formatIndex } from "../lib/portfolio";
 import type { PortfolioViewModel } from "../lib/portfolio";
 import {
-  STACK_COLUMN_SIZES,
   fitsOneLine,
   stackColumnFontSize,
   stackColumnLoop,
+  stackColumnSize,
 } from "../lib/stack";
 import type { UiStrings } from "../i18n/ui";
 
@@ -22,8 +22,7 @@ const { portfolio, ui } = Astro.props;
 const HALF_STAGE = 470;
 
 const columns = portfolio.stack.groups.map((group, index) => {
-  const designSize = STACK_COLUMN_SIZES[index % STACK_COLUMN_SIZES.length];
-  const size = stackColumnFontSize(group.keywords, designSize);
+  const size = stackColumnFontSize(group.keywords, stackColumnSize(index));
   const rowsToFill = Math.ceil(HALF_STAGE / (size * 1.2)) + 1;
   return {
     ...group,

@@ -4,10 +4,10 @@ import { join } from "node:path";
 /**
  * Verifica el build de producción (`.vercel/output`) más allá de lo que
  * cubre `astro check`: contenido HTML real, redirects, funciones y
- * artefactos generados. Cada fase de IMPLEMENTATION_PLAN.md añade sus
- * propias comprobaciones aquí; nunca se adelantan comprobaciones de
- * fases futuras. Sale con código 1 si algo falla, listando todos los
- * fallos encontrados.
+ * artefactos generados. Cada comprobación se nombra por lo que valida y
+ * se registra en CHECKS; añadir una nueva es escribir su función y
+ * sumarla a esa lista. Sale con código 1 si algo falla, listando todos
+ * los fallos encontrados.
  */
 
 const OUTPUT_DIR = ".vercel/output";
@@ -46,10 +46,10 @@ function walkFiles(dir: string): string[] {
 }
 
 /**
- * Fase 2: rutas /es/ y /en/ generadas con lang correcto, redirect "/" ->
- * "/es/" en config.json, y ninguna fuente cargada desde Google Fonts.
+ * Rutas /es/ y /en/ generadas con lang correcto, redirect "/" -> "/es/"
+ * en config.json, y ninguna fuente cargada desde Google Fonts.
  */
-function checkPhase2(): void {
+function checkRoutes(): void {
   const esHtml = readText(join(STATIC_DIR, "es", "index.html"));
   if (!esHtml) {
     fail("Falta static/es/index.html");
@@ -92,10 +92,10 @@ function checkPhase2(): void {
 }
 
 /**
- * Fase 5: la función serverless que atiende /api/contact/ existe en
- * el config de Vercel.
+ * La función serverless que atiende /api/contact/ existe en el config
+ * de Vercel.
  */
-function checkPhase5(): void {
+function checkContactFunction(): void {
   const config = readText(CONFIG_PATH);
   if (!config) {
     fail("Falta .vercel/output/config.json");
@@ -116,12 +116,11 @@ function checkPhase5(): void {
   }
 }
 
-checkPhase2();
 /**
- * Fase 6: los PDF del CV existen, son PDFs válidos, y el href del
- * botón "Descargar CV" en cada idioma apunta al PDF de ese idioma.
+ * Los PDF del CV existen, son PDFs válidos, y el href del botón
+ * "Descargar CV" en cada idioma apunta al PDF de ese idioma.
  */
-function checkPhase6(): void {
+function checkCvPdfs(): void {
   const pdfPaths = {
     es: join(STATIC_DIR, "cv", "kevin-tarqui-cv-es.pdf"),
     en: join(STATIC_DIR, "cv", "kevin-tarqui-cv-en.pdf"),
@@ -146,7 +145,7 @@ function checkPhase6(): void {
   for (const [locale, htmlPath] of Object.entries(htmlPaths)) {
     const html = readText(htmlPath);
     if (!html) {
-      continue; // ya reportado por checkPhase2
+      continue; // ya reportado por checkRoutes
     }
     const expectedHref = `/cv/kevin-tarqui-cv-${locale}.pdf`;
     if (!html.includes(expectedHref)) {
@@ -155,13 +154,11 @@ function checkPhase6(): void {
   }
 }
 
-checkPhase5();
 /**
- * Fase 7: canonical y hreflang recíprocos, meta OG/Twitter con URLs
- * absolutas, JSON-LD parseable, sitemap y robots correctos, y el
- * og-image presente.
+ * Canonical y hreflang recíprocos, meta OG/Twitter con URLs absolutas,
+ * JSON-LD parseable, sitemap y robots correctos, y og-image presente.
  */
-function checkPhase7(): void {
+function checkSeo(): void {
   const htmlPaths = {
     es: join(STATIC_DIR, "es", "index.html"),
     en: join(STATIC_DIR, "en", "index.html"),
@@ -170,16 +167,15 @@ function checkPhase7(): void {
   for (const [locale, htmlPath] of Object.entries(htmlPaths)) {
     const html = readText(htmlPath);
     if (!html) {
-      continue; // ya reportado por checkPhase2
+      continue; // ya reportado por checkRoutes
     }
 
-    const canonicalMatch = /<link rel="canonical" href="([^"]+)"/.exec(html);
-    if (!canonicalMatch) {
+    const [, canonical] =
+      /<link rel="canonical" href="([^"]+)"/.exec(html) ?? [];
+    if (!canonical) {
       fail(`${htmlPath}: falta <link rel="canonical">`);
-    } else if (!canonicalMatch[1].endsWith(`/${locale}/`)) {
-      fail(
-        `${htmlPath}: canonical "${canonicalMatch[1]}" no apunta a /${locale}/`,
-      );
+    } else if (!canonical.endsWith(`/${locale}/`)) {
+      fail(`${htmlPath}: canonical "${canonical}" no apunta a /${locale}/`);
     }
 
     for (const hreflang of ["es", "en", "x-default"]) {
@@ -203,15 +199,15 @@ function checkPhase7(): void {
       fail(`${htmlPath}: og:image debería ser una URL absoluta`);
     }
 
-    const jsonLdMatch =
+    const [, jsonLd] =
       /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/.exec(
         html,
-      );
-    if (!jsonLdMatch) {
+      ) ?? [];
+    if (!jsonLd) {
       fail(`${htmlPath}: falta el script JSON-LD`);
     } else {
       try {
-        const parsed = JSON.parse(jsonLdMatch[1]) as Record<string, unknown>;
+        const parsed = JSON.parse(jsonLd) as Record<string, unknown>;
         if (parsed["@type"] !== "Person") {
           fail(`${htmlPath}: JSON-LD no es @type Person`);
         }
@@ -242,18 +238,15 @@ function checkPhase7(): void {
   }
 }
 
-checkPhase6();
-checkPhase7();
-
 /**
- * Fase 8: `vercel.json` existe, es JSON válido y declara las cabeceras
- * de seguridad y cache esperadas; el cache immutable de `/_astro/*`
- * ya lo escribe el propio adaptador en config.json. Las cabeceras de
+ * `vercel.json` existe, es JSON válido y declara las cabeceras de
+ * seguridad y cache esperadas; el cache immutable de `/_astro/*` ya lo
+ * escribe el propio adaptador en config.json. Las cabeceras de
  * `vercel.json` las aplica la plataforma de Vercel en el despliegue
- * real (no las fusiona el adaptador en config.json), así que aquí
- * solo se valida el archivo fuente.
+ * real (no las fusiona el adaptador en config.json), así que aquí solo
+ * se valida el archivo fuente.
  */
-function checkPhase8(): void {
+function checkHeaders(): void {
   const vercelJsonRaw = readText("vercel.json");
   if (!vercelJsonRaw) {
     fail("Falta vercel.json en la raíz del repo");
@@ -302,7 +295,17 @@ function checkPhase8(): void {
   }
 }
 
-checkPhase8();
+const CHECKS = [
+  checkRoutes,
+  checkContactFunction,
+  checkCvPdfs,
+  checkSeo,
+  checkHeaders,
+];
+
+for (const check of CHECKS) {
+  check();
+}
 
 if (failures.length > 0) {
   console.error("❌ check-build encontró problemas:\n");

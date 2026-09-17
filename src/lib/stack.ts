@@ -8,6 +8,14 @@
 /** Tamaños de fuente (px del artboard 1440) de cada columna del diseño. */
 export const STACK_COLUMN_SIZES = [58, 46, 58, 80] as const;
 
+/** Tamaño de diseño de la columna `index`, recorriendo la lista en ciclo. */
+export function stackColumnSize(index: number): number {
+  return (
+    STACK_COLUMN_SIZES[index % STACK_COLUMN_SIZES.length] ??
+    STACK_COLUMN_SIZES[0]
+  );
+}
+
 /**
  * Ancho medio de un carácter de Bricolage Grotesque 800 al 75% de ancho,
  * en em. Medido en navegador sobre los skills reales (máximo observado

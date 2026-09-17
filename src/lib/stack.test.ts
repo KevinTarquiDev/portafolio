@@ -1,9 +1,25 @@
 import { describe, expect, test } from "bun:test";
 import {
+  STACK_COLUMN_SIZES,
   balancedLineLength,
   stackColumnFontSize,
   stackColumnLoop,
+  stackColumnSize,
 } from "./stack";
+
+describe("stackColumnSize", () => {
+  test("devuelve el tamaño del diseño para las primeras columnas", () => {
+    expect(
+      STACK_COLUMN_SIZES.map((_, index) => stackColumnSize(index)),
+    ).toEqual([...STACK_COLUMN_SIZES]);
+  });
+
+  test("recorre la lista en ciclo si hay más grupos que columnas", () => {
+    expect(stackColumnSize(STACK_COLUMN_SIZES.length)).toBe(
+      STACK_COLUMN_SIZES[0],
+    );
+  });
+});
 
 describe("balancedLineLength", () => {
   test("una palabra no se parte", () => {

@@ -10,10 +10,9 @@
  */
 
 const baseArgIndex = process.argv.indexOf("--base");
-const BASE_URL =
-  baseArgIndex !== -1 && process.argv[baseArgIndex + 1]
-    ? process.argv[baseArgIndex + 1]
-    : "http://localhost:4321";
+const baseArg =
+  baseArgIndex === -1 ? undefined : process.argv[baseArgIndex + 1];
+const BASE_URL = baseArg ?? "http://localhost:4321";
 
 let passed = 0;
 let failed = 0;

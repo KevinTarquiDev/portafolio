@@ -1,29 +1,43 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import { AA_NORMAL_TEXT, contrastRatio } from "./contrast";
 
+const TOKEN_PATTERN = /--color-([\w-]+):\s*(#[0-9a-fA-F]{6})/g;
+
 /**
- * Tokens de src/styles/global.css. Si cambian ahí, deben actualizarse
- * aquí también: este test es la verificación automática de contraste
- * AA de la Fase 3 (el resto de comprobaciones de accesibilidad, con
- * Axe, se hacen en la Fase 8).
+ * Lee la paleta del bloque @theme de global.css, que es su única
+ * definición. Copiar los hex aquí dejaba el test validando los valores
+ * anteriores en cuanto se retocaba un color.
  */
-const tokens = {
-  bg: "#0b0812",
-  ink: "#f2eef7",
-  body: "#cfc7dc",
-  soft: "#b7aec8",
-  muted: "#9a92ad",
-  lilac: "#c9b6f2",
-  green: "#5fd18a",
-  deep: "#2a1245",
-  panel: "#150e22",
-};
+function readColorTokens(): Map<string, string> {
+  const css = readFileSync(
+    new URL("../styles/global.css", import.meta.url),
+    "utf8",
+  );
+  return new Map(
+    [...css.matchAll(TOKEN_PATTERN)].map(([, name, value]) => [
+      name as string,
+      value as string,
+    ]),
+  );
+}
+
+const tokens = readColorTokens();
+
+/** Falla si global.css ya no define el token, en vez de omitir el par. */
+function token(name: string): string {
+  const value = tokens.get(name);
+  if (!value) {
+    throw new Error(`global.css no define --color-${name}`);
+  }
+  return value;
+}
 
 /**
  * Pares [texto, fondo] realmente usados para texto informativo en las
  * escenas (no decorativo: --color-faint queda excluido a propósito).
  */
-const textPairs: Array<[keyof typeof tokens, keyof typeof tokens]> = [
+const textPairs: Array<[string, string]> = [
   ["ink", "bg"],
   ["body", "bg"],
   ["soft", "bg"],
@@ -40,7 +54,7 @@ const textPairs: Array<[keyof typeof tokens, keyof typeof tokens]> = [
 
 describe("contraste AA de los tokens de texto", () => {
   test.each(textPairs)("%s sobre %s cumple AA (4.5:1)", (fg, bg) => {
-    const ratio = contrastRatio(tokens[fg], tokens[bg]);
+    const ratio = contrastRatio(token(fg), token(bg));
     expect(ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
   });
 });

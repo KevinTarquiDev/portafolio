@@ -78,10 +78,13 @@ describe("getPortfolio", () => {
   });
 
   test("la escena destacada es el primer proyecto del resume", () => {
-    const resume = getResume("es");
     const portfolio = getPortfolio("es");
-    expect(portfolio.featuredProject.name).toBe(resume.projects[0]?.name);
-    expect(portfolio.workIntro.featured.name).toBe(resume.projects[0]?.name);
+    const [firstProject] = getResume("es").projects;
+    if (!firstProject) {
+      throw new Error("el resume debe tener al menos un proyecto");
+    }
+    expect(portfolio.featuredProject.name).toBe(firstProject.name);
+    expect(portfolio.workIntro.featured.name).toBe(firstProject.name);
   });
 
   test("isCurrent es true solo cuando falta endDate", () => {

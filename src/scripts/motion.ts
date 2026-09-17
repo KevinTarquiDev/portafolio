@@ -26,10 +26,6 @@ interface Kit {
 
 type Cleanup = () => void;
 
-/** Colores de global.css usados como extremos de interpolación. */
-const COLOR_DIM = "#9a92ad";
-const COLOR_INK = "#f2eef7";
-
 let entrancePlayed = false;
 
 if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -113,6 +109,16 @@ function motionEl(root: ParentNode, name: string): HTMLElement | null {
 
 function motionEls(root: ParentNode, name: string): HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>(`[data-motion='${name}']`)];
+}
+
+/**
+ * Valor de un token --color-* de global.css, que es la única definición
+ * de la paleta: así los extremos de interpolación no se hardcodean aquí.
+ */
+function colorToken(name: string): string {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(`--color-${name}`)
+    .trim();
 }
 
 /** Valor actual de --u en px (1px del artboard de referencia). */
@@ -724,6 +730,8 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
   const vertical = motionEl(about, "about-vertical");
   const bandBack = motionEl(about, "about-band-back");
   const bandFront = motionEl(about, "about-band-front");
+  const wordOff = colorToken("muted");
+  const wordOn = colorToken("ink");
   if (desk) {
     const timeline = gsap.timeline({
       defaults: { ease: "none" },
@@ -738,8 +746,8 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
     });
     timeline.fromTo(
       words,
-      { color: COLOR_DIM },
-      { color: COLOR_INK, duration: 0.34, stagger: 0.018 },
+      { color: wordOff },
+      { color: wordOn, duration: 0.34, stagger: 0.018 },
       0,
     );
     if (vertical) {
@@ -782,9 +790,9 @@ function aboutScene({ gsap }: Kit, desk: boolean): void {
 
   gsap.fromTo(
     words,
-    { color: COLOR_DIM },
+    { color: wordOff },
     {
-      color: COLOR_INK,
+      color: wordOn,
       stagger: 0.025,
       ease: "none",
       scrollTrigger: {
@@ -1692,7 +1700,9 @@ function practicesScene({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
   const orbit = practices.querySelector<SVGElement>(
     "[data-motion='practices-orbit']",
   );
-  if (items.length === 0) {
+  const firstItem = items[0];
+  const lastItem = items.at(-1);
+  if (!firstItem || !lastItem) {
     return () => {};
   }
 
@@ -1738,8 +1748,8 @@ function practicesScene({ gsap, ScrollTrigger }: Kit, desk: boolean): Cleanup {
       value: 1,
       ease: "none",
       scrollTrigger: {
-        trigger: items[0],
-        endTrigger: items.at(-1),
+        trigger: firstItem,
+        endTrigger: lastItem,
         start: "center 65%",
         end: "center 45%",
         scrub: 0.7,

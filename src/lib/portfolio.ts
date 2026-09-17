@@ -22,14 +22,14 @@ const ACRONYM_PATTERN = /^(.+?)\s\(([^)]+)\)$/;
  * acrónimo ("Sudamericana de Software (SASF)").
  */
 export function splitCompanyName(name: string): CompanyName {
-  const parentMatch = PARENT_PATTERN.exec(name);
-  if (parentMatch) {
-    return { short: parentMatch[1], parent: parentMatch[2] };
+  const [, withParent, parent] = PARENT_PATTERN.exec(name) ?? [];
+  if (withParent && parent) {
+    return { short: withParent, parent };
   }
 
-  const acronymMatch = ACRONYM_PATTERN.exec(name);
-  if (acronymMatch) {
-    return { short: acronymMatch[1], acronym: acronymMatch[2] };
+  const [, withAcronym, acronym] = ACRONYM_PATTERN.exec(name) ?? [];
+  if (withAcronym && acronym) {
+    return { short: withAcronym, acronym };
   }
 
   return { short: name };
@@ -103,9 +103,9 @@ export interface WorkItemViewModel {
   company: CompanyName;
   companyFull: string;
   position: string;
-  description?: string;
+  description?: string | undefined;
   startDate: string;
-  endDate?: string;
+  endDate?: string | undefined;
   isCurrent: boolean;
   summary: string;
   highlights: string[];
@@ -122,8 +122,8 @@ export interface ProjectViewModel {
   type: string;
   url: string;
   urlDisplay: string;
-  startDate?: string;
-  endDate?: string;
+  startDate?: string | undefined;
+  endDate?: string | undefined;
   isCurrent: boolean;
   keywords: string[];
   highlights: string[];
@@ -165,8 +165,8 @@ export interface EducationItemViewModel {
   area: string;
   studyType: string;
   startDate: string;
-  endDate?: string;
-  status?: string;
+  endDate?: string | undefined;
+  status?: string | undefined;
 }
 
 export interface EducationViewModel {
@@ -262,7 +262,7 @@ export function getPortfolio(locale: Locale): PortfolioViewModel {
     }),
   );
 
-  const [featured, ...restProjects] = projects;
+  const [featured] = projects;
   if (!featured) {
     throw new Error(
       "El resume no tiene proyectos: se requiere al menos uno para la escena destacada",
@@ -270,7 +270,7 @@ export function getPortfolio(locale: Locale): PortfolioViewModel {
   }
 
   const workIntro: WorkIntroViewModel = {
-    items: [featured, ...restProjects].map((project) => ({
+    items: projects.map((project) => ({
       index: project.index,
       name: project.name,
     })),
