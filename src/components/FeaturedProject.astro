@@ -49,15 +49,15 @@ const backgroundWords = project.keywords
 <section id="featured" data-scene-label={ui.featured.eyebrow} class="featured">
   <div class="track" data-motion="featured-track">
     <div class="scene panel panel-intro">
+      <span
+        class="display text-outline index"
+        aria-hidden="true"
+        data-motion="featured-index"
+      >
+        {project.index}
+      </span>
       <div class="stage">
         <div class="glow intro-glow" aria-hidden="true"></div>
-        <span
-          class="display text-outline index"
-          aria-hidden="true"
-          data-motion="featured-index"
-        >
-          {project.index}
-        </span>
 
         <p class="mono-label text-green eyebrow">
           {ui.featured.eyebrow} — {project.type}
@@ -170,8 +170,13 @@ const backgroundWords = project.keywords
     overflow: hidden;
   }
 
+  /*
+   * min-height, no height: las keywords reales pueden envolver en más
+   * filas de las previstas en el mockup, y el panel debe crecer para
+   * que el botón "Visitar sitio" nunca quede tapado por ellas.
+   */
   .panel-intro {
-    height: calc(var(--u) * 480);
+    min-height: calc(var(--u) * 480);
   }
 
   .panel-media {
@@ -180,6 +185,15 @@ const backgroundWords = project.keywords
 
   .stage {
     height: 100%;
+  }
+
+  /*
+   * Contenedor de flujo: sin esto, el margen superior de .stack colapsaría
+   * con el del stage y desplazaría hacia abajo todo el texto posicionado
+   * en absoluto de la escena en lugar de separar las keywords.
+   */
+  .panel-intro .stage {
+    display: flow-root;
   }
 
   .intro-glow,
@@ -194,9 +208,17 @@ const backgroundWords = project.keywords
     display: none;
   }
 
+  /*
+   * Vive fuera del stage a propósito. El stage del panel de intro se eleva
+   * a z-index 10 para que su enlace siga siendo clicable durante el scroll
+   * horizontal, y eso lo convierte en contexto de apilamiento: cualquier
+   * descendiente suyo quedaría por delante de las capturas hiciera lo que
+   * hiciera con su z-index. Colgando del panel compite de tú a tú con el
+   * stage del panel de capturas, que al ir después en el documento gana.
+   */
   .index {
     position: absolute;
-    z-index: 1;
+    z-index: 0;
     left: calc(var(--ux) * 210);
     top: 0;
     font-size: calc(var(--u) * 300);
@@ -235,12 +257,17 @@ const backgroundWords = project.keywords
     color: var(--color-prose);
   }
 
+  /*
+   * En flujo normal, no en absoluto: así el botón siguiente se coloca
+   * debajo de las filas que ocupen realmente las keywords. El margen
+   * superior reproduce la posición del mockup (el resto de textos de la
+   * escena son absolutos y no ocupan espacio de flujo).
+   */
   .stack {
-    position: absolute;
+    position: relative;
     z-index: 4;
-    left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 320);
     width: calc(var(--u) * 350);
+    margin: calc(var(--u) * 320) 0 0 calc(var(--ux) * 20);
   }
 
   .keywords {
@@ -265,12 +292,12 @@ const backgroundWords = project.keywords
   }
 
   .visit {
-    position: absolute;
+    position: relative;
     z-index: 4;
-    left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 410);
     display: flex;
     align-items: center;
+    width: fit-content;
+    margin: calc(var(--u) * 32) 0 0 calc(var(--ux) * 20);
     height: calc(var(--u) * 52);
     padding-inline: calc(var(--u) * 22);
     border-radius: 9999px;
@@ -412,7 +439,13 @@ const backgroundWords = project.keywords
       height: calc(var(--u) * 900);
     }
 
-    /* Cada stage crea su propio contexto de apilamiento por `translate`. */
+    /*
+     * Cada stage crea su propio contexto de apilamiento por `translate`, y
+     * el del panel de capturas va después en el documento. Sin esta
+     * elevación, sus palabras de fondo (que arrancan desplazadas sobre este
+     * panel) tapan el enlace del proyecto e impiden pulsarlo durante el
+     * scroll horizontal.
+     */
     .panel-intro .stage {
       z-index: 10;
     }
@@ -430,9 +463,10 @@ const backgroundWords = project.keywords
       --glow-strength: 25%;
     }
 
+    /* 490u = medio escenario (450u) + los 40u que sobresalía por arriba. */
     .index {
       left: calc(var(--ux) * 880);
-      top: calc(var(--u) * -40);
+      top: calc(50% - var(--u) * 490);
       font-size: calc(var(--u) * 640);
       --stroke: 1.5px;
     }
@@ -459,6 +493,7 @@ const backgroundWords = project.keywords
     }
 
     .stack {
+      position: absolute;
       z-index: 5;
       left: calc(var(--ux) * 104);
       top: calc(var(--u) * 770);
@@ -466,6 +501,7 @@ const backgroundWords = project.keywords
       align-items: center;
       gap: calc(var(--u) * 22);
       width: auto;
+      margin: 0;
     }
 
     .stack-label {
@@ -504,13 +540,16 @@ const backgroundWords = project.keywords
     }
 
     .visit {
+      position: absolute;
       z-index: 5;
       left: calc(var(--ux) * 880);
       top: calc(var(--u) * 590);
       flex-direction: column;
       align-items: stretch;
       gap: calc(var(--u) * 12);
+      width: auto;
       height: auto;
+      margin: 0;
       padding: 0;
       border-radius: 0;
       background: none;
