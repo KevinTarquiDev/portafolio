@@ -412,6 +412,11 @@ const backgroundWords = project.keywords
       height: calc(var(--u) * 900);
     }
 
+    /* Cada stage crea su propio contexto de apilamiento por `translate`. */
+    .panel-intro .stage {
+      z-index: 10;
+    }
+
     .intro-glow,
     .media-glow {
       display: block;
