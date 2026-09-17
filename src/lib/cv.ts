@@ -1,6 +1,7 @@
-import { formatMonthRange, formatYearRange } from "./dates";
+import { formatMonthRange, localeToBcp47 } from "./dates";
 import { countryName } from "./portfolio";
 import { getResume, type Locale } from "./resume";
+import { DEFAULT_SITE_URL } from "./site";
 import { ui } from "../i18n/ui";
 
 /**
@@ -47,48 +48,46 @@ export function getCvDownloadName(locale: Locale): string {
  * (scripts/generate-cv.ts) solo recorre esta estructura.
  */
 
+export interface CvLink {
+  label: string;
+  url: string;
+}
+
 export interface CvContact {
   location: string;
   phone: string;
   email: string;
-  profiles: Array<{ network: string; url: string }>;
+  links: CvLink[];
+  availability: string;
 }
 
 export interface CvExperienceItem {
   company: string;
-  location: string;
   position: string;
-  description?: string;
+  /** "Remoto · Guayaquil, Guayas, Ecuador", con la descripción al frente si existe. */
+  detail: string;
   dateRange: string;
-  summary: string;
   highlights: string[];
 }
 
 export interface CvProjectItem {
   name: string;
-  type: string;
-  url: string;
+  description: string;
   dateRange: string;
-  keywords: string[];
+  /** Highlights del resume más la línea de stack derivada de keywords. */
   highlights: string[];
 }
 
 export interface CvEducationItem {
   institution: string;
-  area: string;
-  studyType: string;
+  /** "Ingeniería de Software · Título en trámite". */
+  detail: string;
   dateRange: string;
-  status?: string;
 }
 
 export interface CvSkillGroup {
   name: string;
   keywords: string[];
-}
-
-export interface CvLanguage {
-  language: string;
-  fluency: string;
 }
 
 export interface CvDocument {
@@ -103,13 +102,26 @@ export interface CvDocument {
     projects: string;
     education: string;
     skills: string;
-    languages: string;
   };
   experience: CvExperienceItem[];
   projects: CvProjectItem[];
   education: CvEducationItem[];
   skills: CvSkillGroup[];
-  languages: CvLanguage[];
+  languagesLabel: string;
+  /** "Español nativo · Inglés intermedio (B1)". */
+  languagesLine: string;
+}
+
+const SEPARATOR = " · ";
+
+/** Quita el protocolo y la barra final para mostrar una URL legible. */
+function displayUrl(url: string): string {
+  return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+}
+
+/** "Nativo" -> "nativo", conservando siglas como "(B1)". */
+function lowercaseFirst(value: string): string {
+  return value.charAt(0).toLowerCase() + value.slice(1);
 }
 
 /**
@@ -121,6 +133,10 @@ export function buildCvDocument(locale: Locale): CvDocument {
   const resume = getResume(locale);
   const { basics } = resume;
   const strings = ui[locale].cv;
+  const present = ui[locale].experience.current;
+  const stackList = new Intl.ListFormat(localeToBcp47(locale), {
+    type: "conjunction",
+  });
 
   return {
     locale,
@@ -131,10 +147,14 @@ export function buildCvDocument(locale: Locale): CvDocument {
       location: `${basics.location.city}, ${countryName(basics.location.countryCode, locale)}`,
       phone: basics.phone,
       email: basics.email,
-      profiles: basics.profiles.map((profile) => ({
-        network: profile.network,
-        url: profile.url,
-      })),
+      links: [
+        ...basics.profiles.map((profile) => ({
+          label: displayUrl(profile.url),
+          url: profile.url,
+        })),
+        { label: displayUrl(DEFAULT_SITE_URL), url: DEFAULT_SITE_URL },
+      ],
+      availability: basics["x-availability"].join(SEPARATOR),
     },
     sections: {
       profile: strings.sectionProfile,
@@ -142,54 +162,45 @@ export function buildCvDocument(locale: Locale): CvDocument {
       projects: strings.sectionProjects,
       education: strings.sectionEducation,
       skills: strings.sectionSkills,
-      languages: strings.sectionLanguages,
     },
     experience: resume.work.map((job) => ({
       company: job.name,
-      location: job.location,
       position: job.position,
-      description: job.description,
-      dateRange: formatMonthRange(
-        job.startDate,
-        job.endDate,
-        locale,
-        ui[locale].experience.current,
-      ),
-      summary: job.summary,
+      detail: [job.description, job.location].filter(Boolean).join(SEPARATOR),
+      dateRange: formatMonthRange(job.startDate, job.endDate, locale, present),
       highlights: [...job.highlights],
     })),
     projects: resume.projects.map((project) => ({
       name: project.name,
-      type: project.type,
-      url: project.url,
-      dateRange: project.startDate
-        ? formatYearRange(
-            project.startDate,
-            project.endDate,
-            ui[locale].experience.current,
-          )
-        : "",
-      keywords: [...project.keywords],
-      highlights: [...project.highlights],
+      description: project.description.replace(/\.$/, ""),
+      dateRange: formatMonthRange(
+        project.startDate,
+        project.endDate,
+        locale,
+        present,
+      ),
+      highlights: [
+        ...project.highlights,
+        `${strings.mainStack}: ${stackList.format(project.keywords)}.`,
+      ],
     })),
     education: resume.education.map((entry) => ({
       institution: entry.institution,
-      area: entry.area,
-      studyType: entry.studyType,
-      dateRange: formatYearRange(
+      detail: [entry.area, entry.status].filter(Boolean).join(SEPARATOR),
+      dateRange: formatMonthRange(
         entry.startDate,
         entry.endDate,
-        ui[locale].experience.current,
+        locale,
+        present,
       ),
-      status: entry.status,
     })),
     skills: resume.skills.map((group) => ({
       name: group.name,
       keywords: [...group.keywords],
     })),
-    languages: resume.languages.map((entry) => ({
-      language: entry.language,
-      fluency: entry.fluency,
-    })),
+    languagesLabel: strings.sectionLanguages,
+    languagesLine: resume.languages
+      .map((entry) => `${entry.language} ${lowercaseFirst(entry.fluency)}`)
+      .join(SEPARATOR),
   };
 }

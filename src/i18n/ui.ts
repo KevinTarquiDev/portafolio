@@ -82,6 +82,7 @@ export interface UiStrings {
     sectionEducation: string;
     sectionSkills: string;
     sectionLanguages: string;
+    mainStack: string;
   };
   notFound: {
     title: string;
@@ -173,12 +174,13 @@ const es: UiStrings = {
     resultCta: "Volver al inicio",
   },
   cv: {
-    sectionProfile: "Perfil",
-    sectionExperience: "Experiencia",
-    sectionProjects: "Proyectos",
+    sectionProfile: "Perfil profesional",
+    sectionExperience: "Experiencia profesional",
+    sectionProjects: "Proyecto destacado",
     sectionEducation: "Educación",
-    sectionSkills: "Habilidades",
+    sectionSkills: "Competencias técnicas",
     sectionLanguages: "Idiomas",
+    mainStack: "Stack principal",
   },
   notFound: {
     title: "Página no encontrada",
@@ -271,12 +273,13 @@ const en: UiStrings = {
     resultCta: "Back to home",
   },
   cv: {
-    sectionProfile: "Profile",
-    sectionExperience: "Experience",
-    sectionProjects: "Projects",
+    sectionProfile: "Professional profile",
+    sectionExperience: "Professional experience",
+    sectionProjects: "Featured project",
     sectionEducation: "Education",
-    sectionSkills: "Skills",
+    sectionSkills: "Technical skills",
     sectionLanguages: "Languages",
+    mainStack: "Main stack",
   },
   notFound: {
     title: "Page not found",

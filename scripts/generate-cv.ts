@@ -5,201 +5,403 @@ import { buildCvDocument, getCvHref, type CvDocument } from "../src/lib/cv";
 import { locales } from "../src/i18n/config";
 
 /**
- * Genera el CV en PDF (estilo Harvard, compatible con ATS) para cada
- * locale, a partir de buildCvDocument(locale) — es decir, siempre
+ * Genera el CV en PDF (una página, sans-serif, compatible con ATS) para
+ * cada locale, a partir de buildCvDocument(locale) — es decir, siempre
  * desde resume.*.json. El PDF es un artefacto derivado: nunca se lee
  * de vuelta como fuente de datos.
+ *
+ * La maquetación reproduce el CV oficial: tamaños, colores y distancias
+ * entre líneas base están medidos sobre él, por eso el texto se posiciona
+ * por línea base absoluta en lugar de dejarlo fluir.
  */
 
 const OUTPUT_DIR = "public/cv";
-const MAX_PAGES = 2;
+const MAX_PAGES = 1;
 
-const MARGIN = 54;
-const BODY_SIZE = 10.5;
-const SECTION_TITLE_SIZE = 11;
-const NAME_SIZE = 20;
+const PAGE_WIDTH = 612;
+const TEXT_LEFT = 44.775;
+const TEXT_RIGHT = PAGE_WIDTH - TEXT_LEFT;
+const CONTENT_WIDTH = TEXT_RIGHT - TEXT_LEFT;
+const RULE_LEFT = 43.275;
+const RULE_WIDTH = 525.97;
+/** Tabulación derecha de las fechas: no llegan al margen. */
+const DATE_RIGHT = 516.48;
+const BULLET_LEFT = 47.525;
+const BULLET_TEXT_LEFT = 56.275;
+const NAME_BASELINE = 53.78;
+const FOOTER_BASELINE = 779.75;
 
-function contentWidth(doc: PDFKit.PDFDocument): number {
-  return doc.page.width - doc.page.margins.left - doc.page.margins.right;
+const REGULAR = "Helvetica";
+const BOLD = "Helvetica-Bold";
+const ITALIC = "Helvetica-Oblique";
+
+/** Ascendente de Helvetica (AFM), necesaria para situar la línea base. */
+const ASCENDER = 0.718;
+/** Ajustes sobre el alto de línea de pdfkit: 9.25 pt general, 9.5 pt en el perfil. */
+const LINE_GAP = -0.576;
+const SUMMARY_LINE_GAP = -0.326;
+
+const SIZE = {
+  name: 19.5,
+  role: 11,
+  contact: 8,
+  section: 9.5,
+  entry: 9.5,
+  subentry: 9,
+  body: 8.5,
+  footer: 7.5,
+} as const;
+
+/** Distancias entre líneas base, medidas sobre el CV oficial. */
+const GAP = {
+  nameToRole: 17.75,
+  roleToContact: 12.5,
+  contactLine: 10.75,
+  contactToAvailability: 11,
+  availabilityToRule: 6.75,
+  headerRuleToSection: 13.27,
+  titleToRule: 5.75,
+  ruleToText: 10,
+  ruleToEntry: 11.27,
+  contentToSection: 15,
+  skillsToSection: 16.5,
+  skillRow: 11.5,
+  entryToSubentry: 12.25,
+  subentryToBullet: 10.75,
+  betweenBullets: 9.9,
+  betweenEntries: 12.8,
+  detailToLanguages: 11.5,
+} as const;
+
+const TEXT_COLOR = "#000000";
+const MUTED_COLOR = "#5c6769";
+const SECTION_RULE_COLOR = "#146963";
+const HEADER_RULE_COLOR = "#c2d2d0";
+
+const FIELD_SEPARATOR = "  |  ";
+const ITEM_SEPARATOR = " · ";
+
+interface Run {
+  text: string;
+  font: string;
+  size: number;
+  color?: string;
+  link?: string;
 }
 
-/** Escribe una línea con un texto a la izquierda y otro alineado a la derecha. */
-function twoColumnLine(
-  doc: PDFKit.PDFDocument,
-  left: string,
-  right: string,
-  options: { leftFont: string; rightFont?: string; size?: number },
-): void {
-  const width = contentWidth(doc);
-  const size = options.size ?? BODY_SIZE;
-  const y = doc.y;
-
-  doc.font(options.leftFont).fontSize(size);
-  doc.text(left, doc.page.margins.left, y, { width: width * 0.68 });
-  const leftBottom = doc.y;
-
-  doc.font(options.rightFont ?? "Times-Roman").fontSize(size);
-  doc.text(right, doc.page.margins.left, y, { width, align: "right" });
-
-  doc.y = Math.max(leftBottom, doc.y);
+/** pdfkit posiciona por el alto de línea; aquí se trabaja con líneas base. */
+function topFor(baseline: number, size: number): number {
+  return baseline - ASCENDER * size;
 }
 
 /**
- * Escribe una línea centrada compuesta de varios segmentos, algunos
- * con su propio link (anotación). pdfkit no centra bien un `align:
- * "center"` repartido entre llamadas `continued: true`, así que aquí
- * se mide el ancho total y se posiciona manualmente.
+ * Línea base final de un bloque que pudo envolver en varias líneas.
+ * Debe llamarse con la fuente del bloque todavía activa: el avance por
+ * línea de pdfkit depende de las métricas de esa fuente.
  */
-function centeredMixedLine(
+function lastBaseline(
   doc: PDFKit.PDFDocument,
-  segments: Array<{ text: string; link?: string }>,
-): void {
-  const totalWidth = segments.reduce(
-    (sum, segment) => sum + doc.widthOfString(segment.text),
-    0,
-  );
-  const startX = doc.page.margins.left + (contentWidth(doc) - totalWidth) / 2;
-  doc.x = startX;
+  size: number,
+  lineGap = LINE_GAP,
+): number {
+  return doc.y - (doc.currentLineHeight(true) + lineGap) + ASCENDER * size;
+}
 
-  segments.forEach((segment, index) => {
-    const isLast = index === segments.length - 1;
-    doc.text(segment.text, {
-      continued: !isLast,
-      link: segment.link,
-      underline: Boolean(segment.link),
+/** Escribe un bloque que puede envolver y devuelve su línea base final. */
+function writeBlock(
+  doc: PDFKit.PDFDocument,
+  baseline: number,
+  text: string,
+  options: {
+    font: string;
+    size: number;
+    left?: number;
+    width?: number;
+    color?: string;
+    align?: "left" | "center";
+    lineGap?: number;
+  },
+): number {
+  const left = options.left ?? TEXT_LEFT;
+  const lineGap = options.lineGap ?? LINE_GAP;
+  doc
+    .font(options.font)
+    .fontSize(options.size)
+    .fillColor(options.color ?? TEXT_COLOR)
+    .text(text, left, topFor(baseline, options.size), {
+      width: options.width ?? TEXT_RIGHT - left,
+      align: options.align ?? "left",
+      lineGap,
     });
+  return lastBaseline(doc, options.size, lineGap);
+}
+
+function runWidth(doc: PDFKit.PDFDocument, run: Run): number {
+  return doc.font(run.font).fontSize(run.size).widthOfString(run.text);
+}
+
+/** Escribe varios tramos con distinta fuente compartiendo la línea base. */
+function writeRuns(
+  doc: PDFKit.PDFDocument,
+  baseline: number,
+  left: number,
+  runs: Run[],
+): void {
+  let x = left;
+  for (const run of runs) {
+    const width = runWidth(doc, run);
+    doc
+      .fillColor(run.color ?? TEXT_COLOR)
+      .text(run.text, x, topFor(baseline, run.size), {
+        lineBreak: false,
+        link: run.link,
+      });
+    x += width;
+  }
+}
+
+function centeredRuns(
+  doc: PDFKit.PDFDocument,
+  baseline: number,
+  runs: Run[],
+): void {
+  const total = runs.reduce((sum, run) => sum + runWidth(doc, run), 0);
+  writeRuns(doc, baseline, (PAGE_WIDTH - total) / 2, runs);
+}
+
+function horizontalRule(
+  doc: PDFKit.PDFDocument,
+  top: number,
+  height: number,
+  color: string,
+): void {
+  doc.save().rect(RULE_LEFT, top, RULE_WIDTH, height).fill(color).restore();
+}
+
+/** Título de sección con su filete inferior; devuelve su línea base. */
+function sectionTitle(
+  doc: PDFKit.PDFDocument,
+  baseline: number,
+  title: string,
+): number {
+  writeBlock(doc, baseline, title.toUpperCase(), {
+    font: BOLD,
+    size: SIZE.section,
+  });
+  horizontalRule(doc, baseline + GAP.titleToRule - 1, 1, SECTION_RULE_COLOR);
+  return baseline;
+}
+
+/** Cabecera de entrada: título a la izquierda y fechas en tabulación derecha. */
+function entryHeading(
+  doc: PDFKit.PDFDocument,
+  baseline: number,
+  left: string,
+  dateRange: string,
+): void {
+  const dates: Run = { text: dateRange, font: BOLD, size: SIZE.entry };
+  writeBlock(doc, baseline, left, { font: BOLD, size: SIZE.entry });
+  writeRuns(doc, baseline, DATE_RIGHT - runWidth(doc, dates), [dates]);
+}
+
+/** Viñetas con sangría francesa; devuelve la línea base de la última. */
+function bulletList(
+  doc: PDFKit.PDFDocument,
+  baseline: number,
+  items: string[],
+): number {
+  let current = baseline;
+
+  items.forEach((item, index) => {
+    if (index > 0) {
+      current += GAP.betweenBullets;
+    }
+    doc.font(REGULAR).fontSize(SIZE.body).fillColor(TEXT_COLOR);
+    doc.text("•", BULLET_LEFT, topFor(current, SIZE.body), {
+      lineBreak: false,
+    });
+    doc.text(item, BULLET_TEXT_LEFT, topFor(current, SIZE.body), {
+      width: TEXT_RIGHT - BULLET_TEXT_LEFT,
+    });
+    current = lastBaseline(doc, SIZE.body);
   });
 
-  // Un `continued` deja `doc.x` donde terminó el texto: se restablece
-  // al margen izquierdo para que el contenido siguiente no herede la
-  // posición centrada de esta línea.
-  doc.x = doc.page.margins.left;
+  return current;
 }
 
-function sectionTitle(doc: PDFKit.PDFDocument, title: string): void {
-  doc.moveDown(0.6);
-  doc
-    .font("Times-Bold")
-    .fontSize(SECTION_TITLE_SIZE)
-    .text(title.toUpperCase(), { characterSpacing: 0.5 });
-  const y = doc.y + 2;
-  doc
-    .moveTo(doc.page.margins.left, y)
-    .lineTo(doc.page.width - doc.page.margins.right, y)
-    .lineWidth(0.5)
-    .strokeColor("#000000")
-    .stroke();
-  doc.moveDown(0.5);
-}
+function renderHeader(doc: PDFKit.PDFDocument, cv: CvDocument): number {
+  let baseline = NAME_BASELINE;
 
-function bulletList(doc: PDFKit.PDFDocument, items: string[]): void {
-  const width = contentWidth(doc);
-  doc.font("Times-Roman").fontSize(BODY_SIZE);
-  for (const item of items) {
-    doc.text(`• ${item}`, doc.page.margins.left + 10, doc.y, {
-      width: width - 10,
-    });
-  }
+  writeBlock(doc, baseline, cv.name.toUpperCase(), {
+    font: BOLD,
+    size: SIZE.name,
+    align: "center",
+  });
+
+  baseline += GAP.nameToRole;
+  writeBlock(doc, baseline, cv.label.toUpperCase(), {
+    font: BOLD,
+    size: SIZE.role,
+    align: "center",
+  });
+
+  baseline += GAP.roleToContact;
+  centeredRuns(doc, baseline, [
+    {
+      text: `${cv.contact.location}${FIELD_SEPARATOR}${cv.contact.phone}${FIELD_SEPARATOR}`,
+      font: REGULAR,
+      size: SIZE.contact,
+    },
+    {
+      text: cv.contact.email,
+      font: REGULAR,
+      size: SIZE.contact,
+      link: `mailto:${cv.contact.email}`,
+    },
+  ]);
+
+  baseline += GAP.contactLine;
+  centeredRuns(
+    doc,
+    baseline,
+    cv.contact.links.map((link, index) => ({
+      text: `${index === 0 ? "" : FIELD_SEPARATOR}${link.label}`,
+      font: REGULAR,
+      size: SIZE.contact,
+      link: link.url,
+    })),
+  );
+
+  baseline += GAP.contactToAvailability;
+  writeBlock(doc, baseline, cv.contact.availability, {
+    font: REGULAR,
+    size: SIZE.contact,
+    color: MUTED_COLOR,
+    align: "center",
+  });
+
+  horizontalRule(
+    doc,
+    baseline + GAP.availabilityToRule - 0.75,
+    0.75,
+    HEADER_RULE_COLOR,
+  );
+
+  return baseline + GAP.availabilityToRule + GAP.headerRuleToSection;
 }
 
 function renderCv(doc: PDFKit.PDFDocument, cv: CvDocument): void {
-  const width = contentWidth(doc);
+  let baseline = renderHeader(doc, cv);
 
-  doc.font("Times-Bold").fontSize(NAME_SIZE).text(cv.name, { align: "center" });
-  doc
-    .font("Times-Roman")
-    .fontSize(BODY_SIZE + 1)
-    .text(cv.label, {
-      align: "center",
-    });
-  doc.moveDown(0.4);
+  sectionTitle(doc, baseline, cv.sections.profile);
+  baseline += GAP.titleToRule + GAP.ruleToText;
+  baseline = writeBlock(doc, baseline, cv.summary, {
+    font: REGULAR,
+    size: SIZE.body,
+    lineGap: SUMMARY_LINE_GAP,
+  });
 
-  doc.font("Times-Roman").fontSize(BODY_SIZE);
-  centeredMixedLine(doc, [
-    { text: `${cv.contact.location}   ·   ${cv.contact.phone}   ·   ` },
-    { text: cv.contact.email, link: `mailto:${cv.contact.email}` },
-  ]);
-  if (cv.contact.profiles.length > 0) {
-    centeredMixedLine(
-      doc,
-      cv.contact.profiles.map((profile, index) => ({
-        text: `${index === 0 ? "" : "   ·   "}${displayUrl(profile.url)}`,
-        link: profile.url,
-      })),
-    );
-  }
+  baseline += GAP.contentToSection;
+  sectionTitle(doc, baseline, cv.sections.skills);
+  baseline += GAP.titleToRule + GAP.ruleToText;
+  cv.skills.forEach((group, index) => {
+    if (index > 0) {
+      baseline += GAP.skillRow;
+    }
+    doc
+      .font(BOLD)
+      .fontSize(SIZE.body)
+      .fillColor(TEXT_COLOR)
+      .text(`${group.name}: `, TEXT_LEFT, topFor(baseline, SIZE.body), {
+        width: CONTENT_WIDTH,
+        continued: true,
+      });
+    doc.font(REGULAR).text(group.keywords.join(ITEM_SEPARATOR));
+    baseline = lastBaseline(doc, SIZE.body);
+  });
 
-  doc.moveDown(0.8);
-
-  sectionTitle(doc, cv.sections.profile);
-  doc.font("Times-Roman").fontSize(BODY_SIZE).text(cv.summary, { width });
-
-  sectionTitle(doc, cv.sections.experience);
+  baseline += GAP.skillsToSection;
+  sectionTitle(doc, baseline, cv.sections.experience);
+  baseline += GAP.titleToRule + GAP.ruleToEntry;
   cv.experience.forEach((job, index) => {
     if (index > 0) {
-      doc.moveDown(0.5);
+      baseline += GAP.betweenEntries;
     }
-    twoColumnLine(doc, job.company, job.location, { leftFont: "Times-Bold" });
-    twoColumnLine(doc, job.position, job.dateRange, {
-      leftFont: "Times-Italic",
-      rightFont: "Times-Roman",
-    });
-    doc.moveDown(0.15);
-    bulletList(doc, job.highlights);
+    entryHeading(doc, baseline, job.company, job.dateRange);
+    baseline += GAP.entryToSubentry;
+    writeRuns(doc, baseline, TEXT_LEFT, [
+      { text: job.position, font: BOLD, size: SIZE.subentry },
+      { text: FIELD_SEPARATOR, font: ITALIC, size: SIZE.subentry },
+      { text: job.detail, font: ITALIC, size: SIZE.body },
+    ]);
+    baseline = bulletList(doc, baseline + GAP.subentryToBullet, job.highlights);
   });
 
-  if (cv.projects.length > 0) {
-    sectionTitle(doc, cv.sections.projects);
-    cv.projects.forEach((project, index) => {
-      if (index > 0) {
-        doc.moveDown(0.5);
-      }
-      twoColumnLine(doc, project.name, project.dateRange, {
-        leftFont: "Times-Bold",
-      });
-      const meta = [
-        project.type,
-        displayUrl(project.url),
-        project.keywords.join(", "),
-      ]
-        .filter(Boolean)
-        .join("  ·  ");
-      doc.font("Times-Italic").fontSize(BODY_SIZE).text(meta, { width });
-      doc.moveDown(0.15);
-      bulletList(doc, project.highlights);
+  baseline += GAP.contentToSection;
+  sectionTitle(doc, baseline, cv.sections.projects);
+  baseline += GAP.titleToRule + GAP.ruleToEntry;
+  cv.projects.forEach((project, index) => {
+    if (index > 0) {
+      baseline += GAP.betweenEntries;
+    }
+    entryHeading(doc, baseline, project.name, project.dateRange);
+    baseline += GAP.entryToSubentry;
+    writeBlock(doc, baseline, project.description, {
+      font: BOLD,
+      size: SIZE.subentry,
     });
-  }
+    baseline = bulletList(
+      doc,
+      baseline + GAP.subentryToBullet,
+      project.highlights,
+    );
+  });
 
-  sectionTitle(doc, cv.sections.education);
+  baseline += GAP.contentToSection;
+  sectionTitle(doc, baseline, cv.sections.education);
+  baseline += GAP.titleToRule + GAP.ruleToEntry;
   cv.education.forEach((entry, index) => {
     if (index > 0) {
-      doc.moveDown(0.5);
+      baseline += GAP.betweenEntries;
     }
-    twoColumnLine(doc, entry.area, entry.dateRange, { leftFont: "Times-Bold" });
-    const line = entry.status
-      ? `${entry.institution} — ${entry.studyType} (${entry.status})`
-      : `${entry.institution} — ${entry.studyType}`;
-    doc.font("Times-Italic").fontSize(BODY_SIZE).text(line, { width });
+    entryHeading(doc, baseline, entry.institution, entry.dateRange);
+    baseline += GAP.entryToSubentry;
+    baseline = writeBlock(doc, baseline, entry.detail, {
+      font: BOLD,
+      size: SIZE.subentry,
+    });
   });
 
-  sectionTitle(doc, cv.sections.skills);
-  for (const group of cv.skills) {
-    doc.font("Times-Bold").fontSize(BODY_SIZE).text(`${group.name}: `, {
+  baseline += GAP.detailToLanguages;
+  doc
+    .font(BOLD)
+    .fontSize(SIZE.body)
+    .fillColor(TEXT_COLOR)
+    .text(`${cv.languagesLabel}: `, TEXT_LEFT, topFor(baseline, SIZE.body), {
+      width: CONTENT_WIDTH,
       continued: true,
-      width,
     });
-    doc.font("Times-Roman").text(group.keywords.join(", "));
-  }
-
-  sectionTitle(doc, cv.sections.languages);
-  const languagesLine = cv.languages
-    .map((entry) => `${entry.language} — ${entry.fluency}`)
-    .join("   ·   ");
-  doc.font("Times-Roman").fontSize(BODY_SIZE).text(languagesLine, { width });
+  doc.font(REGULAR).text(cv.languagesLine);
 }
 
-function displayUrl(url: string): string {
-  return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+/** Pie de página en todas las páginas, por debajo del margen inferior. */
+function renderFooter(doc: PDFKit.PDFDocument, cv: CvDocument): void {
+  const range = doc.bufferedPageRange();
+
+  for (let index = range.start; index < range.start + range.count; index++) {
+    doc.switchToPage(index);
+    const bottomMargin = doc.page.margins.bottom;
+    doc.page.margins.bottom = 0;
+    centeredRuns(doc, FOOTER_BASELINE, [
+      {
+        text: `${cv.name}${ITEM_SEPARATOR}${cv.label}`,
+        font: REGULAR,
+        size: SIZE.footer,
+        color: MUTED_COLOR,
+      },
+    ]);
+    doc.page.margins.bottom = bottomMargin;
+  }
 }
 
 async function generateForLocale(
@@ -209,8 +411,13 @@ async function generateForLocale(
   const outputPath = join(OUTPUT_DIR, getCvHref(locale).replace("/cv/", ""));
 
   const doc = new PDFDocument({
-    size: "A4",
-    margins: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN },
+    size: "LETTER",
+    margins: {
+      top: 39.78,
+      bottom: 30,
+      left: TEXT_LEFT,
+      right: TEXT_LEFT,
+    },
     bufferPages: true,
     lang: locale,
     info: {
@@ -220,6 +427,7 @@ async function generateForLocale(
       Keywords: cv.skills.flatMap((group) => group.keywords).join(", "),
     },
   });
+  doc.lineGap(LINE_GAP);
 
   let pageCount = 1;
   doc.on("pageAdded", () => {
@@ -234,6 +442,7 @@ async function generateForLocale(
   });
 
   renderCv(doc, cv);
+  renderFooter(doc, cv);
   doc.end();
   await finished;
 

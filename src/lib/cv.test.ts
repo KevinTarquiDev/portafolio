@@ -46,7 +46,21 @@ describe("buildCvDocument", () => {
       expect(cv.projects.length).toBe(resume.projects.length);
       expect(cv.education.length).toBe(resume.education.length);
       expect(cv.skills.length).toBe(resume.skills.length);
-      expect(cv.languages.length).toBe(resume.languages.length);
+      for (const language of resume.languages) {
+        expect(cv.languagesLine).toContain(language.language);
+      }
+    },
+  );
+
+  test.each(locales)(
+    "el stack del proyecto se deriva de sus keywords (%s)",
+    (locale) => {
+      const [project] = getResume(locale).projects;
+      const [stackLine] =
+        buildCvDocument(locale).projects[0].highlights.slice(-1);
+      for (const keyword of project.keywords) {
+        expect(stackLine).toContain(keyword);
+      }
     },
   );
 

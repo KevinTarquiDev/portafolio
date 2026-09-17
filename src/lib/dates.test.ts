@@ -44,17 +44,19 @@ describe("formatYearRange", () => {
 });
 
 describe("formatMonthRange", () => {
-  test("formatea meses en español", () => {
-    const result = formatMonthRange("2023-06", "2026-05", "es", "Actualidad");
-    expect(result).toContain("2023");
-    expect(result).toContain("2026");
-    expect(result).toContain("—");
+  test("formatea meses capitalizados en español", () => {
+    expect(formatMonthRange("2023-06", "2025-12", "es", "Actualidad")).toBe(
+      "Jun 2023 – Dic 2025",
+    );
+    expect(formatMonthRange("2021-09", "2026-09", "es", "Actualidad")).toBe(
+      "Sept 2021 – Sept 2026",
+    );
   });
 
   test("formatea meses en inglés", () => {
-    const result = formatMonthRange("2023-06", "2026-05", "en", "Present");
-    expect(result).toContain("2023");
-    expect(result).toContain("2026");
+    expect(formatMonthRange("2023-06", "2026-05", "en", "Present")).toBe(
+      "Jun 2023 – May 2026",
+    );
   });
 
   test("usa el label de presente cuando falta end", () => {

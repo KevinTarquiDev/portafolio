@@ -38,6 +38,11 @@
       "Backend",
       "Databases",
       "Deployments"
+    ],
+    "x-availability": [
+      "Immediate availability",
+      "On-site and hybrid in Cuenca",
+      "Remote nationally and internationally"
     ]
   },
   "work": [
@@ -166,13 +171,14 @@
       "roles": ["Full Stack Developer"],
       "keywords": [
         "React",
-        "TypeScript",
         "NestJS",
+        "TypeScript",
+        "Tailwind CSS",
         "PostgreSQL",
         "GitLab CI/CD",
         "Docker",
-        "Kubernetes",
-        "Helm"
+        "Kubernetes (K3)",
+        "Cloudflare"
       ],
       "highlights": [
         "Developed a platform for small and medium-sized businesses with multi-user management, roles and permissions, products, categories, variants, inventory control, and public web catalog.",

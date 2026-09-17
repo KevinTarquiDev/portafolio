@@ -60,7 +60,7 @@ export function localeToBcp47(locale: Locale): string {
 }
 
 /**
- * Formatea un rango de meses ("jun 2023 — dic 2025") usando
+ * Formatea un rango de meses ("Jun 2023 – Dic 2025") usando
  * Intl.DateTimeFormat según el locale. Si no hay fecha de fin,
  * usa presentLabel.
  */
@@ -79,11 +79,12 @@ export function formatMonthRange(
   const startLabel = formatMonth(formatter, start);
   const endLabel = end ? formatMonth(formatter, end) : presentLabel;
 
-  return `${startLabel} — ${endLabel}`;
+  return `${startLabel} – ${endLabel}`;
 }
 
 function formatMonth(formatter: Intl.DateTimeFormat, value: string): string {
   const parsed = parseResumeDate(value);
   const month = parsed.month ?? 1;
-  return formatter.format(new Date(Date.UTC(parsed.year, month - 1, 1)));
+  const label = formatter.format(new Date(Date.UTC(parsed.year, month - 1, 1)));
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
