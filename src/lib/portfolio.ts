@@ -4,7 +4,7 @@ import { getResume, type Locale } from "./resume";
 /**
  * Capa de transformación: convierte el resume (fuente única de verdad)
  * en un view model tipado por escena. Los componentes consumen esto,
- * nunca leen data/resume.*.json directamente.
+ * nunca leen data/resume.json directamente.
  */
 
 export interface CompanyName {

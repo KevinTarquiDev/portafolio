@@ -1,0 +1,402 @@
+{
+  "basics": {
+    "name": "Kevin Andrés Tarqui Tapia",
+    "label": {
+      "es": "Desarrollador Full Stack",
+      "en": "Full Stack Developer"
+    },
+    "email": "kevin.tarqui.dev@gmail.com",
+    "phone": "+593 96 400 4859",
+    "summary": {
+      "es": "Desarrollador Full Stack con experiencia en aplicaciones web, APIs REST y microservicios para entornos reales de negocio, abarcando desarrollo frontend y backend, integración con bases de datos, autenticación, resolución de incidencias y despliegues en QA y producción. Integro herramientas de IA asistida en mi flujo de trabajo para agilizar el análisis, desarrollo y documentación, manteniendo el criterio técnico y la calidad de las soluciones. Me enfoco en construir soluciones mantenibles, alineadas con las necesidades del negocio y orientadas a una buena experiencia de usuario.",
+      "en": "Full Stack Developer with experience building web applications, REST APIs, and microservices for real-world business environments, covering frontend and backend development, database integration, authentication, incident resolution, and deployments to QA and production. I integrate AI-assisted tools into my workflow to streamline analysis, development, and documentation while maintaining technical judgment and software quality. I focus on building maintainable solutions that align with business needs and deliver a strong user experience."
+    },
+    "location": {
+      "city": "Cuenca",
+      "region": "Azuay",
+      "countryCode": "EC"
+    },
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "kevintarquidev",
+        "url": "https://linkedin.com/in/kevintarquidev"
+      },
+      {
+        "network": "GitHub",
+        "username": "KevinTarquiDev",
+        "url": "https://github.com/KevinTarquiDev"
+      }
+    ],
+    "x-displayName": "Kevin Tarqui",
+    "x-headline": "Software Developer",
+    "x-tagline": {
+      "es": "Desarrollo aplicaciones web, APIs y sistemas orientados a resolver problemas reales de negocio.",
+      "en": "I build web applications, APIs, and systems that solve real business problems."
+    },
+    "x-specialization": {
+      "role": "Full Stack",
+      "focus": "backend"
+    },
+    "x-summaryShort": {
+      "es": "Desarrollador Full Stack con orientación al backend y experiencia en aplicaciones web, APIs REST, microservicios, frontend, backend, bases de datos, despliegues en producción y desarrollo asistido por IA con OpenAI Codex y Claude Code.",
+      "en": "Full Stack Developer with a backend focus and experience in web applications, REST APIs, microservices, frontend and backend development, databases, production deployments, and AI-assisted development with OpenAI Codex and Claude Code."
+    },
+    "x-focusAreas": [
+      {
+        "es": "Aplicaciones web",
+        "en": "Web applications"
+      },
+      {
+        "es": "APIs REST",
+        "en": "REST APIs"
+      },
+      {
+        "es": "Microservicios",
+        "en": "Microservices"
+      },
+      "Frontend",
+      "Backend",
+      {
+        "es": "Bases de datos",
+        "en": "Databases"
+      },
+      {
+        "es": "Despliegues",
+        "en": "Deployments"
+      }
+    ],
+    "x-availability": [
+      {
+        "es": "Disponibilidad inmediata",
+        "en": "Immediate availability"
+      },
+      {
+        "es": "Presencial e híbrido en Cuenca",
+        "en": "On-site and hybrid in Cuenca"
+      },
+      {
+        "es": "Disponible para trabajo remoto internacional",
+        "en": "Available for international remote work"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "Sudamericana de Software (SASF)",
+      "location": {
+        "es": "Remoto · Guayaquil, Guayas, Ecuador",
+        "en": "Remote · Guayaquil, Guayas, Ecuador"
+      },
+      "position": "Software Developer",
+      "startDate": "2023-06",
+      "endDate": "2026-05",
+      "summary": {
+        "es": "Desarrollo y mantenimiento de soluciones web para sistemas internos, una plataforma para restaurantes y un e-commerce multitenant.",
+        "en": "Development and maintenance of web solutions for internal systems, a restaurant platform, and a multitenant e-commerce application."
+      },
+      "highlights": [
+        {
+          "es": "Desarrollé y mantuve soluciones web para sistemas internos, una plataforma para restaurantes y un e-commerce multitenant, con enfoque principal en frontend y participación también en desarrollo backend.",
+          "en": "Developed and maintained web solutions for internal systems, a restaurant platform, and a multi-tenant e-commerce application, with a primary focus on frontend development while also contributing to backend development."
+        },
+        {
+          "es": "Construí interfaces responsivas y componentes reutilizables para formularios, tablas y flujos de negocio con React, TypeScript y Tailwind CSS, integrados con APIs REST.",
+          "en": "Built responsive interfaces and reusable components for forms, tables, and business workflows using React, TypeScript, and Tailwind CSS, integrated with REST APIs."
+        },
+        {
+          "es": "Colaboré en la implementación y mantenimiento de funcionalidades backend con NestJS y Spring Boot, incluyendo endpoints, DTOs, repositorios, validaciones, autenticación, manejo de errores y consultas SQL.",
+          "en": "Collaborated on the implementation and maintenance of backend features with NestJS and Spring Boot, including endpoints, DTOs, repositories, validations, authentication, error handling, and SQL queries."
+        },
+        {
+          "es": "Participé en corrección de incidencias, estabilización, refactorización y entrega de módulos completos, utilizando Docker para ambientes de prueba y Scrum, Jira, Git y Notion para el trabajo colaborativo.",
+          "en": "Participated in incident resolution, stabilization, refactoring, and delivery of complete modules, using Docker for test environments and Scrum, Jira, Git, and Notion for collaborative work."
+        }
+      ]
+    },
+    {
+      "name": "Kruger Corp",
+      "location": {
+        "es": "Remoto · Quito, Pichincha, Ecuador",
+        "en": "Remote · Quito, Pichincha, Ecuador"
+      },
+      "position": {
+        "es": "Desarrollador Backend Spring Boot",
+        "en": "Spring Boot Backend Developer"
+      },
+      "startDate": "2025-10",
+      "endDate": "2025-12",
+      "summary": {
+        "es": "Desarrollo backend de microservicios con Java y Spring Boot para la digitalización de formularios físicos de una entidad pública ecuatoriana.",
+        "en": "Backend development of microservices with Java and Spring Boot to digitize physical forms for an Ecuadorian public-sector entity."
+      },
+      "highlights": [
+        {
+          "es": "Desarrollé microservicios con Java y Spring Boot para digitalizar formularios físicos de una entidad pública ecuatoriana, modelando secciones, preguntas, opciones y dependencias entre respuestas.",
+          "en": "Developed microservices with Java and Spring Boot to digitize physical forms for an Ecuadorian public-sector entity, modeling sections, questions, options, and dependencies between responses."
+        },
+        {
+          "es": "Implementé endpoints, entidades, validaciones, manejo de errores, gestión de estados, lógica de negocio, comunicación entre servicios y jobs para procesos programados.",
+          "en": "Implemented endpoints, entities, validations, error handling, state management, business logic, service-to-service communication, and scheduled jobs."
+        },
+        {
+          "es": "Diseñé esquemas en PostgreSQL e integré Keycloak para autenticación, registro de encuestas, gestión de distintos tipos de usuarios y categorización de documentos PDF confidenciales.",
+          "en": "Designed PostgreSQL schemas and integrated Keycloak for authentication, survey registration, management of different user types, and categorization of confidential PDF documents."
+        },
+        {
+          "es": "Participé directamente en despliegues a QA y producción mediante construcción y publicación de imágenes Docker y actualización de servicios en servidor.",
+          "en": "Participated directly in QA and production deployments by building and publishing Docker images and updating services on the server."
+        }
+      ]
+    },
+    {
+      "name": "RIOUC - Universidad Católica de Cuenca",
+      "location": "Cuenca, Ecuador",
+      "position": {
+        "es": "Desarrollador Frontend",
+        "en": "Frontend Developer"
+      },
+      "startDate": "2025-03",
+      "endDate": "2025-06",
+      "summary": {
+        "es": "Mejora y refactorización del portal web de RIOUC con Next.js.",
+        "en": "Improvement and refactoring of the RIOUC web portal with Next.js."
+      },
+      "highlights": [
+        {
+          "es": "Colaboré en la mejora y refactorización del portal web de RIOUC con Next.js, implementando ajustes de interfaz, responsividad y componentes de la página principal.",
+          "en": "Collaborated on the improvement and refactoring of the RIOUC web portal with Next.js, implementing UI adjustments, responsiveness, and homepage components."
+        },
+        {
+          "es": "Trabajé con Git y GitFlow para el versionamiento del proyecto, gestión de ramas e integración colaborativa de cambios.",
+          "en": "Worked with Git and GitFlow for project versioning, branch management, and collaborative integration of changes."
+        }
+      ]
+    },
+    {
+      "name": "UDIPSAI - Universidad Católica de Cuenca",
+      "location": "Cuenca, Ecuador",
+      "position": {
+        "es": "Proyecto de Vinculación",
+        "en": "Community Outreach Project"
+      },
+      "description": {
+        "es": "Software y datos",
+        "en": "Software and data"
+      },
+      "startDate": "2024-05",
+      "endDate": "2024-07",
+      "summary": {
+        "es": "Digitalización, migración de información y apoyo en refactorización del sistema institucional.",
+        "en": "Digitization, data migration, and support in refactoring the institutional system."
+      },
+      "highlights": [
+        {
+          "es": "Digitalicé y actualicé 730 fichas institucionales, apoyando la migración de información desde registros físicos y Excel hacia el sistema interno y su base de datos.",
+          "en": "Digitized and updated 730 institutional records, supporting the migration of information from physical records and Excel files into the internal system and its database."
+        },
+        {
+          "es": "Colaboré en la refactorización del sistema UDIPSAI y en el levantamiento de requerimientos para el área de Fonoaudiología.",
+          "en": "Collaborated on refactoring the UDIPSAI system and gathering requirements for the Speech Therapy department."
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Universidad Católica de Cuenca",
+      "area": {
+        "es": "Ingeniería de Software",
+        "en": "Software Engineering"
+      },
+      "studyType": {
+        "es": "Pregrado",
+        "en": "Bachelor's Degree"
+      },
+      "startDate": "2021-09",
+      "endDate": "2026-09",
+      "status": {
+        "es": "Título pendiente de emisión",
+        "en": "Degree issuance pending"
+      }
+    }
+  ],
+  "skills": [
+    {
+      "name": "Backend",
+      "keywords": [
+        "Java",
+        "Spring Boot",
+        "NestJS",
+        "Node.js",
+        {
+          "es": "Microservicios",
+          "en": "Microservices"
+        },
+        {
+          "es": "APIs REST",
+          "en": "REST APIs"
+        }
+      ]
+    },
+    {
+      "name": "Frontend",
+      "keywords": [
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "Tailwind CSS",
+        "Next.js"
+      ]
+    },
+    {
+      "name": {
+        "es": "Datos y seguridad",
+        "en": "Data and Security"
+      },
+      "keywords": [
+        "PostgreSQL",
+        "SQL Server",
+        {
+          "es": "Modelado de bases de datos",
+          "en": "Database Modeling"
+        },
+        "Keycloak"
+      ]
+    },
+    {
+      "name": {
+        "es": "Herramientas y metodología",
+        "en": "Tools and methodology"
+      },
+      "keywords": [
+        "Git",
+        "GitHub",
+        "GitLab CI/CD",
+        "Docker",
+        "Jira",
+        "Notion",
+        "Scrum",
+        {
+          "es": "Desarrollo asistido por IA",
+          "en": "AI-assisted development"
+        },
+        "SDD"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "language": {
+        "es": "Español",
+        "en": "Spanish"
+      },
+      "fluency": {
+        "es": "Nativo",
+        "en": "Native"
+      }
+    },
+    {
+      "language": {
+        "es": "Inglés",
+        "en": "English"
+      },
+      "fluency": {
+        "es": "Intermedio (B1)",
+        "en": "Intermediate (B1)"
+      }
+    }
+  ],
+  "projects": [
+    {
+      "name": "EcuStock",
+      "description": {
+        "es": "Plataforma independiente de gestión de inventario y catálogo web.",
+        "en": "Independent inventory management and web catalog platform."
+      },
+      "startDate": "2026-04",
+      "endDate": "2026-08",
+      "url": "https://webstockify.com",
+      "type": {
+        "es": "Proyecto independiente",
+        "en": "Independent Project"
+      },
+      "roles": [
+        {
+          "es": "Desarrollador Full Stack",
+          "en": "Full Stack Developer"
+        }
+      ],
+      "keywords": [
+        "React",
+        "NestJS",
+        "TypeScript",
+        "Tailwind CSS",
+        "PostgreSQL",
+        "GitLab CI/CD",
+        "Docker",
+        "Kubernetes (K3s)",
+        "Cloudflare"
+      ],
+      "highlights": [
+        {
+          "es": "Desarrollé una plataforma para pequeñas y medianas empresas con gestión multiusuario, roles y permisos, productos, categorías, variantes, control de existencias y catálogo web público.",
+          "en": "Developed a platform for small and medium-sized businesses with multi-user management, roles and permissions, products, categories, variants, inventory control, and a public web catalog."
+        },
+        {
+          "es": "Diseñé e implementé la infraestructura de despliegue para ambientes de QA y producción con Kubernetes (K3s), Helm, Ingress, Cloudflare, CI/CD y estrategias de respaldo, con aislamiento lógico entre entornos.",
+          "en": "Designed and implemented the deployment infrastructure for QA and production environments using Kubernetes (K3s), Helm, Ingress, Cloudflare, CI/CD, and backup strategies, with logical isolation between environments."
+        },
+        {
+          "es": "Implementé una arquitectura multi-tenant con control centralizado y base de datos PostgreSQL dedicada por negocio.",
+          "en": "Implemented a multi-tenant architecture with centralized control and a dedicated PostgreSQL database per business."
+        }
+      ]
+    }
+  ],
+  "x-practices": [
+    {
+      "name": {
+        "es": "Arquitectura",
+        "en": "Architecture"
+      },
+      "keywords": [
+        {
+          "es": "APIs REST",
+          "en": "REST APIs"
+        },
+        {
+          "es": "Microservicios",
+          "en": "Microservices"
+        }
+      ]
+    },
+    {
+      "name": {
+        "es": "Calidad de código",
+        "en": "Code Quality"
+      },
+      "keywords": ["Clean Code", "SOLID", "Testing"]
+    },
+    {
+      "name": "DevOps",
+      "keywords": ["Docker", "CI/CD"]
+    },
+    {
+      "name": {
+        "es": "Flujo de trabajo",
+        "en": "Workflow"
+      },
+      "keywords": [
+        "Git",
+        "Code Review",
+        "Scrum",
+        "SDD",
+        {
+          "es": "Desarrollo asistido por IA",
+          "en": "AI-assisted development"
+        }
+      ]
+    }
+  ]
+}

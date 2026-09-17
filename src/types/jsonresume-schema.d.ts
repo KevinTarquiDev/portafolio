@@ -1,20 +1,13 @@
 declare module "@jsonresume/schema" {
-  export interface ValidationReport {
-    [key: string]: unknown;
-  }
-
   export interface JsonResumeSchema {
+    /** Validación síncrona: `errors` es null cuando `valid` es true. */
     validate(
       resume: unknown,
-      callback?: (error: Error | null, report?: ValidationReport) => void,
-      errorCallback?: (error: Error) => void,
+      callback: (errors: unknown, valid: boolean) => void,
     ): void;
-
     schema: Record<string, unknown>;
     jobSchema?: Record<string, unknown>;
   }
-
   const resumeSchema: JsonResumeSchema;
-
   export default resumeSchema;
 }

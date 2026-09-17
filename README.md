@@ -14,11 +14,10 @@ de build desde JSON Resume; ningún componente la duplica manualmente.
 - **Tailwind CSS 4** vía `@tailwindcss/vite`.
 - **GSAP 3 + ScrollTrigger** para las animaciones de scroll, con import
   dinámico condicionado a `prefers-reduced-motion`.
-- **[JSON Resume](https://jsonresume.org)** (`data/resume.es.json`,
-  `data/resume.en.json`) como única fuente de verdad de los datos
+- **[JSON Resume](https://jsonresume.org)** (`data/resume.json`) como única fuente de verdad de los datos
   profesionales, extendido con campos `x-*` propios del diseño (headline,
   tagline, especialización, prácticas de trabajo, etc.).
-- **pdfkit** para generar el CV en PDF (estilo Harvard, compatible con ATS)
+- **pdfkit** para generar el CV en PDF (una página, compatible con ATS)
   a partir del mismo resume.
 - **[Brevo](https://www.brevo.com)** para el envío del formulario de
   contacto, sin exponer ninguna clave en el navegador.
@@ -48,10 +47,10 @@ bun run dev
 | --------------------------------- | ----------------------------------------------------------------------------------------- |
 | `bun run dev`                     | Regenera el CV y levanta el servidor de desarrollo de Astro                               |
 | `bun run build`                   | Regenera el CV y compila el sitio para producción (`.vercel/output`)                      |
-| `bun run cv:generate`             | Genera `public/cv/*.pdf` a partir de `data/resume.*.json`                                 |
+| `bun run cv:generate`             | Genera `public/cv/*.pdf` a partir de `data/resume.json`                                   |
 | `bun run check`                   | `astro check` (tipos y diagnósticos de Astro)                                             |
 | `bun run test`                    | Ejecuta la suite de `bun test`                                                            |
-| `bun run resume:validate`         | Valida `data/resume.*.json` contra el schema de JSON Resume                               |
+| `bun run resume:validate`         | Valida el resume resuelto por idioma contra JSON Resume                                   |
 | `bun run build:check`             | Verifica el build de producción (`.vercel/output`): rutas, SEO, PDFs…                     |
 | `bun run secrets:check`           | Confirma que no hay secretos filtrados en los artefactos generados                        |
 | `bun run format` / `format:check` | Aplica o comprueba el formato de Prettier                                                 |
@@ -84,7 +83,9 @@ vez de fallar:
 
 ## Datos profesionales
 
-`data/resume.es.json` y `data/resume.en.json` son la única fuente de verdad.
+`data/resume.json` es la única fuente de verdad. Los textos traducibles se
+escriben como pares `{ "es": "…", "en": "…" }` y todo lo que no cambia entre
+idiomas (fechas, empresas, URLs, tecnologías) queda como valor plano.
 `src/lib/resume.ts` expone `getResume(locale)`; el resto de la capa de datos
 (`src/lib/portfolio.ts`, `src/lib/cv.ts`, `src/lib/seo.ts`) transforma ese
 resume en los view models que consumen los componentes. Ningún componente

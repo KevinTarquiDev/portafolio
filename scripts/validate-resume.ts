@@ -1,63 +1,34 @@
 import resumeSchema from "@jsonresume/schema";
-import fs from "node:fs";
+import { locales } from "../src/i18n/config";
+import { getResume } from "../src/lib/resume";
 
-type ResumeConfig = {
-  filename: string;
-  path: string;
-};
-
-const resumes: ResumeConfig[] = [
-  {
-    filename: "resume.es.json",
-    path: "./data/resume.es.json",
-  },
-  {
-    filename: "resume.en.json",
-    path: "./data/resume.en.json",
-  },
-];
+/**
+ * data/resume.json no es JSON Resume literal (usa pares { es, en }), así
+ * que se valida lo que realmente consumen el portafolio y el CV: el
+ * resume ya resuelto para cada idioma.
+ */
 
 let totalValid = 0;
-let hasErrors = false;
 
-for (const { filename, path } of resumes) {
-  try {
-    const resume = JSON.parse(fs.readFileSync(path, "utf8"));
-
-    resumeSchema.validate(
-      resume,
-      (error) => {
-        if (error) {
-          hasErrors = true;
-          console.error(`❌ ${filename} inválido`);
-          console.error(error);
-          return;
-        }
-
-        totalValid++;
-        console.log(`✅ ${filename} válido`);
-      },
-      (error) => {
-        hasErrors = true;
-        console.error(`❌ Error validando ${filename}`);
-        console.error(error);
-      },
-    );
-  } catch (error) {
-    hasErrors = true;
-    console.error(`❌ No se pudo leer o parsear ${filename}`);
-    console.error(error);
-  }
+for (const locale of locales) {
+  resumeSchema.validate(getResume(locale), (errors, valid) => {
+    if (valid) {
+      totalValid++;
+      console.log(`✅ resume (${locale}) válido`);
+      return;
+    }
+    console.error(`❌ resume (${locale}) inválido`);
+    console.error(errors);
+  });
 }
 
-if (hasErrors) {
-  console.error(
-    `\n❌ Validación finalizada con errores (${totalValid}/${resumes.length} válidos)`,
-  );
-
-  process.exitCode = 1;
-} else {
+if (totalValid === locales.length) {
   console.log(
-    `\n✅ Validación completada: ${totalValid}/${resumes.length} resumes válidos`,
+    `\n✅ Validación completada: ${totalValid}/${locales.length} idiomas válidos`,
   );
+} else {
+  console.error(
+    `\n❌ Validación finalizada con errores (${totalValid}/${locales.length} válidos)`,
+  );
+  process.exitCode = 1;
 }

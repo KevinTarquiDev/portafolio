@@ -7,7 +7,7 @@ import { locales } from "../src/i18n/config";
 /**
  * Genera el CV en PDF (una página, sans-serif, compatible con ATS) para
  * cada locale, a partir de buildCvDocument(locale) — es decir, siempre
- * desde resume.*.json. El PDF es un artefacto derivado: nunca se lee
+ * desde data/resume.json. El PDF es un artefacto derivado: nunca se lee
  * de vuelta como fuente de datos.
  *
  * La maquetación reproduce el CV oficial: tamaños, colores y distancias

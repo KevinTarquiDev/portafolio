@@ -92,61 +92,6 @@ describe("getPortfolio", () => {
   });
 });
 
-describe("paridad ES/EN de datos profesionales", () => {
-  const es = getResume("es");
-  const en = getResume("en");
-
-  test("misma cantidad de experiencias", () => {
-    expect(en.work.length).toBe(es.work.length);
-  });
-
-  test("misma cantidad de proyectos", () => {
-    expect(en.projects.length).toBe(es.projects.length);
-  });
-
-  test("misma cantidad de educación", () => {
-    expect(en.education.length).toBe(es.education.length);
-  });
-
-  test("mismos grupos de skills y mismas cantidades de keywords", () => {
-    expect(en.skills.length).toBe(es.skills.length);
-    es.skills.forEach((group, index) => {
-      expect(en.skills[index]?.keywords.length).toBe(group.keywords.length);
-    });
-  });
-
-  test("mismos grupos de x-practices y mismas cantidades de keywords", () => {
-    expect(en["x-practices"].length).toBe(es["x-practices"].length);
-    es["x-practices"].forEach((practice, index) => {
-      expect(en["x-practices"][index]?.keywords.length).toBe(
-        practice.keywords.length,
-      );
-    });
-  });
-
-  test("misma cantidad de x-focusAreas", () => {
-    expect(en.basics["x-focusAreas"].length).toBe(
-      es.basics["x-focusAreas"].length,
-    );
-  });
-
-  test("mismas claves x-* en basics", () => {
-    const xKeysOf = (basics: Record<string, unknown>) =>
-      Object.keys(basics)
-        .filter((key) => key.startsWith("x-"))
-        .sort();
-    expect(xKeysOf(en.basics)).toEqual(xKeysOf(es.basics));
-  });
-
-  test("mismas claves x-* en la raíz del resume", () => {
-    const xKeysOf = (resume: Record<string, unknown>) =>
-      Object.keys(resume)
-        .filter((key) => key.startsWith("x-"))
-        .sort();
-    expect(xKeysOf(en)).toEqual(xKeysOf(es));
-  });
-});
-
 /**
  * Recorre un valor recursivamente y devuelve las rutas de todos los
  * strings vacíos o arrays vacíos que encuentre.
