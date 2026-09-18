@@ -4,12 +4,11 @@ import {
   CONTACT_SENDER_EMAIL,
   CONTACT_SENDER_NAME,
   CONTACT_RECIPIENT_EMAIL,
-  SITE_URL,
 } from "astro:env/server";
 import type { BrevoConfig } from "../../lib/brevo";
 import { resolveSenderName, sendContactEmail } from "../../lib/brevo";
 import { handleContactRequest } from "../../lib/contact-handler";
-import { DEFAULT_SITE_URL } from "../../lib/site";
+import { hitRateLimit, rateLimitKey } from "../../lib/rate-limit";
 import { getResume } from "../../lib/resume";
 
 // Única ruta on-demand del sitio: todo lo demás es estático.
@@ -34,6 +33,6 @@ export const POST: APIRoute = async ({ request }) => {
   return handleContactRequest(request, {
     config: resolveConfig(),
     send: sendContactEmail,
-    allowedOrigin: SITE_URL ?? DEFAULT_SITE_URL,
+    rateLimit: (req) => hitRateLimit(rateLimitKey(req)),
   });
 };

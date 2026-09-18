@@ -104,7 +104,8 @@ async function main(): Promise<void> {
     `status=${honeypotResponse.status}`,
   );
 
-  // 4. Origin ajeno -> 403.
+  // 4. Origin ajeno -> 403. Lo rechaza `security.checkOrigin` de Astro
+  // antes del handler, así que esta prueba solo se sostiene end-to-end.
   const originResponse = await postContact(validFields(), {
     accept: "application/json",
     origin: "https://evil.example",

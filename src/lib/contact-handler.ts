@@ -6,14 +6,23 @@ import { isLocale, defaultLocale } from "../i18n/config";
  * Lógica HTTP de /api/contact, independiente de Astro para poder
  * testearla sin red ni request reales. api/contact.ts solo conecta
  * esto con astro:env y sendContactEmail.
+ *
+ * El Origin no se comprueba aquí: `security.checkOrigin` de Astro está
+ * activo por defecto y rechaza con 403 cualquier POST de formulario cuyo
+ * Origin no sea el propio sitio, antes de que la petición llegue hasta
+ * este handler.
  */
 
 export interface ContactHandlerDeps {
   /** null cuando falta configuración server-side requerida (503). */
   config: BrevoConfig | null;
   send: (input: ContactEmailInput, config: BrevoConfig) => Promise<SendResult>;
-  /** Origen propio del sitio (por ejemplo SITE_URL), para validar Origin. */
-  allowedOrigin: string;
+  /**
+   * Registra el envío y devuelve true si el remitente supera su cuota.
+   * Se inyecta, igual que `send`, para que los tests no dependan del
+   * contador en memoria del proceso.
+   */
+  rateLimit: (request: Request) => boolean;
 }
 
 function jsonResponse(status: number, body: Record<string, unknown>): Response {
@@ -31,22 +40,6 @@ function wantsJson(request: Request): boolean {
   return (request.headers.get("accept") ?? "").includes("application/json");
 }
 
-function isOriginAllowed(request: Request, allowedOrigin: string): boolean {
-  const originHeader = request.headers.get("origin");
-  if (!originHeader) {
-    return true;
-  }
-
-  try {
-    const originHost = new URL(originHeader).host;
-    const requestHost = new URL(request.url).host;
-    const allowedHost = new URL(allowedOrigin).host;
-    return originHost === requestHost || originHost === allowedHost;
-  } catch {
-    return false;
-  }
-}
-
 function readLocaleField(formData: FormData): string {
   const value = formData.get("locale");
   return typeof value === "string" && isLocale(value) ? value : defaultLocale;
@@ -56,12 +49,6 @@ export async function handleContactRequest(
   request: Request,
   deps: ContactHandlerDeps,
 ): Promise<Response> {
-  if (!isOriginAllowed(request, deps.allowedOrigin)) {
-    return wantsJson(request)
-      ? jsonResponse(403, { ok: false, error: "origin_not_allowed" })
-      : new Response("Origin no permitido", { status: 403 });
-  }
-
   let formData: FormData;
   try {
     formData = await request.formData();
@@ -76,7 +63,11 @@ export async function handleContactRequest(
   const sentRedirect = `/${locale}/contact/sent/`;
 
   if (isLikelySpam(formData.get("company"), formData.get("startedAt"))) {
-    // Falso éxito silencioso: nunca se llama a send().
+    // Falso éxito silencioso: nunca se llama a send(). Al visitante no se
+    // le avisa a propósito (delataría la heurística a un bot), pero sí
+    // queda rastro: la heurística también puede descartar mensajes reales
+    // y sin este registro no habría forma de detectarlo.
+    console.warn("[contact] descartado por heurística anti-spam");
     return wantsJson(request)
       ? jsonResponse(200, { ok: true })
       : redirectResponse(sentRedirect);
@@ -100,9 +91,24 @@ export async function handleContactRequest(
       : redirectResponse(errorRedirect);
   }
 
+  // Se cuenta aquí, no antes: así los intentos que fallan la validación no
+  // gastan cuota y el visitante que corrige una errata no queda bloqueado.
+  if (deps.rateLimit(request)) {
+    return wantsJson(request)
+      ? jsonResponse(429, { ok: false, error: "rate_limited" })
+      : redirectResponse(errorRedirect);
+  }
+
   const result = await deps.send(validation.data, deps.config);
 
   if (!result.ok) {
+    // La respuesta al visitante es genérica a propósito, pero `reason` y
+    // `status` son la única pista de si falló la API (401, 429…) o la red.
+    // Sin registrarlos aquí se calculaban para tirarlos.
+    const detail = result.status
+      ? `${result.reason} (${result.status})`
+      : result.reason;
+    console.error(`[contact] envío fallido: ${detail}`);
     return wantsJson(request)
       ? jsonResponse(502, { ok: false, error: "send_failed" })
       : redirectResponse(errorRedirect);

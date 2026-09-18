@@ -2,7 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { handleContactRequest } from "./contact-handler";
 import type { BrevoConfig, ContactEmailInput, SendResult } from "./brevo";
 
-const allowedOrigin = "https://kevintarqui.vercel.app";
+/** El límite se ejerce en su propio test; aquí nunca debe interferir. */
+const noRateLimit = () => false;
 
 const validConfig: BrevoConfig = {
   apiKey: "test-key",
@@ -13,13 +14,12 @@ const validConfig: BrevoConfig = {
 
 function formRequest(
   fields: Record<string, string>,
-  options: { origin?: string; accept?: string } = {},
+  options: { accept?: string } = {},
 ): Request {
   const body = new URLSearchParams(fields);
   const headers: Record<string, string> = {
     "content-type": "application/x-www-form-urlencoded",
   };
-  if (options.origin) headers.origin = options.origin;
   if (options.accept) headers.accept = options.accept;
 
   return new Request("https://kevintarqui.vercel.app/api/contact/", {
@@ -52,7 +52,7 @@ describe("handleContactRequest", () => {
 
     const response = await handleContactRequest(
       formRequest(validFields, { accept: "application/json" }),
-      { config: validConfig, send, allowedOrigin },
+      { config: validConfig, send, rateLimit: noRateLimit },
     );
 
     expect(response.status).toBe(200);
@@ -72,7 +72,7 @@ describe("handleContactRequest", () => {
     const response = await handleContactRequest(formRequest(validFields), {
       config: validConfig,
       send,
-      allowedOrigin,
+      rateLimit: noRateLimit,
     });
 
     expect(response.status).toBe(303);
@@ -85,7 +85,7 @@ describe("handleContactRequest", () => {
 
     const response = await handleContactRequest(
       formRequest(fields, { accept: "application/json" }),
-      { config: validConfig, send, allowedOrigin },
+      { config: validConfig, send, rateLimit: noRateLimit },
     );
 
     expect(response.status).toBe(422);
@@ -104,7 +104,7 @@ describe("handleContactRequest", () => {
 
     const response = await handleContactRequest(
       formRequest(fields, { accept: "application/json" }),
-      { config: validConfig, send, allowedOrigin },
+      { config: validConfig, send, rateLimit: noRateLimit },
     );
 
     expect(response.status).toBe(200);
@@ -121,24 +121,10 @@ describe("handleContactRequest", () => {
 
     await handleContactRequest(
       formRequest(fields, { accept: "application/json" }),
-      { config: validConfig, send, allowedOrigin },
+      { config: validConfig, send, rateLimit: noRateLimit },
     );
 
     expect(sendCalled).toBe(false);
-  });
-
-  test("un Origin ajeno responde 403", async () => {
-    const send = async (): Promise<SendResult> => ({ ok: true });
-
-    const response = await handleContactRequest(
-      formRequest(validFields, {
-        origin: "https://evil.example",
-        accept: "application/json",
-      }),
-      { config: validConfig, send, allowedOrigin },
-    );
-
-    expect(response.status).toBe(403);
   });
 
   test("configuración incompleta responde 503", async () => {
@@ -146,7 +132,7 @@ describe("handleContactRequest", () => {
 
     const response = await handleContactRequest(
       formRequest(validFields, { accept: "application/json" }),
-      { config: null, send, allowedOrigin },
+      { config: null, send, rateLimit: noRateLimit },
     );
 
     expect(response.status).toBe(503);
@@ -154,6 +140,45 @@ describe("handleContactRequest", () => {
       ok: false,
       error: "not_configured",
     });
+  });
+
+  test("superar el límite responde 429 sin llamar a send", async () => {
+    let sendCalled = false;
+    const send = async (): Promise<SendResult> => {
+      sendCalled = true;
+      return { ok: true };
+    };
+
+    const response = await handleContactRequest(
+      formRequest(validFields, { accept: "application/json" }),
+      { config: validConfig, send, rateLimit: () => true },
+    );
+
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ ok: false, error: "rate_limited" });
+    expect(sendCalled).toBe(false);
+  });
+
+  test("el límite no gasta cuota con un payload inválido", async () => {
+    const send = async (): Promise<SendResult> => ({ ok: true });
+    let rateLimitCalls = 0;
+
+    await handleContactRequest(
+      formRequest(
+        { ...validFields, email: "no-valido" },
+        { accept: "application/json" },
+      ),
+      {
+        config: validConfig,
+        send,
+        rateLimit: () => {
+          rateLimitCalls += 1;
+          return false;
+        },
+      },
+    );
+
+    expect(rateLimitCalls).toBe(0);
   });
 
   test("un fallo de envío responde 502", async () => {
@@ -165,7 +190,7 @@ describe("handleContactRequest", () => {
 
     const response = await handleContactRequest(
       formRequest(validFields, { accept: "application/json" }),
-      { config: validConfig, send, allowedOrigin },
+      { config: validConfig, send, rateLimit: noRateLimit },
     );
 
     expect(response.status).toBe(502);

@@ -7,17 +7,24 @@
  * vuelve a validar todo de forma independiente.
  */
 import { validateContactField } from "../lib/contact";
-import type { ContactFieldError, ContactInput } from "../lib/contact";
+import type { ContactInput } from "../lib/contact";
 
 type Field = keyof ContactInput;
 
 const FIELDS: readonly Field[] = ["name", "email", "message"];
 
+/**
+ * Copia en cliente del bloque JSON que pinta ContactForm.astro. Los mapas
+ * de error se tipan por clave de texto, no con los códigos exactos: aquí
+ * el dato viene de JSON y se valida en runtime (ver parseMessages), y la
+ * exhaustividad ya la garantiza el componente al construirlo.
+ */
 interface ContactMessages {
   success: string;
   submitting: string;
   submit: string;
   genericError: string;
+  rateLimited: string;
   errors: {
     name: Record<string, string>;
     email: Record<string, string>;
@@ -58,7 +65,12 @@ function initContactForm(form: HTMLFormElement): void {
   const submitLabel = form.querySelector<HTMLElement>(
     "[data-contact-submit-label]",
   );
-  const status = form.querySelector<HTMLElement>("[data-contact-status]");
+  const ui: FormUi = {
+    submitButton,
+    submitLabel,
+    status: form.querySelector<HTMLElement>("[data-contact-status]"),
+    announcer: form.querySelector<HTMLElement>("[data-contact-announcer]"),
+  };
 
   for (const field of FIELDS) {
     const input = getFieldInput(form, field);
@@ -84,8 +96,15 @@ function initContactForm(form: HTMLFormElement): void {
     });
   }
 
+  // El botón ya no se deshabilita durante el envío (ver setBusy), así que
+  // el reenvío lo frena esta bandera y no el estado del control.
+  let submitting = false;
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
 
     let firstInvalid: HTMLElement | null = null;
     for (const field of FIELDS) {
@@ -102,25 +121,78 @@ function initContactForm(form: HTMLFormElement): void {
       return;
     }
 
-    void submitForm(form, messages, { submitButton, submitLabel, status });
+    submitting = true;
+    void submitForm(form, messages, ui).finally(() => {
+      submitting = false;
+    });
   });
 }
 
+function isStringMap(value: unknown): value is Record<string, string> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Object.values(value).every((entry) => typeof entry === "string")
+  );
+}
+
+/**
+ * Comprueba la forma del JSON en vez de afirmarla: si el bloque de
+ * mensajes cambiara, el formulario se queda sin mejora progresiva (sigue
+ * funcionando por POST normal) en lugar de romperse al primer envío.
+ */
 function parseMessages(raw: string | null | undefined): ContactMessages | null {
   if (!raw) {
     return null;
   }
+
+  let parsed: unknown;
   try {
-    return JSON.parse(raw) as ContactMessages;
+    parsed = JSON.parse(raw);
   } catch {
     return null;
   }
+  if (typeof parsed !== "object" || parsed === null) {
+    return null;
+  }
+
+  const { success, submitting, submit, genericError, rateLimited, errors } =
+    parsed as Record<string, unknown>;
+  if (
+    typeof success !== "string" ||
+    typeof submitting !== "string" ||
+    typeof submit !== "string" ||
+    typeof genericError !== "string" ||
+    typeof rateLimited !== "string" ||
+    typeof errors !== "object" ||
+    errors === null
+  ) {
+    return null;
+  }
+
+  const byField = errors as Record<string, unknown>;
+  const name = byField.name;
+  const email = byField.email;
+  const message = byField.message;
+  if (!isStringMap(name) || !isStringMap(email) || !isStringMap(message)) {
+    return null;
+  }
+
+  return {
+    success,
+    submitting,
+    submit,
+    genericError,
+    rateLimited,
+    errors: { name, email, message },
+  };
 }
 
 interface FormUi {
   submitButton: HTMLButtonElement | null;
   submitLabel: HTMLElement | null;
   status: HTMLElement | null;
+  announcer: HTMLElement | null;
 }
 
 async function submitForm(
@@ -128,7 +200,7 @@ async function submitForm(
   messages: ContactMessages,
   ui: FormUi,
 ): Promise<void> {
-  setBusy(ui, messages.submitting, true);
+  setBusy(form, ui, messages.submitting, true);
 
   try {
     const response = await fetch(form.action, {
@@ -138,7 +210,7 @@ async function submitForm(
     });
 
     if (response.ok) {
-      setStatus(ui.status, messages.success);
+      setStatus(ui, messages.success);
       form.reset();
       clearFieldErrors(form);
       const startedAtInput = form.querySelector<HTMLInputElement>(
@@ -151,34 +223,84 @@ async function submitForm(
     }
 
     if (response.status === 422) {
-      const body = (await response.json()) as {
-        errors?: Partial<Record<Field, ContactFieldError>>;
-      };
-      applyServerErrors(form, body.errors ?? {}, messages);
-      setStatus(ui.status, "");
+      const applied = applyServerErrors(
+        form,
+        await readFieldErrors(response),
+        messages,
+      );
+      // El 422 cubre también los cuerpos ilegibles, que no traen ningún
+      // error de campo: sin este aviso el envío fallaría en silencio.
+      setStatus(ui, applied ? "" : messages.genericError);
       return;
     }
 
-    setStatus(ui.status, messages.genericError);
+    if (response.status === 429) {
+      setStatus(ui, messages.rateLimited);
+      return;
+    }
+
+    setStatus(ui, messages.genericError);
   } catch {
-    setStatus(ui.status, messages.genericError);
+    setStatus(ui, messages.genericError);
   } finally {
-    setBusy(ui, messages.submit, false);
+    setBusy(form, ui, messages.submit, false);
   }
 }
 
-function setBusy(ui: FormUi, label: string, busy: boolean): void {
+/** Códigos de error por campo de una respuesta 422, ignorando el resto. */
+async function readFieldErrors(
+  response: Response,
+): Promise<Partial<Record<Field, string>>> {
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    return {};
+  }
+  if (typeof body !== "object" || body === null) {
+    return {};
+  }
+
+  const errors = (body as Record<string, unknown>).errors;
+  if (typeof errors !== "object" || errors === null) {
+    return {};
+  }
+
+  const source = errors as Record<string, unknown>;
+  const out: Partial<Record<Field, string>> = {};
+  for (const field of FIELDS) {
+    const code = source[field];
+    if (typeof code === "string") {
+      out[field] = code;
+    }
+  }
+  return out;
+}
+
+function setBusy(
+  form: HTMLFormElement,
+  ui: FormUi,
+  label: string,
+  busy: boolean,
+): void {
+  form.setAttribute("aria-busy", String(busy));
   if (ui.submitButton) {
-    ui.submitButton.disabled = busy;
+    // aria-disabled en vez de disabled: deshabilitar el botón recién
+    // pulsado le quita el foco, y el lector de pantalla pierde el hilo
+    // justo cuando va a anunciarse el resultado.
+    ui.submitButton.setAttribute("aria-disabled", String(busy));
   }
   if (ui.submitLabel) {
     ui.submitLabel.textContent = label;
   }
 }
 
-function setStatus(status: HTMLElement | null, text: string): void {
-  if (status) {
-    status.textContent = text;
+function setStatus(ui: FormUi, text: string): void {
+  if (ui.status) {
+    ui.status.textContent = text;
+  }
+  if (ui.announcer) {
+    ui.announcer.textContent = text;
   }
 }
 
@@ -263,11 +385,12 @@ function shakeField(input: HTMLElement): void {
   input.classList.add("field-shake");
 }
 
+/** Refleja los errores del servidor y devuelve si alguno era de campo. */
 function applyServerErrors(
   form: HTMLFormElement,
-  errors: Partial<Record<Field, ContactFieldError>>,
+  errors: Partial<Record<Field, string>>,
   messages: ContactMessages,
-): void {
+): boolean {
   let firstInvalid: HTMLElement | null = null;
 
   for (const field of FIELDS) {
@@ -282,4 +405,5 @@ function applyServerErrors(
   }
 
   firstInvalid?.focus();
+  return firstInvalid !== null;
 }

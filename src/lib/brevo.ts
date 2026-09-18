@@ -75,16 +75,18 @@ export async function sendContactEmail(
  * petición. Se usa en tests para verificar sender/to/replyTo sin
  * mockear fetch.
  */
-export function buildBrevoPayload(
-  input: ContactEmailInput,
-  config: BrevoConfig,
-): {
+export interface BrevoPayload {
   sender: { name: string; email: string };
   to: Array<{ email: string }>;
   replyTo: { email: string; name: string };
   subject: string;
   textContent: string;
-} {
+}
+
+export function buildBrevoPayload(
+  input: ContactEmailInput,
+  config: BrevoConfig,
+): BrevoPayload {
   return {
     sender: { name: config.senderName, email: config.senderEmail },
     to: [{ email: config.recipientEmail }],

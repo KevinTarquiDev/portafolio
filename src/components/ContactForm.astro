@@ -5,6 +5,8 @@
  * servidor redirige a /{locale}/contact/sent/ o /error/. Con JS,
  * contact-form.ts intercepta el submit y muestra el resultado inline.
  */
+import { CONTACT_LIMITS } from "../lib/contact";
+import type { ContactErrorMessages } from "../lib/contact";
 import type { Locale } from "../lib/resume";
 import type { UiStrings } from "../i18n/ui";
 
@@ -15,29 +17,37 @@ export interface Props {
 
 const { locale, ui } = Astro.props;
 
+/**
+ * El tipo obliga a cubrir todos los códigos que cada validador puede
+ * devolver: añadir uno nuevo en lib/contact.ts rompe el build aquí, en
+ * vez de degradar en silencio al mensaje genérico.
+ */
+const errors: ContactErrorMessages = {
+  name: {
+    required: ui.contact.formErrorNameRequired,
+    too_short: ui.contact.formErrorNameLength,
+    too_long: ui.contact.formErrorNameLength,
+    invalid_characters: ui.contact.formErrorNameLength,
+  },
+  email: {
+    required: ui.contact.formErrorEmailRequired,
+    invalid_email: ui.contact.formErrorEmailInvalid,
+    too_long: ui.contact.formErrorEmailInvalid,
+  },
+  message: {
+    required: ui.contact.formErrorMessageRequired,
+    too_short: ui.contact.formErrorMessageLength,
+    too_long: ui.contact.formErrorMessageLength,
+  },
+};
+
 const messages = {
   success: ui.contact.formSuccess,
   submitting: ui.contact.formSubmitting,
   submit: ui.contact.formSubmit,
   genericError: ui.contact.formErrorGeneric,
-  errors: {
-    name: {
-      required: ui.contact.formErrorNameRequired,
-      too_short: ui.contact.formErrorNameLength,
-      too_long: ui.contact.formErrorNameLength,
-      invalid_characters: ui.contact.formErrorNameLength,
-    },
-    email: {
-      required: ui.contact.formErrorEmailRequired,
-      invalid_email: ui.contact.formErrorEmailInvalid,
-      too_long: ui.contact.formErrorEmailInvalid,
-    },
-    message: {
-      required: ui.contact.formErrorMessageRequired,
-      too_short: ui.contact.formErrorMessageLength,
-      too_long: ui.contact.formErrorMessageLength,
-    },
-  },
+  rateLimited: ui.contact.formErrorRateLimited,
+  errors,
 };
 ---
 
@@ -72,8 +82,8 @@ const messages = {
         name="name"
         type="text"
         required
-        minlength="5"
-        maxlength="100"
+        minlength={CONTACT_LIMITS.name.min}
+        maxlength={CONTACT_LIMITS.name.max}
         autocomplete="name"
         aria-describedby="contact-name-error"
         class="field-input h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
@@ -89,7 +99,7 @@ const messages = {
         name="email"
         type="email"
         required
-        maxlength="254"
+        maxlength={CONTACT_LIMITS.email.max}
         autocomplete="email"
         aria-describedby="contact-email-error"
         class="field-input h-11 border-b border-ink/30 bg-transparent text-xl text-ink outline-none focus-visible:border-green"
@@ -106,8 +116,8 @@ const messages = {
       name="message"
       rows="3"
       required
-      minlength="10"
-      maxlength="2000"
+      minlength={CONTACT_LIMITS.message.min}
+      maxlength={CONTACT_LIMITS.message.max}
       aria-describedby="contact-message-error"
       class="field-input h-20 resize-none border-b border-ink/30 bg-transparent text-lg text-ink outline-none focus-visible:border-green desk:text-xl"
     ></textarea>
@@ -117,7 +127,7 @@ const messages = {
     <button
       type="submit"
       data-cursor="cta"
-      class="mt-2 flex h-14 w-full items-center justify-center gap-3 rounded-full bg-green text-lg font-bold font-stretch-85% text-bg disabled:opacity-60 desk:mt-0 desk:h-15 desk:w-fit desk:gap-3.5 desk:px-[30px] desk:text-xl"
+      class="mt-2 flex h-14 w-full items-center justify-center gap-3 rounded-full bg-green text-lg font-bold font-stretch-85% text-bg aria-disabled:opacity-60 desk:mt-0 desk:h-15 desk:w-fit desk:gap-3.5 desk:px-[30px] desk:text-xl"
     >
       <span data-contact-submit-label>{ui.contact.formSubmit}</span>
       <svg
@@ -136,13 +146,21 @@ const messages = {
         ></path>
       </svg>
     </button>
-    <p
-      data-contact-status
-      role="status"
-      aria-live="polite"
-      class="text-sm text-body empty:hidden"
-    ></p>
+    <p data-contact-status class="text-sm text-body empty:hidden"></p>
   </div>
+
+  {/*
+   * Región viva permanente. El párrafo visible de arriba se oculta cuando
+   * está vacío, y un elemento en `display: none` no está en el árbol de
+   * accesibilidad: al aparecer y rellenarse en el mismo tick, el lector de
+   * pantalla no llega a anunciarlo. Esta copia nunca se oculta.
+   */}
+  <p
+    data-contact-announcer
+    role="status"
+    aria-live="polite"
+    class="sr-only"
+  ></p>
 </form>
 
 <script

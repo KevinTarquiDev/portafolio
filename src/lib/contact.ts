@@ -9,55 +9,77 @@ export interface ContactInput {
   message: string;
 }
 
-export type ContactFieldError =
-  | "required"
-  | "too_short"
-  | "too_long"
-  | "invalid_email"
-  | "invalid_characters";
+/**
+ * Códigos que puede devolver cada campo, declarados por separado en vez
+ * de como una única unión: así el mapa de textos de la interfaz se puede
+ * exigir completo campo a campo, sin obligar a inventar mensajes para
+ * combinaciones que su validador nunca produce.
+ */
+export interface ContactFieldErrors {
+  name: "required" | "invalid_characters" | "too_short" | "too_long";
+  email: "required" | "too_long" | "invalid_email";
+  message: "required" | "too_short" | "too_long";
+}
+
+export type ContactFieldError = ContactFieldErrors[keyof ContactFieldErrors];
+
+export type ContactErrors = Partial<{
+  [Field in keyof ContactFieldErrors]: ContactFieldErrors[Field];
+}>;
+
+/** Un texto por cada código que ese campo puede devolver, ni uno menos. */
+export type ContactErrorMessages = {
+  [Field in keyof ContactFieldErrors]: Record<
+    ContactFieldErrors[Field],
+    string
+  >;
+};
 
 export type ContactValidationResult =
-  | { ok: true; data: ContactInput }
-  | {
-      ok: false;
-      errors: Partial<Record<keyof ContactInput, ContactFieldError>>;
-    };
+  { ok: true; data: ContactInput } | { ok: false; errors: ContactErrors };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CONTROL_CHARS_PATTERN = /[\r\n]/;
 
-/** Nombre y apellido: "Ana Lopez" son 9 caracteres, "Ana Li" son 6. */
-const NAME_MIN = 5;
-const NAME_MAX = 100;
-const EMAIL_MAX = 254;
-const MESSAGE_MIN = 10;
-const MESSAGE_MAX = 2000;
+/**
+ * Longitudes admitidas por campo. Es la única declaración: el formulario
+ * deriva de aquí sus atributos minlength/maxlength, de modo que la
+ * validación nativa del navegador no pueda contradecir a la del servidor.
+ * Nombre y apellido: "Ana Lopez" son 9 caracteres, "Ana Li" son 6.
+ */
+export const CONTACT_LIMITS = {
+  name: { min: 5, max: 100 },
+  email: { max: 254 },
+  message: { min: 10, max: 2000 },
+} as const;
+
+const { name: NAME, email: EMAIL, message: MESSAGE } = CONTACT_LIMITS;
 
 function readString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function validateName(name: string): ContactFieldError | null {
+function validateName(name: string): ContactFieldErrors["name"] | null {
   if (!name) {
     return "required";
   }
   if (CONTROL_CHARS_PATTERN.test(name)) {
     return "invalid_characters";
   }
-  if (name.length < NAME_MIN) {
+  if (name.length < NAME.min) {
     return "too_short";
   }
-  if (name.length > NAME_MAX) {
+  if (name.length > NAME.max) {
     return "too_long";
   }
   return null;
 }
 
-function validateEmail(email: string): ContactFieldError | null {
+function validateEmail(email: string): ContactFieldErrors["email"] | null {
   if (!email) {
     return "required";
   }
-  if (email.length > EMAIL_MAX) {
+  if (email.length > EMAIL.max) {
     return "too_long";
   }
   if (!EMAIL_PATTERN.test(email)) {
@@ -66,14 +88,16 @@ function validateEmail(email: string): ContactFieldError | null {
   return null;
 }
 
-function validateMessage(message: string): ContactFieldError | null {
+function validateMessage(
+  message: string,
+): ContactFieldErrors["message"] | null {
   if (!message) {
     return "required";
   }
-  if (message.length < MESSAGE_MIN) {
+  if (message.length < MESSAGE.min) {
     return "too_short";
   }
-  if (message.length > MESSAGE_MAX) {
+  if (message.length > MESSAGE.max) {
     return "too_long";
   }
   return null;
@@ -116,7 +140,7 @@ export function validateContact(input: unknown): ContactValidationResult {
   const email = readString(record.email);
   const message = readString(record.message);
 
-  const errors: Partial<Record<keyof ContactInput, ContactFieldError>> = {};
+  const errors: ContactErrors = {};
 
   const nameError = validateName(name);
   if (nameError) {
