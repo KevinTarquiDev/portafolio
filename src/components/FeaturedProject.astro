@@ -356,20 +356,17 @@ const backgroundWords = project.keywords
     position: absolute;
   }
 
-  .media :global(.media-shot) {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
   /*
    * En 390px una captura de escritorio solo se lee si ocupa casi todo el
    * ancho: las tres van al máximo que permite el lienzo y solapan únicamente
    * por las esquinas, no sobre el contenido útil de la de debajo.
    */
   .media :global(.media-shot) {
+    display: block;
+    width: 100%;
+    height: 100%;
     border-radius: calc(var(--u) * 8);
+    object-fit: cover;
   }
 
   .media[data-media="admin"] {
@@ -608,9 +605,6 @@ const backgroundWords = project.keywords
     .word {
       font-size: calc(var(--u) * 200);
       --stroke: 1.2px;
-    }
-
-    .word {
       --stroke-color: color-mix(in srgb, var(--color-lilac) 14%, transparent);
     }
 
@@ -714,13 +708,10 @@ const backgroundWords = project.keywords
       width: 200%;
     }
 
+    /* Una sola superficie: halos y letras cruzan la unión de los paneles. */
     :global(html.motion) .panel {
       flex-shrink: 0;
       width: 50%;
-    }
-
-    /* Una sola superficie: halos y letras cruzan la unión de los paneles. */
-    :global(html.motion) .panel {
       overflow: visible;
     }
 

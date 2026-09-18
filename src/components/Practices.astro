@@ -321,8 +321,8 @@ const orbitText = Array.from({ length: 3 }, () =>
       height: 100svh;
     }
 
+    /* El alto y la colocación los aporta la utilidad `stage`. */
     .stage {
-      height: calc(var(--u) * 900);
       padding: 0;
     }
 
@@ -330,17 +330,6 @@ const orbitText = Array.from({ length: 3 }, () =>
     .rail,
     .marker {
       display: none;
-    }
-
-    :global(html.motion) .practices {
-      height: 100svh;
-      overflow: hidden;
-    }
-
-    :global(html.motion) .stage {
-      position: absolute;
-      top: 50%;
-      height: calc(var(--u) * 900);
     }
 
     .practices-glow {

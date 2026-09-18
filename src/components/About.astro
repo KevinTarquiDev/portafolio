@@ -225,6 +225,17 @@ const bandGroups = [0, 1];
     }
   }
 
+  /*
+   * El reset global de global.css congela la marquesina en su primer
+   * fotograma, pero no retira la capa de composición que `will-change`
+   * mantiene promovida. Aquí ya no hay nada que animar.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .band-track {
+      will-change: auto;
+    }
+  }
+
   .band-group {
     display: flex;
     flex-shrink: 0;
@@ -297,8 +308,7 @@ const bandGroups = [0, 1];
 
   /* ---------- Desktop · artboard 02 (1440×900) ---------- */
   @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
-    .about,
-    :global(html.motion) .about {
+    .about {
       height: 100svh;
       /*
        * El resplandor superior nace dentro de la escena, no en su borde:
@@ -322,14 +332,10 @@ const bandGroups = [0, 1];
         );
     }
 
-    .stage,
-    :global(html.motion) .about .stage {
+    /* El resto de la colocación la aporta la utilidad `stage`. */
+    .stage {
       display: block;
       padding: 0;
-      position: absolute;
-      top: 50%;
-      height: calc(var(--u) * 900);
-      translate: 0 -50%;
     }
 
     .about-glow {

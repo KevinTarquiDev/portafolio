@@ -33,6 +33,7 @@
   --color-purple: #7a3fe0;
   --color-purple-hi: #9b6bf0;
   --color-deep: #2a1245;
+  --color-dusk: #150b25; /* paso intermedio entre bg y deep en degradados */
   --color-lilac: #c9b6f2;
   --color-green: #5fd18a;
 
