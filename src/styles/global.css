@@ -67,6 +67,13 @@
     --u: min(100vw / 390, 1.6px);
     --ux: calc(100vw / 390);
 
+    /*
+     * Cambio de estado de un ítem dentro de una escena (el puesto activo,
+     * el nodo encendido, la palabra enfocada). Al estar en un único sitio,
+     * el ritmo de todas las escenas se ajusta desde aquí.
+     */
+    --transition-state: 0.35s ease;
+
     @variant desk {
       --u: min(100vw / 1440, 100svh / 900);
       --ux: calc(100vw / 1440);

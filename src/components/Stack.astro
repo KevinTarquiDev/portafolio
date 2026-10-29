@@ -455,8 +455,8 @@ const columns = portfolio.stack.groups.map((group, index) => {
       -webkit-text-stroke: 1px
         color-mix(in srgb, var(--color-lilac) 16%, transparent);
       transition:
-        color 0.35s ease,
-        -webkit-text-stroke-color 0.35s ease;
+        color var(--transition-state),
+        -webkit-text-stroke-color var(--transition-state);
     }
 
     .item.is-wrapped {
@@ -517,9 +517,6 @@ const columns = portfolio.stack.groups.map((group, index) => {
       left: calc(var(--ux) * 226 - var(--u) * 22);
       top: calc(var(--u) * 448);
       display: inline-flex;
-      width: calc(var(--u) * 44);
-      height: calc(var(--u) * 44);
-      --dot: calc(var(--u) * 14);
     }
   }
 </style>

@@ -192,7 +192,7 @@ export function buildCvDocument(locale: Locale): CvDocument {
     })),
     education: resume.education.map((entry) => ({
       institution: entry.institution,
-      detail: [entry.area, entry.status].filter(Boolean).join(SEPARATOR),
+      detail: entry.area,
       dateRange: formatMonthRange(
         entry.startDate,
         entry.endDate,

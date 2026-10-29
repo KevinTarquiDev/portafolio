@@ -238,9 +238,9 @@ if (!active) {
     -webkit-text-stroke: 1px
       color-mix(in srgb, var(--color-lilac) 30%, transparent);
     transition:
-      color 0.35s ease,
-      -webkit-text-stroke-color 0.35s ease,
-      opacity 0.35s ease;
+      color var(--transition-state),
+      -webkit-text-stroke-color var(--transition-state),
+      opacity var(--transition-state);
     opacity: 0.7;
   }
 
@@ -257,7 +257,7 @@ if (!active) {
     gap: calc(var(--u) * 10);
     padding: 0 calc(var(--ux) * 52) 0 calc(var(--u) * 8);
     opacity: 0.8;
-    transition: opacity 0.35s ease;
+    transition: opacity var(--transition-state);
   }
 
   .is-active .job-body {
@@ -266,7 +266,7 @@ if (!active) {
 
   .job-index {
     color: var(--color-muted);
-    transition: color 0.35s ease;
+    transition: color var(--transition-state);
   }
 
   .is-active .job-index {
@@ -282,7 +282,7 @@ if (!active) {
     line-height: 0.95;
     letter-spacing: -0.012em;
     color: var(--color-soft);
-    transition: color 0.35s ease;
+    transition: color var(--transition-state);
   }
 
   .is-active .job-company {
@@ -297,7 +297,7 @@ if (!active) {
     line-height: 1;
     letter-spacing: -0.01em;
     color: color-mix(in srgb, var(--color-lilac) 68%, transparent);
-    transition: color 0.35s ease;
+    transition: color var(--transition-state);
   }
 
   .is-active .job-position {
@@ -316,10 +316,10 @@ if (!active) {
     border-radius: 9999px;
     background: var(--color-bg);
     transition:
-      scale 0.35s ease,
-      border-color 0.35s ease,
-      background-color 0.35s ease,
-      box-shadow 0.35s ease;
+      scale var(--transition-state),
+      border-color var(--transition-state),
+      background-color var(--transition-state),
+      box-shadow var(--transition-state);
   }
 
   .is-active .job-dot {
@@ -547,9 +547,6 @@ if (!active) {
       left: calc(var(--ux) * 800 - var(--u) * 21);
       top: calc(var(--u) * 497);
       display: inline-flex;
-      width: calc(var(--u) * 44);
-      height: calc(var(--u) * 44);
-      --dot: calc(var(--u) * 14);
     }
   }
 </style>

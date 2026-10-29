@@ -29,14 +29,33 @@ export function motionEls(root: ParentNode, name: string): HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>(`[data-motion='${name}']`)];
 }
 
-/** Valor actual de --u en px (1px del artboard de referencia). */
+let measured: { width: number; height: number; value: number } | null = null;
+
+/**
+ * Valor actual de --u en px (1px del artboard de referencia).
+ *
+ * Medirlo obliga a un layout sincrónico, y GSAP reevalúa de golpe las
+ * decenas de callbacks `() => n * unit()` en cada refresh de
+ * ScrollTrigger. Como --u se deriva solo del viewport, se recuerda la
+ * última medida mientras sus dimensiones no cambien: así un refresh gasta
+ * una medición en vez de una por callback. Cualquier cosa que altere el
+ * valor (resize, rotación, aparición de la barra de scroll al fijar una
+ * escena) cambia esas dimensiones y vuelve a medir.
+ */
 export function unit(): number {
+  const { innerWidth: width, innerHeight: height } = window;
+  if (measured?.width === width && measured.height === height) {
+    return measured.value;
+  }
+
   const probe = document.createElement("div");
   probe.style.cssText =
     "position:absolute;visibility:hidden;height:0;width:calc(var(--u) * 1000)";
   document.body.appendChild(probe);
   const value = probe.getBoundingClientRect().width / 1000;
   probe.remove();
+
+  measured = { width, height, value };
   return value;
 }
 

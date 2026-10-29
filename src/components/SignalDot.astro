@@ -3,8 +3,9 @@ import type { HTMLAttributes } from "astro/types";
 
 /**
  * El punto verde que recorre el sitio: un anillo con un punto luminoso
- * dentro. Cada escena lo posiciona y dimensiona desde su CSS con
- * width/height (anillo) y la variable --dot (punto interior).
+ * dentro. Viene ya a escala del artboard, que es como lo usan todas las
+ * escenas; cada una solo lo coloca desde su CSS. Para un tamaño distinto
+ * se redefinen width/height (anillo) y --dot (punto interior).
  */
 export type Props = HTMLAttributes<"span">;
 
@@ -17,12 +18,13 @@ const { class: className, ...rest } = Astro.props;
 
 <style>
   .signal-dot {
+    --dot: calc(var(--u) * 14);
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    width: calc(var(--u) * 44);
+    height: calc(var(--u) * 44);
     border: 1px solid color-mix(in srgb, var(--color-green) 40%, transparent);
     border-radius: 9999px;
   }
@@ -30,11 +32,11 @@ const { class: className, ...rest } = Astro.props;
   .signal-dot > span {
     display: block;
     flex-shrink: 0;
-    width: var(--dot, 14px);
-    height: var(--dot, 14px);
+    width: var(--dot);
+    height: var(--dot);
     border-radius: 9999px;
     background: var(--color-green);
-    box-shadow: 0 0 calc(var(--dot, 14px) * 2)
+    box-shadow: 0 0 calc(var(--dot) * 2)
       color-mix(in srgb, var(--color-green) 50%, transparent);
   }
 </style>

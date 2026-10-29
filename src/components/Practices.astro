@@ -220,7 +220,7 @@ const orbitText = Array.from({ length: 3 }, () =>
     padding: calc(var(--u) * 16) calc(var(--ux) * 20) calc(var(--u) * 16)
       calc(var(--ux) * 60);
     opacity: 0.8;
-    transition: opacity 0.35s ease;
+    transition: opacity var(--transition-state);
   }
 
   .practice.is-active {
@@ -237,12 +237,12 @@ const orbitText = Array.from({ length: 3 }, () =>
     border-radius: 9999px;
     background: var(--color-bg);
     transition:
-      width 0.35s ease,
-      height 0.35s ease,
-      translate 0.35s ease,
-      border-color 0.35s ease,
-      background-color 0.35s ease,
-      box-shadow 0.35s ease;
+      width var(--transition-state),
+      height var(--transition-state),
+      translate var(--transition-state),
+      border-color var(--transition-state),
+      background-color var(--transition-state),
+      box-shadow var(--transition-state);
   }
 
   .is-active .marker {
@@ -257,7 +257,7 @@ const orbitText = Array.from({ length: 3 }, () =>
   .practice-index {
     font-size: 11px;
     color: color-mix(in srgb, var(--color-green) 55%, transparent);
-    transition: color 0.35s ease;
+    transition: color var(--transition-state);
   }
 
   .is-active .practice-index {
@@ -273,7 +273,7 @@ const orbitText = Array.from({ length: 3 }, () =>
     line-height: 0.9;
     letter-spacing: -0.012em;
     color: var(--color-soft);
-    transition: color 0.35s ease;
+    transition: color var(--transition-state);
   }
 
   .is-active .practice-name {
@@ -284,7 +284,7 @@ const orbitText = Array.from({ length: 3 }, () =>
     margin: 0;
     font-size: 10px;
     color: var(--color-muted);
-    transition: color 0.35s ease;
+    transition: color var(--transition-state);
   }
 
   .is-active .practice-keywords {
@@ -422,9 +422,6 @@ const orbitText = Array.from({ length: 3 }, () =>
       position: absolute;
       z-index: 6;
       display: inline-flex;
-      width: calc(var(--u) * 44);
-      height: calc(var(--u) * 44);
-      --dot: calc(var(--u) * 14);
     }
 
     .practices :global(.node-1) {

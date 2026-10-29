@@ -166,7 +166,6 @@ export interface EducationItemViewModel {
   studyType: string;
   startDate: string;
   endDate?: string | undefined;
-  status?: string | undefined;
 }
 
 export interface EducationViewModel {
@@ -300,7 +299,6 @@ export function getPortfolio(locale: Locale): PortfolioViewModel {
       studyType: entry.studyType,
       startDate: entry.startDate,
       endDate: entry.endDate,
-      status: entry.status,
     })),
   };
 

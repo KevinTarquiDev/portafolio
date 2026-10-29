@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 
 /**
  * Verifica el build de producción (`.vercel/output`) más allá de lo que
@@ -283,10 +283,54 @@ function checkHeaders(): void {
 
   const config = readText(CONFIG_PATH);
   if (config) {
-    const hasImmutableAstroCache =
-      /"src":\s*"\^\/_astro\/[^"]*"[\s\S]*?"cache-control":\s*"public, max-age=31536000, immutable"/.test(
-        config,
-      );
+    const assetPaths = walkFiles(join(STATIC_DIR, "_astro")).map(
+      (file) => `/${relative(STATIC_DIR, file).split(sep).join("/")}`,
+    );
+    let hasImmutableAstroCache = false;
+    try {
+      const parsed: unknown = JSON.parse(config);
+      if (
+        typeof parsed === "object" &&
+        parsed !== null &&
+        "routes" in parsed &&
+        Array.isArray(parsed.routes)
+      ) {
+        hasImmutableAstroCache = parsed.routes.some((route: unknown) => {
+          if (
+            typeof route !== "object" ||
+            route === null ||
+            !("src" in route) ||
+            typeof route.src !== "string" ||
+            !("continue" in route) ||
+            route.continue !== true ||
+            !("headers" in route) ||
+            typeof route.headers !== "object" ||
+            route.headers === null ||
+            !("cache-control" in route.headers) ||
+            route.headers["cache-control"] !==
+              "public, max-age=31536000, immutable"
+          ) {
+            return false;
+          }
+          try {
+            const pattern = new RegExp(route.src);
+            return (
+              assetPaths.length > 0 &&
+              assetPaths.every((path) => pattern.test(path)) &&
+              ["js", "css", "woff2", "avif"].every((extension) =>
+                pattern.test(`/_astro/example.${extension}`),
+              ) &&
+              !pattern.test("/other/example.js")
+            );
+          } catch {
+            return false;
+          }
+        });
+      }
+    } catch {
+      fail("config.json no es JSON válido");
+      return;
+    }
     if (!hasImmutableAstroCache) {
       fail(
         "config.json no aplica cache-control immutable a /_astro/* (lo genera el adaptador)",

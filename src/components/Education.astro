@@ -56,13 +56,6 @@ const entries = portfolio.education.items.map((entry) => ({
           <h3 class="degree-area">{entry.area}</h3>
           <p class="serif degree-institution">{entry.institution}</p>
         </div>
-
-        {entry.status && (
-          <p class="mono-label status">
-            <span class="status-dot" aria-hidden="true"></span>
-            {entry.status}
-          </p>
-        )}
       </div>
     </div>
   ))}
@@ -197,30 +190,6 @@ const entries = portfolio.education.items.map((entry) => ({
     color: var(--color-lilac);
   }
 
-  .status {
-    position: absolute;
-    z-index: 3;
-    left: calc(var(--ux) * 20);
-    top: calc(var(--u) * 610);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0;
-    padding: 10px 16px;
-    border: 1px solid color-mix(in srgb, var(--color-green) 45%, transparent);
-    border-radius: 9999px;
-    color: var(--color-ink);
-  }
-
-  .status-dot {
-    flex-shrink: 0;
-    width: 8px;
-    height: 8px;
-    border-radius: 9999px;
-    background: var(--color-green);
-    box-shadow: 0 0 16px color-mix(in srgb, var(--color-green) 50%, transparent);
-  }
-
   /* ---------- Desktop · artboard 09 (1440×900) ---------- */
   @media (min-width: 1024px) and (min-aspect-ratio: 1/1) {
     .entry {
@@ -326,13 +295,6 @@ const entries = portfolio.education.items.map((entry) => ({
     .degree-institution {
       font-size: calc(var(--u) * 46);
       line-height: 1;
-    }
-
-    .status {
-      left: calc(var(--ux) * 1020);
-      top: calc(var(--u) * 590);
-      gap: 12px;
-      padding: 12px 20px;
     }
   }
 </style>
