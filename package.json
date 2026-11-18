@@ -25,12 +25,12 @@
     "verify": "bun run format:check && bun run resume:validate && bun run test && bun run check && bun run build && bun run build:check && bun run secrets:check --allow-missing"
   },
   "dependencies": {
-    "@astrojs/vercel": "11.0.17",
+    "@astrojs/vercel": "11.0.22",
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@fontsource/geist-mono": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "7.4.7",
+    "astro": "7.4.12",
     "gsap": "^3.15.0",
     "tailwindcss": "^4.3.3"
   },
